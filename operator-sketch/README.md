@@ -2,7 +2,17 @@
 
 Related delivery issue: [inkseq/h3-studio #132](https://github.com/inkseq/h3-studio/issues/132), P4, and [#125](https://github.com/inkseq/h3-studio/issues/125). This standalone static artifact supersedes the earlier local mock for the current review. It is not the production application or a new system of record. No backend, API, schema, release, provider calls, rentals, job submissions or billing changes are included. All mock state is in memory and resets on reload; no credentials or private assets are used.
 
-Open `index.html` directly, or serve this folder with a loopback static HTTP server. The current local review copy is served at `http://127.0.0.1:18997/`. Source preservation does not authorize P4 implementation or deployment. The user approved the direction and requested this revised sketch before application coding.
+Open `index.html` directly, or serve this folder with a loopback static HTTP server. The current local review copy is served at `http://127.0.0.1:18997/`. The user approved v2 and authorized implementation after the eight refinements below. This static file remains a disconnected review artifact.
+
+## Approved v2 refinements
+
+- Stop warns when waiting FL/REF jobs would lose their last compatible ready/busy machine. Stopping rows and hourly cost stay visible until a terminal observation.
+- Fictional per-offer availability is consumed once per batch; quantities spread across distinct stock slots. The live API's offers are advisory resource quotes, not pinnable physical machines; live starts require independent fresh previews and allocation journals.
+- Group Add defaults to one machine. Find/Queue starts default to Ungrouped, which is also a move destination.
+- Renting, downloading weights, loading model, ready and stopping/stopped are separate mock phases. Live process startup is not model-load evidence; an unavailable load observation must stay explicit.
+- Keep-on remains visible at 760–1220 px by wrapping into a second row.
+- Ended history shows runtime, total cost and videos; detail shows today's cost/videos beside generation statistics.
+- Admin shows all account machines, stop controls and spend per account. Cross-account access must be separately authorized by the server.
 
 ## Review flows
 
