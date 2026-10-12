@@ -204,3 +204,11 @@
 !studio-app/src/generation-availability.css
 !studio-app/src/generation-availability.test.js
 !studio-app/src/cloud-availability.test.js
+
+# Approved P4 live operator workspace (source only, no runtime fixtures).
+!studio-app/src/P4OperatorConsole.jsx
+!studio-app/src/p4-operator-model.js
+!studio-app/src/p4-operator-client.js
+!studio-app/src/p4-operator-controller.js
+!studio-app/src/p4-operator.test.js
+!studio-app/src/p4-operator.css
