@@ -220,4 +220,10 @@
 !studio-app/src/StoryboardPanels.jsx
 !studio-app/src/storyboard-ui-context.jsx
 !studio-app/src/storyboard-ui-model.js
+!studio-app/src/storyboard-domain.js
+!studio-app/src/storyboard-domain.test.js
+!studio-app/src/storyboard-actions.js
+!studio-app/src/storyboard-actions.test.js
+!studio-app/src/storyboard-cloud.test.js
+!studio-app/src/StoryboardConnected.jsx
 !studio-app/src/storyboard-workspace.css

@@ -12,7 +12,7 @@ export const expand=(shot,db)=>db.expand(shot);
 export const planDrop=(shot,item,slot,db)=>db.planDrop(shot,item,slot);
 export const shotProfiles=shot=>[...shot.cast.map(c=>({id:c.id,variant:c.variant})),...(shot.place?[shot.place]:[]),...shot.props.map(id=>({id}))];
 export function startFrame(shot,db){
-  if(shot.continuePrev){const previous=prevShot(db.state.shots,shot),version=previous&&chosenVersion(previous);return {asset:shot.previousFrame&&db.asset(shot.previousFrame),label:version?'上一镜选定版本的最后一帧':'等待上一镜选定版本',pending:!shot.previousFrame};}
+  if(shot.continuePrev){const previous=prevShot(db.state.shots,shot),version=previous&&chosenVersion(previous),frame=shot.previousFrame&&db.asset(shot.previousFrame),binding=shot.entity?.data.storyboard?.previousFrame,selection=frame?.entity?.data.sourceSelection;const current=frame&&version&&binding?.shotId===previous.id&&binding.selectedAssetId===previous.chosen&&selection?.kind==='artifact_frame'&&selection.position==='last'&&selection.artifact_id===version.artifactId;return {asset:current?frame:null,label:version?'上一镜选定版本的最后一帧':'等待上一镜选定版本',pending:!current};}
   const asset=shot.start&&db.asset(shot.start);return asset?{asset,label:asset.name}:null;
 }
 export const fmt=sec=>Number.isFinite(sec)?`${Math.floor(Math.max(0,sec)/60)}:${String(Math.floor(Math.max(0,sec)%60)).padStart(2,'0')}`:'—';

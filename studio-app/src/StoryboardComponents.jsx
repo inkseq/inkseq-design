@@ -4,7 +4,7 @@ import {useDraggable, useDroppable} from '@dnd-kit/core';
 import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
 import {KIND_LABEL, TYPE_LABEL, VARIANT_LABEL} from './storyboard-ui-model.js';
-import {StoryboardAssetImage,StoryboardVideo,StoryboardPlayButton} from './StoryboardMedia.jsx';
+import {StoryboardDownloads,StoryboardAssetImage,StoryboardVideo,StoryboardPlayButton} from './StoryboardMedia.jsx';
 import {chosenVersion,coverOf,expand,fmt,MODE_LABEL,modeOf,QUALITY_LABEL,planDrop,segments,shotProfiles,shotStatus,startFrame,totalDuration,variantOf,queuePositions} from './storyboard-ui-model.js';
 import {useStoryboardUI as useStore} from './storyboard-ui-context.jsx';
 
@@ -473,7 +473,7 @@ export function ShotEditor({shotId, onClose, inline}) {
           <button className="primary use" onClick={() => dispatch({type: 'choose', shot: shot.id, version: viewing.id})}>用这个版本（替换时间线上的 v{chosen?.n}）</button>}
       </div>
       {['done','succeeded'].includes(viewing?.status)&& (saving ? <SaveFrame shot={shot} version={viewing} onDone={t => { setSaving(false); setMsg(t); }} />
-        : <div className="row tight"><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>📌 截一帧存为参考</button>{msg && <small className="okmsg">{msg}</small>}</div>)}
+        : <div className="row tight"><StoryboardDownloads version={viewing} title={shot.title}/><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>📌 截一帧存为参考</button>{msg && <small className="okmsg">{msg}</small>}</div>)}
 
       {shot.versions.length > 0 && <div className="versions">
         {shot.versions.map(v => (

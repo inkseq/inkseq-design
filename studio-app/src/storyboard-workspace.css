@@ -343,6 +343,10 @@ body.sb-resizing video, body.sb-resizing-y video { pointer-events: none; }
 :where(.sb-workspace, .sb-portal) .vimg.add:hover { color: var(--brand); border-color: var(--brand); }
 :where(.sb-workspace, .sb-portal) .drop-line { font-size: 11px; color: var(--muted); border: 1px dashed #cfc9ba; border-radius: 8px; padding: 6px; text-align: center; }
 
+.storyboard-main-stage {min-width:0;padding:0!important;}
+.sb-confirm {width:min(900px,94vw);max-height:88dvh;overflow:auto;}
+.sb-confirm-row {border-top:1px solid var(--line);padding:12px 0;}
+.sb-confirm pre {white-space:pre-wrap;overflow-wrap:anywhere;}
 .sb-workspace {position:relative;display:flex;flex-direction:column;height:calc(100dvh - 172px);min-height:460px;background:var(--bg);overflow:hidden;isolation:isolate;}
 .sb-workspace .layout {padding-bottom:0;}
 .sb-workspace .drawer {bottom:0;max-width:calc(100% - 24px);}

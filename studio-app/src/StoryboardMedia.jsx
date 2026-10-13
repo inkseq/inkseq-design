@@ -1,5 +1,11 @@
 import React,{useEffect,useRef,useState} from 'react';
 import {getFile} from './media.js';
+import {artifactMedia} from './artifact-media.js';
+
+export function StoryboardDownloads({version,title}){
+  const video=version.asset?.entity,audio=version.audio,items=[video?{id:version.artifactId,kind:'video',mime:video.data.mime,content_url:video.data.cloudContentPath}:null,audio].map(artifact=>artifactMedia(artifact,{id:version.jobId},{title})).filter(Boolean);
+  return <span className="row tight">{items.map(media=><a key={media.id} href={media.downloadURL} download={media.filename.replace('粗剪','镜头')} referrerPolicy="no-referrer">{media.type==='video'?'下载视频':'下载独立音频'}</a>)}</span>;
+}
 
 // Reuse the existing owner-scoped media reader; Blob URLs live only as long as
 // their mounted preview. No hardcoded demo clips, public buckets or provider URLs.
