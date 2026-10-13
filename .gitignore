@@ -216,6 +216,8 @@
 # Owner-approved storyboard layout A; no prototype store or sample media.
 !studio-app/src/StoryboardWorkspace.jsx
 !studio-app/src/StoryboardComponents.jsx
+!studio-app/src/StoryboardDialog.jsx
+!studio-app/src/storyboard-dialog.test.js
 !studio-app/src/StoryboardMedia.jsx
 !studio-app/src/StoryboardPanels.jsx
 !studio-app/src/storyboard-ui-context.jsx
