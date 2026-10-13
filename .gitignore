@@ -212,3 +212,18 @@
 !studio-app/src/p4-operator-controller.js
 !studio-app/src/p4-operator.test.js
 !studio-app/src/p4-operator.css
+
+# Owner-approved storyboard layout A; no prototype store or sample media.
+!studio-app/src/StoryboardWorkspace.jsx
+!studio-app/src/StoryboardComponents.jsx
+!studio-app/src/StoryboardMedia.jsx
+!studio-app/src/StoryboardPanels.jsx
+!studio-app/src/storyboard-ui-context.jsx
+!studio-app/src/storyboard-ui-model.js
+!studio-app/src/storyboard-domain.js
+!studio-app/src/storyboard-domain.test.js
+!studio-app/src/storyboard-actions.js
+!studio-app/src/storyboard-actions.test.js
+!studio-app/src/storyboard-cloud.test.js
+!studio-app/src/StoryboardConnected.jsx
+!studio-app/src/storyboard-workspace.css
