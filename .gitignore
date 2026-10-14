@@ -220,6 +220,10 @@
 !studio-app/src/OperatorJobsPanel.jsx
 !studio-app/src/operator-jobs-model.js
 !studio-app/src/operator-jobs.test.js
+!studio-app/src/OperatorHostsPanel.jsx
+!studio-app/src/operator-host-model.js
+!studio-app/src/operator-host.css
+!studio-app/src/operator-host.test.js
 
 # Owner-approved storyboard layout A; no prototype store or sample media.
 !studio-app/src/StoryboardWorkspace.jsx
