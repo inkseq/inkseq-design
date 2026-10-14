@@ -229,3 +229,5 @@
 !studio-app/src/storyboard-cloud.test.js
 !studio-app/src/StoryboardConnected.jsx
 !studio-app/src/storyboard-workspace.css
+!studio-app/src/storyboard-playback.js
+!studio-app/src/storyboard-playback.test.js
