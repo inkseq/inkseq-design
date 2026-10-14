@@ -172,6 +172,7 @@
 !studio-app/src/store.js
 !studio-app/src/store.test.js
 !studio-app/src/story-navigation.css
+!studio-app/src/story-shell.css
 !studio-app/src/story-navigation.js
 !studio-app/src/story-navigation.test.js
 !studio-app/src/storyboard.js
