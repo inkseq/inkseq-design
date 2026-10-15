@@ -221,6 +221,9 @@
 !studio-app/src/operator-jobs-model.js
 !studio-app/src/operator-jobs.test.js
 !studio-app/src/OperatorHostsPanel.jsx
+!studio-app/src/CreationHistory.jsx
+!studio-app/src/creation-history-model.js
+!studio-app/src/creation-history.test.js
 !studio-app/src/operator-host-model.js
 !studio-app/src/operator-host.css
 !studio-app/src/operator-host.test.js
