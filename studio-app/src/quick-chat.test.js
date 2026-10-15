@@ -123,6 +123,34 @@ test('technical derivative inventory hides only unbound selections, never upload
 test('canonical revision deep links read that immutable resource even outside the current timeline page',async()=>{
   const reads=[],client=fakeClient({revision:async(_id,id)=>{reads.push(id);return {id,card_id:'c',version:id==='old'?1:2};},card:async()=>({id:'c',current_revision_id:'head',revisions:[{id:'old'},{id:'head'}]})}),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');await controller.open('s',{revisionId:'old'});assert.ok(reads.includes('old'));assert.equal(controller.getState().revisions.old.version,1);assert.equal(controller.getState().cards.c.current_revision_id,'head');assert.equal(controller.getState().pending,null);
 });
+test('a failed current revision read recovers on an empty forward poll without another authoring or generation command',async()=>{
+  let revisionReads=0,writes=0;const timelineReads=[];
+  const card={id:'card',version:1,current_revision_id:'revision',revisions:[{id:'revision'}]},revision={id:'revision',card_id:'card',version:1,input_hash:'original-hash',deployment_profile_id:'selected-ref-profile',recipe_id:'h3-base-ref2va-v1',prompt:'Saved original prompt',controls:{duration:4,steps:20,seed:'42',sampler_name:'res_multistep'},inputs:{images:[{asset_id:'image',purpose:'reference'}],first_frame:{asset_id:'image'}},copies:1};
+  const forbidden=async()=>{writes++;throw Error('recovery must remain read-only');},client=fakeClient({
+    timeline:async(_id,options)=>{timelineReads.push(options);return {events:options.after_cursor?[]:[{id:'event',seq:1,type:'card.created',record:{card_id:card.id}}],after_cursor:'forward'};},
+    card:async()=>structuredClone(card),revision:async()=>{if(++revisionReads===1)throw Error('transient revision read failed');return structuredClone(revision);},
+    createCard:forbidden,reviseCard:forbidden,preflight:forbidden,submit:forbidden,
+  }),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');
+  await assert.rejects(controller.open('s',{cardId:card.id}),/transient revision read failed/);
+  assert.deepEqual(controller.getState().cards.card,card);assert.equal(controller.getState().revisions.revision,undefined);assert.equal(controller.getState().forwardCursor,'forward');
+  await controller.poll();assert.deepEqual(controller.getState().revisions.revision,revision);assert.equal(revisionReads,2);assert.equal(timelineReads[1].after_cursor,'forward');
+  await controller.poll();assert.equal(revisionReads,2,'a loaded immutable revision does not get fetched on every poll');assert.equal(writes,0);assert.equal(controller.getState().pending,null);controller.destroy();
+});
+test('a late missing-revision recovery respects account, session and read-generation fences',async()=>{
+  for(const boundary of ['account','session','authoring']){
+    let reads=0,finish,started;const waiting=new Promise(resolve=>{started=resolve;}),revision={id:'revision',card_id:'card',version:1};
+    const client=fakeClient({
+      timeline:async(id,options)=>({events:id==='s'&&!options.after_cursor?[{id:'event',seq:1,type:'card.created',record:{card_id:'card'}}]:[],after_cursor:'forward'}),
+      card:async()=>({id:'card',current_revision_id:'revision'}),revision:async()=>{if(++reads===1)throw Error('transient');return new Promise(resolve=>{finish=resolve;started();});},
+      patchSession:async()=>({session:{id:'s',version:2,title:'Newer authored title'}}),
+    }),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');await assert.rejects(controller.open('s'),/transient/);
+    const oldPoll=assert.rejects(controller.poll(),/工作账户、会话或内容已经改变/);await waiting;
+    if(boundary==='account')await controller.setAccount('other-owner');else if(boundary==='session')await controller.open('other-session');else await controller.patch({title:'Newer authored title'});
+    finish(revision);await oldPoll;assert.equal(controller.getState().revisions.revision,undefined,'an obsolete recovery cannot publish into the current view');
+    if(boundary==='authoring')assert.equal(controller.getState().session.version,2);else assert.deepEqual(controller.getState().cards,{});
+    assert.equal(controller.getState().pending,null);controller.destroy();
+  }
+});
 test('direct-card send recovers the original atomic turn command and reads its one durable card',async()=>{
   const calls=[];let committed=false;
   const turn={id:'turn',seq:1,text:'一架纸飞机起飞。',assistant_mode:'none',status:'recorded',card_id:'card'},client=fakeClient({

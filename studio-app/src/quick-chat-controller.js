@@ -91,6 +91,9 @@ export function createQuickChatController({client=createQuickChatClient(),storag
     // Timeline holds durable creation references; current job state is read
     // separately even when its sequence has not changed.
     const cardIds=new Set(events.map(event=>event.record?.card_id||event.card_id).filter(Boolean));
+    // A card can arrive before its revision read fails. The forward cursor
+    // already advanced, so recover that missing immutable read on later polls.
+    for(const card of Object.values(state.cards))if(card.current_revision_id&&!state.revisions[card.current_revision_id])cardIds.add(card.id);
     for(const revisionId of new Set(events.map(event=>event.record?.revision_id).filter(Boolean))){const revision=record(await client.revision(id,revisionId),'revision');guard(ctx);emit({revisions:{...state.revisions,[revision.id]:revision}});if(revision.card_id)cardIds.add(revision.card_id);}
     const eventPreflights=Object.fromEntries(events.filter(event=>event.type==='preflight.completed'&&event.record?.id).map(event=>[event.record.id,event.record]));
     if(Object.keys(eventPreflights).length)emit({preflights:{...state.preflights,...eventPreflights}});
