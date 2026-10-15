@@ -123,18 +123,28 @@ test('technical derivative inventory hides only unbound selections, never upload
 test('canonical revision deep links read that immutable resource even outside the current timeline page',async()=>{
   const reads=[],client=fakeClient({revision:async(_id,id)=>{reads.push(id);return {id,card_id:'c',version:id==='old'?1:2};},card:async()=>({id:'c',current_revision_id:'head',revisions:[{id:'old'},{id:'head'}]})}),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');await controller.open('s',{revisionId:'old'});assert.ok(reads.includes('old'));assert.equal(controller.getState().revisions.old.version,1);assert.equal(controller.getState().cards.c.current_revision_id,'head');assert.equal(controller.getState().pending,null);
 });
-test('a failed current revision read recovers on an empty forward poll without another authoring or generation command',async()=>{
-  let revisionReads=0,writes=0;const timelineReads=[];
+test('a failed card or current revision read recovers a full direct-card event on an empty forward poll without writes',async()=>{
+  for(const failedResource of ['card','revision']){
+  let cardReads=0,revisionReads=0,writes=0;const timelineReads=[];
   const card={id:'card',version:1,current_revision_id:'revision',revisions:[{id:'revision'}]},revision={id:'revision',card_id:'card',version:1,input_hash:'original-hash',deployment_profile_id:'selected-ref-profile',recipe_id:'h3-base-ref2va-v1',prompt:'Saved original prompt',controls:{duration:4,steps:20,seed:'42',sampler_name:'res_multistep'},inputs:{images:[{asset_id:'image',purpose:'reference'}],first_frame:{asset_id:'image'}},copies:1};
   const forbidden=async()=>{writes++;throw Error('recovery must remain read-only');},client=fakeClient({
-    timeline:async(_id,options)=>{timelineReads.push(options);return {events:options.after_cursor?[]:[{id:'event',seq:1,type:'card.created',record:{card_id:card.id}}],after_cursor:'forward'};},
-    card:async()=>structuredClone(card),revision:async()=>{if(++revisionReads===1)throw Error('transient revision read failed');return structuredClone(revision);},
+    timeline:async(_id,options)=>{timelineReads.push(options);return {events:options.after_cursor?[]:[{id:'event',seq:1,type:'card.created',record:structuredClone(revision)}],after_cursor:'forward'};},
+    card:async()=>{if(++cardReads===1&&failedResource==='card')throw Error('transient card read failed');return structuredClone(card);},revision:async()=>{if(++revisionReads===1&&failedResource==='revision')throw Error('transient revision read failed');return structuredClone(revision);},
     createCard:forbidden,reviseCard:forbidden,preflight:forbidden,submit:forbidden,
   }),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');
-  await assert.rejects(controller.open('s',{cardId:card.id}),/transient revision read failed/);
-  assert.deepEqual(controller.getState().cards.card,card);assert.equal(controller.getState().revisions.revision,undefined);assert.equal(controller.getState().forwardCursor,'forward');
-  await controller.poll();assert.deepEqual(controller.getState().revisions.revision,revision);assert.equal(revisionReads,2);assert.equal(timelineReads[1].after_cursor,'forward');
-  await controller.poll();assert.equal(revisionReads,2,'a loaded immutable revision does not get fetched on every poll');assert.equal(writes,0);assert.equal(controller.getState().pending,null);controller.destroy();
+  await assert.rejects(controller.open('s',{cardId:card.id}),new RegExp('transient '+failedResource+' read failed'));
+  assert.deepEqual(controller.getState().cards.card,failedResource==='card'?undefined:card);assert.equal(controller.getState().revisions.revision,undefined);assert.equal(controller.getState().forwardCursor,'forward');
+  await controller.poll();assert.deepEqual(controller.getState().cards.card,card);assert.deepEqual(controller.getState().revisions.revision,revision);assert.equal(cardReads,2);assert.equal(revisionReads,failedResource==='card'?1:2);assert.equal(timelineReads[1].after_cursor,'forward');
+  const reads=revisionReads;await controller.poll();assert.equal(revisionReads,reads,'loaded immutable data does not get fetched on every poll');assert.equal(cardReads,2);assert.equal(writes,0);assert.equal(controller.getState().pending,null);controller.destroy();
+  }
+});
+test('missing-card recovery is bounded to loaded durable references and stops refetching completed cards',async()=>{
+  let cardReads=0;const timelineReads=[],events=Array.from({length:30},(_,index)=>({id:'event-'+index,seq:index+1,type:'card.created',record:{id:'revision-'+index,card_id:'card-'+index}}));
+  events.push({id:'scope-limited',seq:31,type:'preflight.completed',record:{id:'scoped-preflight',requires_scope:'jobs:write'}});
+  const client=fakeClient({timeline:async(_id,options)=>{timelineReads.push(options);return {events:options.after_cursor?[]:events,after_cursor:'forward'};},card:async(_id,id)=>{if(++cardReads===1)throw Error('transient card read failed');return {id,current_revision_id:'revision-'+id.slice(5)};},revision:async(_id,id)=>({id,card_id:'card-'+id.slice(9)})}),controller=createQuickChatController({client,storage:memory()});await controller.setAccount('supervan');
+  await assert.rejects(controller.open('s'),/transient card read failed/);await controller.poll();assert.equal(Object.keys(controller.getState().cards).length,20);assert.equal(cardReads,21);
+  await controller.poll();assert.equal(Object.keys(controller.getState().cards).length,30);assert.equal(cardReads,31);
+  await controller.poll();assert.equal(cardReads,31);assert.ok(timelineReads.slice(1).every(options=>options.after_cursor==='forward'&&!options.before_cursor),'recovery does not read additional history pages');assert.equal(controller.getState().pending,null);controller.destroy();
 });
 test('a late missing-revision recovery respects account, session and read-generation fences',async()=>{
   for(const boundary of ['account','session','authoring']){
