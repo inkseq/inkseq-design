@@ -32,7 +32,7 @@ const publicId=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,200}$/.test(val
 export function jobDiagnostics(job){
   const value=job?.diagnostic;if(!value||typeof value!=='object')return [];
   const lines=[];if(diagnosticReasons[value.reason_code])lines.push(diagnosticReasons[value.reason_code]);
-  if(Number.isFinite(value.age_seconds)&&value.age_seconds>=0)lines.push('当前状态已持续 '+(value.age_seconds<60?Math.floor(value.age_seconds)+' 秒':Math.floor(value.age_seconds/60)+' 分钟'));
+  if(Number.isFinite(value.age_seconds)&&value.age_seconds>=0)lines.push('距最近任务更新 '+(value.age_seconds<60?Math.floor(value.age_seconds)+' 秒':Math.floor(value.age_seconds/60)+' 分钟'));
   if(publicId(value.current_attempt_id)&&Number.isSafeInteger(value.attempt_no)&&value.attempt_no>0)lines.push('原执行 #'+value.attempt_no+' · '+value.current_attempt_id.slice(0,8));
   const receipt=value.dispatch;if(receipt&&publicId(receipt.event_id)&&dispatchStates[receipt.state])lines.push('派发 '+receipt.event_id.slice(0,8)+' · '+dispatchStates[receipt.state]);
   return lines;

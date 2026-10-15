@@ -103,7 +103,7 @@ test('task row renders any-owner queued selection while disabling running and un
 test('admin diagnostics retain original execution and notification identities without exposing raw errors',()=>{
   const row=job('held',{status:'recovery_hold',cancellable:false,diagnostic:{reason_code:'original_attempt_requires_reconciliation',age_seconds:185,attempt_no:2,current_attempt_id:'12345678-abcd',dispatch:{event_id:'abcdef12-abcd',state:'unknown'},error_code:'private raw response'}});
   assert.equal(jobStatus(row.status),'原执行待核对');assert.equal(jobStatus('submission_unknown'),'提交结果待核对');
-  assert.deepEqual(jobDiagnostics(row),['保留原执行，等待核对','当前状态已持续 3 分钟','原执行 #2 · 12345678','派发 abcdef12 · 通知结果待核对']);
+  assert.deepEqual(jobDiagnostics(row),['保留原执行，等待核对','距最近任务更新 3 分钟','原执行 #2 · 12345678','派发 abcdef12 · 通知结果待核对']);
   assert.deepEqual(jobDiagnostics(job()),[]); // Compatible with an older server during rollout.
   assert.deepEqual(jobDiagnostics({diagnostic:{reason_code:'secret raw reason',age_seconds:-1,attempt_no:2,current_attempt_id:'https://private',dispatch:{event_id:'token',state:'secret'}}}),[]);
   assert.equal(canCancelJob(row),false);
