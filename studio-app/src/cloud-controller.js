@@ -254,11 +254,12 @@ export function createCloudController({store=defaultStore,client,storage=globalT
       if (!recipe || !profile) throw Error('workbench.capabilities');
       const mode = recipe.mode, support = profile.generation_support?.[mode];
       const shot = current().project.entities.find(row => row.id === shotId), b = shot?.data.storyboard;
-      if (!shot || !b) throw Error('workbench.changed');
+      if (!shot) throw Error('workbench.changed');
       if (shot.data.h3?.explicitReferences) {
         if (preview.project_version !== current().workspace.serverVersion || preview.issues?.length) throw Error('workbench.inputsInvalid');
         continue;
       }
+      if (!b) throw Error('workbench.changed');
       if (b.continuePrevious && (mode === 'fl' || support?.input_support?.first_frame === true)) {
         const project = current().project, chapter = project.entities.find(row => row.type === 'chapter' && chapterShots(project, row.id).some(row => row.id === shotId));
         const shots = chapter ? chapterShots(project, chapter.id) : [], previous = shots[shots.findIndex(row => row.id === shotId) - 1];

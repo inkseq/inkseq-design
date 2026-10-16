@@ -231,3 +231,14 @@ test('actual nested storyboard and top-level copies CAS proof envelopes clear on
   nested=false;resource='quick_chat_preferences';await assert.rejects(h.controller.workbenchCommand('copies',{expected_version:2,copies_max:6,takes_fold_count:8}),/workbench.closed/);assert.equal(h.controller.workbenchPending(),null);
  }finally{h.controller.destroy();}
 });
+
+test('restored explicit recipe preflight preserves non-storyboard inputs and quality intent',async()=>{
+ const h=await harness();try{
+  h.store.editProject(p=>{const shot=p.entities.find(x=>x.id===h.shot);delete shot.data.storyboard;shot.data.qualityIntent='final';shot.data.h3.explicitReferences=[{asset_id:'original',role:'reference',source_range:{start:1,end:2}}];});
+  await h.controller.save();const before=clone(h.store.getState().project.entities.find(x=>x.id===h.shot).data);
+  h.api.request=async(path,options)=>({id:'restored-pf',request_hash:await digest(options.body),project_id:h.store.getState().project.id,project_version:options.body.expected_version,status:'completed',ready:true,items:[{shot_id:h.shot,index:0,plan_id:'p',plan:{}}]});
+  await h.controller.workbenchCommand('preflight',{shot_ids:[h.shot],copies:1});
+  assert.deepEqual(h.store.getState().project.entities.find(x=>x.id===h.shot).data,before);
+  assert.equal(h.calls.some(x=>['upload','frame','plan','savedPlan','submit'].includes(x[0])),false);
+ }finally{h.controller.destroy();}
+});

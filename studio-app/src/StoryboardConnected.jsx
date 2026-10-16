@@ -28,10 +28,12 @@ function Confirmation({ids,onClose}){
 function planRecipe(plan,capabilities){
  const request=plan?.effective_request;if(!request)return null;
  const recipe=capabilities?.recipes?.find(row=>row.id===plan.recipe_id)||capabilities?.recipes?.find(row=>row.mode===request.mode);
- const fields=Object.keys(recipe?.controls||{}),controls=Object.fromEntries(fields.filter(key=>Object.hasOwn(request,key)).map(key=>[key,request[key]]));
+ // Saved effective values remain visible even when today's schema differs.
+ const controls=Object.fromEntries(Object.entries(request).filter(([key])=>!['model','mode','prompt','inputs'].includes(key)));
+ if(plan.authoring_recipe)return structuredClone(plan.authoring_recipe);
  const inputs=Object.fromEntries(Object.entries(request.inputs||{}).map(([role,value])=>[role,Array.isArray(value)?value.map(item=>typeof item==='string'?{asset_id:item,...(role==='videos'?{include_audio:request.video_audio?.[item]===true}:{})}:item):typeof value==='string'?{asset_id:value}:value]));
  if(request.guides)inputs.guides=request.guides;
- return {recipe_id:recipe?.id,deployment_profile_id:plan.deployment_profile_id,prompt:request.prompt,controls,inputs};
+ return {recipe_id:recipe?.id,deployment_profile_id:plan.execution?.deployment_profile_id||plan.deployment_profile_id,model_id:request.model,prompt:request.prompt,controls,inputs};
 }
 function WorkbenchConfirmation({receipt,onClose}){
  const {t,locale}=useI18n(),c=useCloud(),ref=useRef(),[busy,setBusy]=useState(false),[error,setError]=useState('');
@@ -64,7 +66,7 @@ export default function StoryboardConnected({onLegacyGuide,onCanvas}){
       delete h3.recipeId;delete h3.deploymentProfileId;delete h3.inputMode;
       if(action.value.recipe_id){h3.recipeId=action.value.recipe_id;h3.inputMode=c.capabilities?.recipes?.find(row=>row.id===h3.recipeId)?.mode;}
       if(action.value.deployment_profile_id)h3.deploymentProfileId=action.value.deployment_profile_id;
-      const data={h3,...(h3.inputMode?{storyboard:{...shot.data.storyboard,mode:h3.inputMode}}:{}),...(Number.isFinite(h3.controls.duration)?{seconds:h3.controls.duration}:{})};
+      const data={h3,...(shot.data.storyboard && h3.inputMode?{storyboard:{...shot.data.storyboard,mode:h3.inputMode}}:{}),...(Number.isFinite(h3.controls.duration)?{seconds:h3.controls.duration}:{})};
       if(!store.updateEntity(shot.id,{data}))throw Error('workbench.changed');
       await cloud.save();assertWorkspace(store,context);return {ok:true};
     }
