@@ -37,14 +37,14 @@ export function storyboardView(project,{chapterId,capabilities,jobs=[],queue=nul
   });
   return {project:{title:project.title,chapter:chapter?.title||'第一章',chapterId:chapter?.id||null,style:project.journey?.storyboard?.style||'',aspect:project.journey?.brief?.aspect||'16:9'},shots,assets,profiles,queue,busy,error,capabilities,modelLabelKeys:Object.fromEntries(['draft','final'].filter(q=>!storyboardProfile(capabilities,q,'fl')?.label).map(q=>[q,'storyboard.modelUnloaded'])),models:Object.fromEntries(['draft','final'].map(q=>[q,storyboardProfile(capabilities,q,'fl')?.label||'服务能力尚未读取']))};
 }
-export function expandStoryboard(shot,state,{forSync=false,locale='zh'}={}){
+export function expandStoryboard(shot,state,{forSync=false,locale='zh',effectiveProfile=null}={}){
  const t=(key,values)=>translate(locale,key,values);
   const asset=id=>state.assets.find(a=>a.id===id),profile=id=>state.profiles.find(p=>p.id===id);
   // Explicit saved look/version IDs are exact. Missing IDs are not a request
   // to silently supply another look's image; only an unset ID uses defaults.
   const variant=(p,id)=>id?p?.variants.find(v=>v.id===id):p?.variants.find(v=>v.id===p.def)||p?.variants[0];
   const parts=[],items=[],notes=[],warnings=[],inputMode=shot.mode.toLowerCase();
-  const chosen=storyboardProfile(state.capabilities,shot.quality,inputMode,shot.entity?.data.h3?.deploymentProfileId),support=chosen?.generation_support?.[inputMode];
+  const chosen=effectiveProfile||storyboardProfile(state.capabilities,shot.quality,inputMode,shot.entity?.data.h3?.deploymentProfileId),support=chosen?.generation_support?.[inputMode];
   const constraints=support?.execution_policy_constraints||support?.constraints||support?.execution_support?.constraints||{};
   const advertised=support?{...support,mode:inputMode,execution_support:{...support,constraints}}:null;
   const schema=effectiveControlSchema(advertised),limits=support?effectiveLimits(advertised):null,nativeRoles=support?.limits?.input_count_semantics==='native_roles_v2';
