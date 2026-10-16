@@ -1,5 +1,4 @@
 import {useI18n,LanguageSwitcher} from './i18n/I18nProvider.jsx';
-import './i18n/workspace-language.css';
 import React,{useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Plus,ArrowUp,Settings2,Bot,Menu,X,RefreshCw,LogOut,Upload,Image,Video,Music} from 'lucide-react';
 import {useCloud} from './CloudStudio.jsx';
@@ -17,6 +16,7 @@ import OperatorEntry from './OperatorEntry.jsx';
 import {DeploymentProfileSelect} from './DeploymentProfile.jsx';
 import {draftKey,readDraft,saveDraft,draftSnapshot,carryDraft as carryPromptDraft} from './quick-chat-draft.js';
 import './quick-chat.css';
+import './i18n/workspace-language.css';
 const quietly=promise=>promise.catch(()=>{}),date=value=>value?new Date(typeof value==='number'?value*1000:value).toLocaleString():'';
 const modeKey=(account,id)=>`yingxu:quick-chat:mode:${account||'anonymous'}:${id||'new'}`;
 function readMode(account,id,fallback='auto'){try{const value=localStorage.getItem(modeKey(account,id));return ['auto','fl','ref'].includes(value)?value:fallback;}catch{return fallback;}}
