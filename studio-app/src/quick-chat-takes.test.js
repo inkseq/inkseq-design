@@ -17,3 +17,16 @@ test('pending transfer recovery GET preserves one original shot operation',async
 test('transfer receipt mismatch stays pending; explicit resume retains original key/body',async()=>{const calls=[];let valid=false;const client=fake({takeToStory:async(...args)=>{calls.push(args);return {id:'transfer',status:valid?'completed':'pending',project_id:'p',seed_locked:true,project_version:5,shot_id:'shot',web_url:'https://foreign.invalid/?project=p&entity=shot'};}}),c=await ready(client);await c.takeToStory({id:'take'},{target_project_id:'p',expected_project_version:4,parent_id:'scene'});valid=true;await assert.rejects(c.resumeStoryTransfer());assert.deepEqual(calls[0],calls[1]);assert.equal(c.getState().pending.transferId,'transfer');});
 test('old-account late write cannot clear original pending or affect new account',async()=>{let finish;const storage=memory(),c=await ready(fake({starTake:()=>new Promise(r=>finish=r)}),storage);const request=c.starTake({id:'take',annotation:{version:0}},true);await c.setAccount('other');finish({take_id:'take',version:1,starred:true});await assert.rejects(request);assert.ok(storage.getItem('yingxu:quick-chat:operation:owner'));assert.equal(c.getState().account,'other');assert.equal(c.getState().pending,null);});
 test('partial transfer followed by 401/403/404/409 retains original command across restored auth',async()=>{for(const status of [401,403,404,409]){let first=true;const calls=[],storage=memory(),client=fake({takeToStory:async(...args)=>{calls.push(args);if(first){first=false;throw Object.assign(Error('after partial asset copy'),{status});}return {id:'original',status:'completed',project_id:'p',project_version:5,seed_locked:true,shot_id:'shot',web_url:'/?project=p&entity=shot'};}}),c=await ready(client,storage);await assert.rejects(c.takeToStory({id:'take'},{target_project_id:'p',expected_project_version:4,parent_id:'scene'}));assert.equal(c.getState().pending.method,'takeToStory');const restored=await ready(client,storage);await restored.recover();assert.deepEqual(calls[0],calls[1]);assert.equal(restored.getState().pending,null);}});
+
+test('closed no-shot proof requires explicit fresh acknowledgement; never retargets automatically',async()=>{
+ const calls=[],receipt={id:'transfer',status:'blocked',no_shot_committed:true,error_code:'target_version_conflict',project_id:'p',shot_id:'reserved-shot',seed:'7',seed_locked:true,web_url:null};
+ let response=receipt;
+ const client=fake({takeToStory:async(...args)=>{calls.push(args);return receipt;},storyTransfer:async()=>response}),storage=memory(),c=await ready(client,storage);
+ await c.takeToStory({id:'take'},{target_project_id:'p',expected_project_version:4,parent_id:'scene'});
+ assert.equal(c.getState().pending.closedReceipt.no_shot_committed,true);const original=c.getState().pending;
+ for(const patch of [{no_shot_committed:false},{status:'unknown'},{error_code:'other'},{project_id:'other'},{id:'other'},{web_url:'/?project=p&entity=reserved-shot'}]){
+  response={...receipt,...patch};await assert.rejects(c.acknowledgeBlockedTransfer());assert.equal(c.getState().pending.key,original.key);
+ }
+ response=receipt;await c.acknowledgeBlockedTransfer();assert.equal(c.getState().pending,null);assert.equal(calls.length,1);
+ assert.deepEqual(calls[0][2],original.body);
+});
