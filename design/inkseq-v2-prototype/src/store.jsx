@@ -1,5 +1,6 @@
 import React, {createContext, useCallback, useContext, useEffect, useMemo, useReducer, useState} from 'react';
 import {expire, liveView, purge, setTrash} from './trash.js';
+import {getLang, onLang, translateData} from './i18n.js';
 import {BLANK_SHOT, CLIPS, DEFAULT_SETTINGS, mockUploads, parseScript, seedAssets, seedProfiles, seedQuickChats, seedShots, seedStories} from './data.js';
 import {makeDb, modeOf, MODELS, planDrop, RECIPE_KEYS} from './model.js';
 
@@ -48,7 +49,14 @@ function seedTags(s) {
 // Older saved demos have no agents yet.
 // Every limit is a setting (with a default) the owner/admin can change in 设置 — nothing is hard-coded.
 export const DEFAULT_LIMITS = {daily: 20, confirmAbove: 1, testDaily: 20, maxHourly: 1.5, idleStopMin: 10, maxRunHours: 2};
-const normalize = s => ({...s, agents: s.agents || [], agentInvite: s.agentInvite || null, limits: {...DEFAULT_LIMITS, ...(s.limits || {})}, spentToday: s.spentToday ?? 3.42});
+// Older saves have portraits with baked-in Chinese text; strip it so thumbnails are language-neutral.
+const plainPortrait = th => {
+  if (typeof th !== 'string' || !th.startsWith('data:image/svg+xml')) return th;
+  const svg = decodeURIComponent(th.slice(th.indexOf(',') + 1));
+  if (!svg.includes('<text')) return th;
+  return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.replace(/<text[^>]*>[^<]*<\/text>/g, '').replace(/<rect x="0" y="134"[^>]*\/>/g, ''));
+};
+const normalize = s => ({...s, assets: (s.assets || []).map(a => ({...a, thumb: plainPortrait(a.thumb)})), agents: s.agents || [], agentInvite: s.agentInvite || null, limits: {...DEFAULT_LIMITS, ...(s.limits || {})}, spentToday: s.spentToday ?? 3.42});
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return normalize(seedTags(expire(JSON.parse(raw)))); } catch {}
   return normalize(seedTags(initial()));
@@ -134,6 +142,20 @@ function reducer(state, a) {
         where = `新的快速创作「${prompt.slice(0, 12)}」`;
       }
       return logIt({...state, sessions}, `在${where}里生成 2 条草稿`, cost);
+    }
+    // Demo data follows the UI language (sample titles, scripts, profiles…); user-written text is kept.
+    case 'dataLang': {
+      if (state.dataLang === a.lang && state.dataLangV === 2) return state; // V bumps re-run it after new fields are covered
+      const T = v => translateData(v, a.lang);
+      const m = (o, keys) => { const r = {...o}; keys.forEach(k => { if (typeof r[k] === 'string') r[k] = T(r[k]); }); return r; };
+      return {...state, dataLang: a.lang, dataLangV: 2,
+        stories: state.stories.map(s => ({...m(s, ['title']), settings: m(s.settings, ['logline', 'style']), chapters: s.chapters.map(c => ({...m(c, ['title']), scenes: c.scenes.map(sc => m(sc, ['title']))}))})),
+        shots: state.shots.map(s => m(s, ['title', 'script', 'prompt', 'dialogue'])),
+        profiles: state.profiles.map(p => ({...m(p, ['name', 'desc']), variants: p.variants.map(v => m(v, ['name', 'desc']))})),
+        assets: state.assets.map(x => m(x, ['name'])),
+        agents: (state.agents || []).map(g => ({...g, scope: m(g.scope, ['label']), log: g.log.map(l => m(l, ['text']))})),
+        sessions: state.sessions.map(x => ({...m(x, ['title']), messages: x.messages.map(msg => ({...m(msg, ['text', 'prompt']), ...(msg.proposal ? {proposal: m(msg.proposal, ['prompt'])} : {})}))})),
+      };
     }
     case 'trash': return setTrash(state, a.item, true);
     case 'restore': return setTrash(state, a.item, false);
@@ -431,6 +453,7 @@ export function StoreProvider({children}) {
   const [state, dispatch] = useReducer(reducer, null, load);
   useEffect(() => { const t = setInterval(() => dispatch({type: 'tick', dt: 0.25}), 250); return () => clearInterval(t); }, []);
   useEffect(() => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {} }, [state]);
+  useEffect(() => { dispatch({type: 'dataLang', lang: getLang()}); return onLang(l => dispatch({type: 'dataLang', lang: l})); }, []);
   const view = useMemo(() => liveView(state), [state]);
   const db = useMemo(() => makeDb(view), [view]);
   // One toast for the whole app; with undo it stays a little longer.

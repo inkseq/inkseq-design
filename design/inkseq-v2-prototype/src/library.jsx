@@ -1,5 +1,7 @@
 import React, {useMemo, useRef, useState} from 'react';
-import {Check, Download, FolderInput, Plus, Tag, Trash2, Upload, X} from 'lucide-react';
+import {Box, Check, Download, Files, Film, FolderInput, Image as ImageIcon, Inbox, MapPin, Music, Plus, Tag, Trash2, Upload, UserRound, X} from 'lucide-react';
+
+const VIEW_ICON = {character: UserRound, location: MapPin, prop: Box, all: Files, image: ImageIcon, video: Film, audio: Music, inbox: Inbox};
 import {AppHeader} from './pages.jsx';
 import {AssetThumb, PlayButton, ProfileEditor, readFiles} from './components.jsx';
 import {KIND_LABEL, TYPE_LABEL, VARIANT_LABEL} from './data.js';
@@ -59,10 +61,10 @@ export function LibraryPage() {
       <div className="libp">
         <aside className="libp-side">
           <div className="libp-group">档案</div>
-          {['character', 'location', 'prop'].map(k => <button key={k} className={view === k ? 'on' : ''} onClick={() => go(k)}>{TYPE_LABEL[k]}<small>{count(k)}</small></button>)}
+          {['character', 'location', 'prop'].map(k => { const I = VIEW_ICON[k]; return <button key={k} className={view === k ? 'on' : ''} onClick={() => go(k)}><I size={14} /><span>{TYPE_LABEL[k]}</span><small>{count(k)}</small></button>; })}
           <div className="libp-group">文件</div>
           {[['all', '全部文件'], ['image', '图片'], ['video', '动作视频'], ['audio', '声音'], ['inbox', '待整理']].map(([k, l]) =>
-            <button key={k} className={(view === k ? 'on ' : '') + (k === 'inbox' && count(k) ? 'alert' : '')} onClick={() => go(k)}>{l}<small>{count(k)}</small></button>)}
+            <button key={k} className={(view === k ? 'on ' : '') + (k === 'inbox' && count(k) ? 'alert' : '')} onClick={() => go(k)}>{(I => <I size={14} />)(VIEW_ICON[k])}<span>{l}</span><small>{count(k)}</small></button>)}
           <div className="libp-group">作品 <small>自动按用到的地方归类</small></div>
           <button className={work === 'all' ? 'on' : ''} onClick={() => setWork('all')}>全部作品</button>
           {state.stories.map(s => <button key={s.id} className={work === s.id ? 'on' : ''} onClick={() => setWork(s.id)}><span className="clip">{s.title}</span></button>)}
@@ -75,7 +77,7 @@ export function LibraryPage() {
           onDragOver={e => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); setDrop(true); } }} onDragLeave={() => setDrop(false)}
           onDrop={e => { e.preventDefault(); setDrop(false); upload(e.dataTransfer.files); }}>
           <div className="libp-head">
-            <h1 className="page-title">{isProfile ? TYPE_LABEL[view] : {all: '全部文件', image: '图片', video: '动作视频', audio: '声音', inbox: '待整理'}[view]}
+            <h1 className="page-title">{(I => <I size={20} />)(VIEW_ICON[view])}{isProfile ? TYPE_LABEL[view] : {all: '全部文件', image: '图片', video: '动作视频', audio: '声音', inbox: '待整理'}[view]}
               <small>{isProfile ? profiles.length : assets.length}</small></h1>
             {work !== 'all' && <span className="pill">{work === 'unused' ? '还没用过的' : use.story(work)?.title}<button className="x" onClick={() => setWork('all')}><X size={11} /></button></span>}
             {tag && <span className="pill"><Tag size={11} />{tag}<button className="x" onClick={() => setTag(null)}><X size={11} /></button></span>}
