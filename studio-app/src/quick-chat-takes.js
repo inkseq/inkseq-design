@@ -10,3 +10,5 @@ export function createConversationFiles(){const rows=new Map();const key=(accoun
 
 export function takeError(error,t){if(typeof error?.message==='string'&&error.message.startsWith('takes.'))return t(error.message);const key={version_conflict:'takes.conflict',copies_limit_exceeded:'takes.capExceeded',invalid_take_preferences:'takes.invalidPreferences',project_changed:'takes.conflict',idempotency_conflict:'takes.wait'}[error?.code];return t(key||'takes.operationFailed');}
 export function createReadFence(){let generation=0;return {begin(){return ++generation;},invalidate(){generation++;},current(token){return token===generation;},async read(read,apply){const token=++generation;const value=await read();if(token!==generation)return false;apply(value);return true;}};}
+
+export function selectedTakeForRevision(takes,selected,revisionId){return takes.find(item=>item.id===selected&&item.revision_id===revisionId)||takes.find(item=>item.revision_id===revisionId)||null;}

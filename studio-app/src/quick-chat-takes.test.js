@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {createQuickChatClient} from './quick-chat-client.js';
 import {createQuickChatController} from './quick-chat-controller.js';
-import {mergeTakes,preferenceBody,checkedPreferences,quoteMachineMinutes,storyScenes,createConversationFiles,createReadFence} from './quick-chat-takes.js';
+import {mergeTakes,preferenceBody,checkedPreferences,quoteMachineMinutes,storyScenes,createConversationFiles,createReadFence,selectedTakeForRevision} from './quick-chat-takes.js';
 const memory=()=>{const values=new Map();return {getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};};
 const fake=(extra={})=>({setAccount(){},reset(){},schema:async()=>({}),capabilities:async()=>({}),sessions:async()=>({sessions:[]}),session:async id=>({id,version:1}),materials:async()=>({materials:[]}),timeline:async()=>({events:[]}),...extra});
 async function ready(client,storage=memory()){const c=createQuickChatController({client,storage});await c.setAccount('owner');await c.open('session');return c;}
@@ -38,4 +38,14 @@ test('completed transfer mismatched original receipt identity never clears pendi
   await c.takeToStory({id:'take'},{target_project_id:'p',expected_project_version:4,parent_id:'scene'});const original=c.getState().pending;
   await assert.rejects(c.recover());assert.equal(c.getState().pending.key,original.key);assert.equal(c.getState().pending.transferId,'transfer');
  }
+});
+
+test('displayed revision selects its own exact take after count save/history switch without late-page selection',()=>{
+ const old={id:'take23',revision_id:'r6',seed:'23'},first={id:'take29',revision_id:'r7',seed:'29'},second={id:'take28',revision_id:'r7',seed:'28'};
+ assert.equal(selectedTakeForRevision([first,second,old],'take23','r7'),first);
+ assert.equal(selectedTakeForRevision([first,second,old],'take28','r7'),second);
+ assert.equal(selectedTakeForRevision([first,second,old],'take28','r6'),old);
+ assert.equal(selectedTakeForRevision([first,second],'take23','r6'),null);
+ // Older page arriving after a new user choice cannot select another revision.
+ assert.equal(selectedTakeForRevision([first,second,old],'take28','r7'),second);
 });

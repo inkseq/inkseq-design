@@ -3,19 +3,22 @@ import React,{useEffect,useRef,useState} from 'react';
 import {useI18n} from './i18n/I18nProvider.jsx';
 import {ChatDialog} from './QuickChatControls.jsx';
 import {PrivateMedia} from './QuickChatMaterials.jsx';
-import {mergeTakes,takeMedia,storyScenes,takeError,createReadFence} from './quick-chat-takes.js';
+import {mergeTakes,takeMedia,storyScenes,takeError,createReadFence,selectedTakeForRevision} from './quick-chat-takes.js';
 import './quick-chat-takes.css';
 
 function Preview({take,controller,hover=false}){const {t}=useI18n(),media=takeMedia(take);return media?<PrivateMedia key={media.id} client={controller.client} path={media.content_url||`/v1/artifacts/${encodeURIComponent(media.id)}/content`} kind={media.kind} hoverPlay={hover} name={t('takes.source',{number:take.group_number??take.index+1})}/>:<div className="qc-take-placeholder">{t(({draft:'workspace.detail17',queued:'workspace.detail45',waiting_capacity:'workspace.detail44',running:'workspace.detail48',succeeded:'workspace.detail51',failed:'workspace.detail52',cancelled:'workspace.detail54'})[take.status]||'workspace.detail11')}</div>;}
-export default function QuickChatTakes({card,state,controller,preferences,onSelect,onAgain,onEdit}){
+export default function QuickChatTakes({card,state,controller,preferences,displayedRevisionId,onSelect,onAgain,onEdit}){
  const {t}=useI18n(),[takes,setTakes]=useState([]),[cursor,setCursor]=useState(null),[selected,setSelected]=useState(''),[compare,setCompare]=useState([]),[comparing,setComparing]=useState(false),[expanded,setExpanded]=useState(false),[loading,setLoading]=useState(false),[error,setError]=useState(''),[story,setStory]=useState(null),[projects,setProjects]=useState([]),[moreProjects,setMoreProjects]=useState(false),[project,setProject]=useState(null),[parent,setParent]=useState(''),[result,setResult]=useState(null),[position,setPosition]=useState(null),generation=useRef(0),storyFence=useRef(createReadFence()),projectFence=useRef(createReadFence());
- const busy=state.busy||!!state.pending,active=takes.find(item=>item.id===selected)||takes[0],fold=preferences?.takes_fold_count??8,visible=expanded?takes:takes.slice(0,fold);
+ const busy=state.busy||!!state.pending,active=selectedTakeForRevision(takes,selected,displayedRevisionId),fold=preferences?.takes_fold_count??8,visible=expanded?takes:takes.slice(0,fold);
  const origin={account:state.account,sessionId:state.session?.id};
  function guard(source=origin){const live=controller.getState();if(live.account!==source.account||live.session?.id!==source.sessionId)throw Error(t('takes.scopeChanged'));}
  async function load(more=false){const seq=++generation.current;setLoading(true);try{const data=await controller.readTakes(card,more?{before_cursor:cursor}:{});guard();if(seq!==generation.current)return;setTakes(old=>mergeTakes(old,data.takes||[]));if(!expanded||more)setCursor(data.before_cursor||null);setError('');}catch(e){if(seq===generation.current)setError(t('takes.unavailable'));}finally{if(seq===generation.current)setLoading(false);}}
  useEffect(()=>{setTakes([]);setSelected('');setCompare([]);setStory(null);setResult(null);return()=>{generation.current++;storyFence.current.invalidate();projectFence.current.invalidate();};},[state.account,state.session?.id,card.id]);
  useEffect(()=>{void load();},[state.account,state.session?.id,card.id,card.version,state.lastUpdated]);
  useEffect(()=>{if(active)onSelect(active);},[active?.id]);
+ // History and authored revision changes are authoritative for the selected
+ // recipe. Fetch older pages if necessary, without selecting a late response.
+ useEffect(()=>{let cancelled=false;if(!displayedRevisionId||!takes.length||takes.some(item=>item.revision_id===displayedRevisionId)||!cursor)return;const source=origin;void(async()=>{let next=cursor;const seen=new Set();try{while(next&&!cancelled&&!seen.has(next)){seen.add(next);const data=await controller.readTakes(card,{before_cursor:next});guard(source);if(cancelled)return;setTakes(old=>mergeTakes(old,data.takes||[]));next=data.before_cursor||null;setCursor(next);if((data.takes||[]).some(item=>item.revision_id===displayedRevisionId))return;}}catch(e){if(!cancelled)setError(takeError(e,t));}})();return()=>{cancelled=true;};},[displayedRevisionId,state.account,state.session?.id,card.id,takes.length,cursor]);
  useEffect(()=>{let alive=true;setPosition(null);if(active?.job_id&&['queued','waiting_capacity'].includes(active.job?.status||active.status))controller.client.queuePosition(active.job_id).then(value=>{guard();if(alive&&value.job_id===active.job_id)setPosition(value.position);}).catch(()=>{});return()=>{alive=false;};},[active?.job_id,active?.status,state.lastUpdated]);
  async function act(fn){setError('');try{guard();return await fn();}catch(e){setError(takeError(e,t));}}
  function choose(take){setSelected(take.id);onSelect(take);setComparing(false);}
