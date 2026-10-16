@@ -273,3 +273,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/quick-chat-takes.js
 !studio-app/src/quick-chat-takes.css
 !studio-app/src/quick-chat-takes.test.js
+
+# Exact integer USD conversion
+!studio-app/src/money.js
+!studio-app/src/money.test.js
