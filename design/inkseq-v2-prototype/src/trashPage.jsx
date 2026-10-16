@@ -19,10 +19,10 @@ export function TrashPage() {
     <div className="home">
       <AppHeader />
       <main className="trash-page">
-        <div className="trash-head"><h1 className="page-title">回收站 <small>{all.length}</small></h1><div className="spacer" />
+        <div className="trash-head"><h1 className="page-title"><Trash2 size={20} />回收站 <small>{all.length}</small></h1><div className="spacer" />
           {all.length > 0 && <button className="ghost small danger-text" onClick={() => setConfirm({list: all, text: `清空回收站里的全部 ${all.length} 项？`})}>清空回收站</button>}</div>
-        <p className="muted">删掉的东西在这里放 {TRASH_DAYS} 天，之后自动永久删除。恢复后会回到原来的位置，用到它的镜头也会恢复。放进故事的镜头、已花的算力账单不受影响。</p>
-        <div className="trash-filter">{GROUPS.map(([k, l, ks]) => { const n = ks ? all.filter(x => ks.includes(x.item.kind)).length : all.length;
+        <p className="muted">删掉的东西在这里保留 {TRASH_DAYS} 天，随时可以恢复到原来的位置。</p>
+        <div className="seg trash-filter">{GROUPS.map(([k, l, ks]) => { const n = ks ? all.filter(x => ks.includes(x.item.kind)).length : all.length;
           return <button key={k} className={group === k ? 'on' : ''} onClick={() => { setGroup(k); setPicked([]); }}>{l} · {n}</button>; })}</div>
         {items.length ? <div className="trash-list">
           {sel.length > 0 && <div className="trash-bar">已选 {sel.length} 项<div className="spacer" style={{flex: 1}} />
@@ -36,7 +36,7 @@ export function TrashPage() {
             <div className="acts"><button className="small" onClick={() => restore([x])}><RotateCcw size={13} />恢复</button>
               <button className="small ghost" title="永久删除" onClick={() => setConfirm({list: [x], text: `永久删除「${x.name}」？`})}><Trash2 size={13} /></button></div>
           </div>)}
-        </div> : <p className="muted" style={{marginTop: 24}}>回收站是空的。</p>}
+        </div> : <div className="empty-state"><span><Trash2 size={22} /></span><b>回收站是空的</b><small className="muted">删除的故事、镜头、素材和创作会先放在这里。</small></div>}
       </main>
       {confirm && <div className="modal-back" onClick={() => setConfirm(null)}><div className="purge-confirm modal-card" onClick={e => e.stopPropagation()}>
         <b>{confirm.text}</b><small>永久删除后没法恢复。用到它的镜头会改用默认造型，或把这个素材空出来。</small>

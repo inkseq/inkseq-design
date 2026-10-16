@@ -6,7 +6,7 @@ import {createPortal} from 'react-dom';
 import {useDraggable, useDroppable} from '@dnd-kit/core';
 import {useSortable} from '@dnd-kit/sortable';
 import {CSS} from '@dnd-kit/utilities';
-import {MoreHorizontal, Pause, Pencil, Play, Plus, SkipBack, SlidersHorizontal, Sparkles, Trash2} from 'lucide-react';
+import {Box, Clapperboard, Film, Image as ImageIcon, Inbox, MapPin, MoreHorizontal, Music, Pause, Pencil, Play, Plus, SkipBack, SlidersHorizontal, Sparkles, Trash2, UserRound} from 'lucide-react';
 import {AdvancedInline, changedCount} from './advanced.jsx';
 import {Chip, checkInputs, SpecPicker} from './inputs.jsx';
 import {KIND_LABEL, TYPE_LABEL, VARIANT_LABEL} from './data.js';
@@ -166,7 +166,7 @@ function ChooseFiles({kind, exclude, title, onPick, onFiles, onClose}) {
 
 /* ---------- library ---------- */
 
-const LIB_TABS = [['character', '人物'], ['location', '场景'], ['prop', '道具'], ['image', '图片'], ['video', '动作'], ['audio', '声音'], ['inbox', '待整理']];
+const LIB_TABS = [['character', '人物', UserRound], ['location', '场景', MapPin], ['prop', '道具', Box], ['image', '图片', ImageIcon], ['video', '动作', Film], ['audio', '声音', Music], ['inbox', '待整理', Inbox]];
 
 export function AssetLibrary({onPick, selectedShot, compact}) {
   const {state, dispatch, db} = useStore();
@@ -183,10 +183,8 @@ export function AssetLibrary({onPick, selectedShot, compact}) {
       <div className="lib-head"><b>素材库</b><small>{state.profiles.length} 个档案 · {state.assets.length} 个文件</small>
         <button className="small ghost" onClick={() => setWide(!wide)}>{wide ? '收起' : '展开'}</button></div>
       <input className="lib-search" placeholder="搜索：林岚、站台、信…" value={q} onChange={e => setQ(e.target.value)} />
-      <div className="lib-tabs">{LIB_TABS.map(([k, l], i) => (
-        <React.Fragment key={k}>{i === 3 && <span className="lib-sep">文件</span>}
-          <button className={(tab === k ? 'on ' : '') + (k === 'inbox' && inbox.length ? 'alert' : '')} onClick={() => setTab(k)}>{l}<small>{count(k)}</small></button>
-        </React.Fragment>))}</div>
+      <div className="lib-tabs">{LIB_TABS.map(([k, l, I]) => (
+        <button key={k} className={(tab === k ? 'on ' : '') + (k === 'inbox' && inbox.length ? 'alert' : '')} onClick={() => setTab(k)} title={l}><I size={13} /><span>{l}</span><small>{count(k)}</small></button>))}</div>
       {selectedShot && <div className="lib-ctx">当前镜头「{selectedShot.title}」· ✓ 已用 · 点击即添加</div>}
 
       {isProfileTab && <>
@@ -195,9 +193,7 @@ export function AssetLibrary({onPick, selectedShot, compact}) {
             onAdd={selectedShot ? () => onPick({profile: p.id}) : null} />))}</div>
         <button className="small add-profile" onClick={() => { const name = prompt(`新建${TYPE_LABEL[tab]}的名字`); if (name) dispatch({type: 'newProfile', ptype: tab, name}); }}>
           ＋ 新建{TYPE_LABEL[tab]}</button>
-        <div className="lib-tip">{tab === 'character' ? '人物档案 = 描述 + 多套造型照片 + 声音。拖到镜头上，自动带上照片、声音和描述。'
-          : tab === 'location' ? '场景档案 = 布局描述 + 白天/夜晚等版本的图 + 环境声。' : '道具档案 = 描述 + 几张图。'}
-          点「档案」打开后，可以从左边“图片”里把照片直接拖进去；上传的新图在“待整理”里一键归档。</div>
+        <div className="lib-tip">{tab === 'character' ? '人物 = 描述 + 造型照片 + 声音。拖到镜头上，三样一起带上。' : tab === 'location' ? '场景 = 布局描述 + 白天/夜晚等版本 + 环境声。' : '道具 = 描述 + 几张图。'}</div>
       </>}
 
       {['image', 'video', 'audio'].includes(tab) && <div className="grid">
@@ -439,7 +435,7 @@ function Progress({v}) {
 }
 export function ShotThumb({shot}) {
   const v = chosenVersion(shot);
-  return v ? <img className="sthumb" src={`/clips/${v.clip}-first.jpg`} alt="" /> : <div className="sthumb empty"><span>{shot.title}</span></div>;
+  return v ? <img className="sthumb" src={`/clips/${v.clip}-first.jpg`} alt="" /> : <div className="sthumb empty"><Clapperboard size={18} /><small>待生成</small></div>;
 }
 
 export function WhoChips({shot, small}) {
@@ -708,7 +704,7 @@ export function ShotEditor({shotId, onClose, inline, wide, onWide}) {
 
       {matchInfo && <div className="match-line">
         {matchInfo.busy ? <span className="muted">AI 正在匹配素材…</span>
-          : matchInfo.error ? <span className="muted">AI 匹配没连上：{matchInfo.error}</span>
+          : matchInfo.error ? <span className="muted" title={matchInfo.error}>AI 匹配暂时不可用，可以手动选造型和照片</span>
           : <span className="muted"><b className="ai-badge">AI</b> 按剧本自动选了 {matchInfo.applied} 项{matchInfo.unsure ? `，${matchInfo.unsure} 项拿不准只标了「建议」` : ''} · {matchInfo.model} · {matchInfo.ms} 毫秒 · 你手动改过的不会被覆盖</span>}
         {!matchInfo.busy && <button className="small ghost" onClick={() => runMatch(true)}>重新匹配全部</button>}</div>}
       <div className="modetabs" role="tablist" aria-label="生成模式（二选一）">

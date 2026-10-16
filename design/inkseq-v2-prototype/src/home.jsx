@@ -3,7 +3,7 @@ import {Popover} from './ui.jsx';
 import {chosenVersion} from './model.js';
 import {useStore} from './store.jsx';
 import {AppHeader} from './pages.jsx';
-import {ArrowRight, MessageSquare, MoreHorizontal, Pencil, Plus, Trash2} from 'lucide-react';
+import {Clapperboard, LayoutGrid, ArrowRight, MessageSquare, MoreHorizontal, Pencil, Plus, Trash2} from 'lucide-react';
 import {running} from './trash.js';
 
 const ago = t => {
@@ -89,7 +89,7 @@ export function Home({onToast}) {
       <AppHeader />
       <main className="home-main">
         <div className="home-head">
-          <h1 className="page-title">我的故事 <small>{state.stories.length}</small></h1>
+          <h1 className="page-title"><LayoutGrid size={20} />我的故事 <small>{state.stories.length}</small></h1>
           <input className="lib-search" placeholder="搜索故事…" value={q} onChange={e => setQ(e.target.value)} />
           <button onClick={() => dispatch({type: 'qcNew'})}><MessageSquare size={16} />快速创作</button>
           <button className="primary" onClick={() => setCreating(true)}><Plus size={16} />新建故事</button>
@@ -103,7 +103,7 @@ export function Home({onToast}) {
               <div key={s.id} className={'story-wrap' + (menu === s.id ? ' menu-open' : '')}>
               <Card className="story-card" onClick={() => renaming !== s.id && dispatch({type: 'openStory', id: s.id})}>
                 <div className="cover">
-                  {cover ? <img src={`/clips/${cover.clip}-first.jpg`} alt="" /> : <span>{s.title.slice(0, 1)}</span>}
+                  {cover ? <img src={`/clips/${cover.clip}-first.jpg`} alt="" /> : <span className="cover-empty"><Clapperboard size={30} /></span>}
                   <em className={'badge ' + (s.local ? 'local' : 'cloud')}>{s.local ? '本机' : '云端'}</em>
                   <em className="aspect">{s.settings.aspect}</em>
                 </div>

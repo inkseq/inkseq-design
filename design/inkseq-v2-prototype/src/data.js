@@ -4,8 +4,7 @@ const portrait = (letter, bg, tag) =>
   'data:image/svg+xml;utf8,' + encodeURIComponent(
     `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160"><rect width="160" height="160" fill="${bg}"/>` +
     `<circle cx="80" cy="62" r="30" fill="#fff" opacity=".9"/><rect x="34" y="100" width="92" height="60" rx="26" fill="#fff" opacity=".9"/>` +
-    `<text x="80" y="72" font-size="28" text-anchor="middle" fill="${bg}" font-family="sans-serif">${letter}</text>` +
-    `<rect x="0" y="134" width="160" height="26" fill="rgba(0,0,0,.35)"/><text x="80" y="152" font-size="15" text-anchor="middle" fill="#fff" font-family="sans-serif">${tag}</text></svg>`);
+    `</svg>`); // silhouette only: no baked-in text, so it works in every language
 const frame = (c, t) => `/clips/c${c}-t${t}.jpg`;
 
 export const KIND_LABEL = {image: '图片', video: '动作视频', audio: '声音'};

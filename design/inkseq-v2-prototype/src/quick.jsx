@@ -128,8 +128,8 @@ function ResultCard({sid, msg, onTweak, onNext, onCopy, onAgain, onMove, onDelet
         <small className="muted clip2">{msg.prompt}</small>
         {msg.controls && changedCount(msg.controls) > 0 && <small className="muted adv-sum">高级：{changedSummary(msg.controls).join(' · ')}</small>}
         {msg.status === 'done' && <div className="row tight">
-          <button className="small" onClick={() => onTweak(msg)}><Wand2 size={13} />改一改</button>
-          <button className="small" onClick={() => onAgain(msg)}><RefreshCw size={13} />再来一条</button>
+          <button className="small keep-label" onClick={() => onTweak(msg)}><Wand2 size={13} />改一改</button>
+          <button className="small keep-label" onClick={() => onAgain(msg)}><RefreshCw size={13} />再来一条</button>
           <div className="more-wrap"><button className="small ghost" data-pop={'res-' + msg.id} onClick={() => setMore(!more)}><MoreHorizontal size={14} /></button>
             {more && <Popover owner={'res-' + msg.id} onClose={closeMore}>
               <button onClick={() => { setMore(false); onNext(msg); }}><ArrowRight size={13} />接着拍<small>用最后一帧开头</small></button>
@@ -427,10 +427,12 @@ export function QuickPage({onToast}) {
               {attachOpen && <AttachMenu onFiles={(f, n) => addFiles(f, n)} onPick={a => { setAtts(x => (x.some(y => y.id === a.id) ? x : [...x, a])); setAttachOpen(false); }} onClose={() => setAttachOpen(false)} />}
             </div>
             <div className="composer-opts">
-              <button className={'assist' + (assistant ? ' on' : '')} onClick={() => setAssistant(!assistant)}>
-                <Bot size={14} />助手 {assistant ? '开' : '关'}<small>{assistant ? '先出方案，你点“生成”才开始' : '跳过助手，发送即生成'}</small></button>
+              <button className={'assist keep-label' + (assistant ? ' on' : '')} onClick={() => setAssistant(!assistant)} title={assistant ? '助手先出方案，你点「生成」才开始' : '跳过助手，发送即生成'}>
+                <Bot size={14} />助手<i className="switch" /></button>
+              <span className="opt-sep" />
               <div className="seg" title="自动：只有图片按首尾帧，放了视频或声音按全能参考">{[['auto', mode === 'auto' && atts.length ? `自动 · ${MODE_NAME[effMode]}` : '自动'], ['FL', '首尾帧'], ['REF', '全能参考']].map(([k, l]) => <button key={k} className={mode === k ? 'on' : ''} onClick={() => setMode(k)}>{l}</button>)}</div>
               <div className="seg">{['draft', 'final'].map(k => <button key={k} className={quality === k ? 'on' : ''} onClick={() => setQuality(k)}>{MODELS[k].label}</button>)}</div>
+              <span className="opt-sep" />
               {!assistant && <select className="count-pick" value={count} onChange={e => setCount(+e.target.value)} title="一次出几条">{[1, 2, 3, 4].map(k => <option key={k} value={k}>一次 {k} 条</option>)}</select>}
               <SpecPicker quality={quality} c={ctl} onChange={(k, v) => setAdv(x => { const n = {...x}; if (v === undefined) delete n[k]; else n[k] = v; return n; })} />
               <button className={'ghost adv-btn' + (changedCount(adv) ? ' on' : '')} onClick={() => setAdvOpen(true)} title="H3 全部生成参数">

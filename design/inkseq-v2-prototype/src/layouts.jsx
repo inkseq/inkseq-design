@@ -174,6 +174,7 @@ function BulkBar({story, shots, picked, setPicked}) {
 function SceneGroup({story, scene, shots, offset, selected, setSelected, picked, onPick}) {
   const {dispatch, trash} = useStore();
   const siblings = story.chapters.find(c => c.scenes.some(x => x.id === scene.id))?.scenes.length || 1;
+  const [editingTitle, setEditingTitle] = useState(false);
   const busy = shots.reduce((n, s) => n + s.versions.filter(v => v.status === 'queued' || v.status === 'generating').length, 0);
   const {setNodeRef, isOver, active} = useDroppable({id: 'scene:' + scene.id});
   const moving = isOver && String(active?.id).startsWith('shot:');
@@ -181,7 +182,9 @@ function SceneGroup({story, scene, shots, offset, selected, setSelected, picked,
   return (
     <section ref={setNodeRef} className={'scene' + (moving ? ' drop-hot' : '')}>
       <div className="scene-head">
-        <input value={scene.title} onChange={e => dispatch({type: 'renameScene', storyId: story.id, id: scene.id, title: e.target.value})} />
+        {editingTitle ? <input autoFocus defaultValue={scene.title} onBlur={e => { const v = e.target.value.trim(); if (v) dispatch({type: 'renameScene', storyId: story.id, id: scene.id, title: v}); setEditingTitle(false); }}
+          onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); if (e.key === 'Escape') setEditingTitle(false); }} />
+          : <button className="scene-title" title="点击改名" onClick={() => setEditingTitle(true)}>{scene.title}</button>}
         <small>{shots.length} 镜 · {fmt(dur)}</small>
         <button className="small ghost" onClick={() => dispatch({type: 'add', sceneId: scene.id})}><Plus size={14} />镜头</button>
         <button className="small ghost icon-only" disabled={siblings < 2 || busy > 0} title={siblings < 2 ? '这一章至少保留一场' : busy ? '还有镜头在生成' : `这一场移到回收站（连同 ${shots.length} 个镜头）`}

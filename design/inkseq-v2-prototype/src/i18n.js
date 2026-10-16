@@ -42,6 +42,8 @@ function core(c) {
     }
     out ??= first;
   }
+  // English plurals: "1 stories" -> "1 story"
+  if (out) out = out.replace(/(^|[^\d.])1 (chapter|shot|take|look|image|machine|version|voice clip|clip|run|file|profile|sample|work|item|scene|asset|minute|hour|day|group)s\b/g, '$11 $2').replace(/(^|[^\d.])1 stories\b/g, '$11 story');
   if (cache.size > 5000) cache.clear();
   cache.set(c, out);
   return out;
@@ -61,8 +63,8 @@ const write = (n, v) => { if (n.nodeValue !== v) { mine.set(n, v); n.nodeValue =
 const skipped = el => !el || SKIP.has(el.tagName) || el.isContentEditable || el.closest?.('[data-no-i18n]');
 
 function processElement(el) {
-  if (skipped(el)) return;
-  const texts = [...el.childNodes].filter(n => n.nodeType === 3);
+  if (!el || el.isContentEditable || el.closest?.('[data-no-i18n]')) return;
+  const texts = SKIP.has(el.tagName) ? [] : [...el.childNodes].filter(n => n.nodeType === 3);
   if (texts.length) {
     const origs = texts.map(original);
     if (lang === 'zh') texts.forEach((n, i) => write(n, origs[i]));
@@ -82,9 +84,19 @@ function processElement(el) {
     el.setAttribute(k + '-en', v);
   }
 }
+// Reverse lookup for sample data (English -> Chinese) when switching back.
+const reverse = new Map(Object.entries(EN).filter(([zh]) => !zh.includes('{}')).map(([zh, en]) => [en, zh]));
+// Translate one piece of sample data to the target language; user-written text that is not in the
+// dictionary is returned unchanged.
+export function translateData(v, to) {
+  if (typeof v !== 'string' || !v) return v;
+  if (to === 'zh') return reverse.get(v) ?? v;
+  return translate(v) ?? v;
+}
+
 function walk(root) {
   if (root.nodeType === 3) return processElement(root.parentElement);
-  if (root.nodeType !== 1 || skipped(root)) return;
+  if (root.nodeType !== 1 || root.closest?.('[data-no-i18n]')) return;
   processElement(root);
   for (const el of root.querySelectorAll('*')) processElement(el);
 }

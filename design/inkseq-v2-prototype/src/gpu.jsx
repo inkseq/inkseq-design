@@ -62,7 +62,7 @@ function MachineRow({m, job, onOpen, onStop}) {
     <div className={'mrow' + (m.status === 'stopping' ? ' stopping' : '')}>
       <Cpu size={22} className="mrow-icon" />
       <button className="mrow-main ghost" onClick={() => onOpen(m)} title="机器详情">
-        <b>{m.gpu} · <span className={'mode ' + (m.mode === 'both' ? 'both' : m.mode.toLowerCase())}>{MODE[m.mode]}</span>{m.mode === 'both' && <small className="muted"> 当前 {MODE[m.active]}</small>}
+        <b>{m.gpu}<span className={'mode ' + (m.mode === 'both' ? 'both' : m.mode.toLowerCase())}>{MODE[m.mode]}</span>{m.mode === 'both' && <small className="muted"> 当前 {MODE[m.active]}</small>}
           {' '}<span className="q">{MODELS[m.quality].label}</span>{m.auto && <span className="pill">自动加的</span>}</b>
         <small className="muted">{m.provider || 'Vast'} · {m.region} · {money(m.price)}/小时上限 · <Timer size={11} /> {keepText(m)}</small></button>
       <div className="mrow-state">
@@ -214,7 +214,7 @@ export function GpuPage() {
       <AppHeader />
       <main className="home-main">
         <div className="home-head">
-          <div className="tabs"><button className="on">算力 <small>GPU 机器</small></button></div>
+          <h1 className="page-title"><Cpu size={20} />算力 <small>GPU 机器</small></h1>
           <small className="muted">{age < 3 ? '刚刚更新' : `更新于 ${age} 秒前`}</small><button className="small ghost" onClick={() => setRefreshedAt(state.clock)}><RefreshCw size={13} />刷新</button>
           <div className="spacer" />
           <button className="primary" onClick={() => setStarting('FL')}><Plus size={16} />启动机器</button>
@@ -223,8 +223,8 @@ export function GpuPage() {
           <div><small>就绪</small><b>{count('ready') - Object.keys(busy).length}</b></div>
           <div><small>正在生成</small><b>{Object.keys(busy).length}</b></div>
           <div><small>准备中</small><b>{count(['renting', 'downloading', 'loading', 'switching'])}</b></div>
-          <div><small>每小时上限</small><b>{money(perHour)}</b></div>
-          <div><small>累计花费（估算）</small><b>{money(state.spent + runningCost)}</b><small className="muted">内测不限额</small></div>
+          <div><small>现在每小时</small><b>{money(perHour)}</b><small className="muted">按在线机器的价格上限</small></div>
+          <div><small>累计花费（估算）</small><b>{money(state.spent + runningCost)}</b><button className="linkish keep-label" onClick={() => dispatch({type: 'page', page: 'settings'})}>上限在设置里改</button></div>
         </div>
         <div className="queues">
           {['FL', 'REF'].map(k => {
