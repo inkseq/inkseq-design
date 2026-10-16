@@ -264,3 +264,12 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/spending-settings.css
 !studio-app/src/i18n.test.js
 !studio-app/src/spending-client.test.js
+
+# Quick Chat take groups; source only.
+!studio-app/src/QuickChatTakes.jsx
+!studio-app/src/QuickChatPreferences.jsx
+!studio-app/src/QuickChatTakeCount.jsx
+!studio-app/src/QuickChatTakeRecipe.jsx
+!studio-app/src/quick-chat-takes.js
+!studio-app/src/quick-chat-takes.css
+!studio-app/src/quick-chat-takes.test.js
