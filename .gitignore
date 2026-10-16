@@ -256,3 +256,11 @@
 design/inkseq-v2-prototype/public/
 design/inkseq-v2-prototype/node_modules/
 design/inkseq-v2-prototype/dist/
+
+# v2 keyed UI catalogs and editable spending settings; no generated media.
+!studio-app/src/i18n/
+!studio-app/src/i18n/**
+!studio-app/src/SpendingSettings.jsx
+!studio-app/src/spending-settings.css
+!studio-app/src/i18n.test.js
+!studio-app/src/spending-client.test.js
