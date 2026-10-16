@@ -14,6 +14,7 @@ import {LibraryPage} from './library.jsx';
 import {coverOf, planDrop, variantOf} from './model.js';
 import './styles.css';
 import {installHoldHint} from './holdhint.js';
+import {startI18n} from './i18n.js';
 
 installHoldHint();
 
@@ -115,3 +116,4 @@ function App() {
 }
 
 createRoot(document.getElementById('root')).render(<StoreProvider><App /></StoreProvider>);
+startI18n();

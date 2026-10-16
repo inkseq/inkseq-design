@@ -46,7 +46,9 @@ function seedTags(s) {
   return {...s, tagsSeeded: true, assets: s.assets.map(a => { const k = Object.keys(t).find(k => a.id.startsWith(k)); return k ? {...a, tags: [...new Set([...(a.tags || []), ...t[k]])]} : a; })};
 }
 // Older saved demos have no agents yet.
-const normalize = s => ({...s, agents: s.agents || [], agentInvite: s.agentInvite || null});
+// Every limit is a setting (with a default) the owner/admin can change in 设置 — nothing is hard-coded.
+export const DEFAULT_LIMITS = {daily: 20, confirmAbove: 1, testDaily: 20, maxHourly: 1.5, idleStopMin: 10, maxRunHours: 2};
+const normalize = s => ({...s, agents: s.agents || [], agentInvite: s.agentInvite || null, limits: {...DEFAULT_LIMITS, ...(s.limits || {})}, spentToday: s.spentToday ?? 3.42});
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return normalize(seedTags(expire(JSON.parse(raw)))); } catch {}
   return normalize(seedTags(initial()));
@@ -101,6 +103,8 @@ function reducer(state, a) {
       return {...state, agents: [...state.agents, ag]};
     }
     case 'agentPause': return {...state, agents: state.agents.map(x => (x.id === a.id ? {...x, paused: !x.paused, log: [...x.log, {at: Date.now(), text: x.paused ? '你恢复了它' : '你暂停了它'}]} : x))};
+    case 'agentCap': return {...state, agents: state.agents.map(x => (x.id === a.id ? {...x, cap: a.cap, log: [...x.log, {at: Date.now(), text: `你把每日上限改成 $${a.cap}`}]} : x))};
+    case 'limits': return {...state, limits: {...state.limits, ...a.patch}};
     case 'agentRevoke': return {...state, agents: state.agents.filter(x => x.id !== a.id)};
     // 原型：模拟助手在它的范围里做一次事（2 条草稿），并记账；超出每日上限就不提交。
     case 'agentDemo': {

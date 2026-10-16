@@ -5,9 +5,7 @@ simulated generation/GPUs. **It defines behaviour and layout; it is not producti
 feature in the canonical frontend (`inkseq/sixnine-design`, `studio-app`) on the real backend
 (`inkseq/h3-studio`). Supersedes the 2026-10-14 storyboard handoff.
 
-- Sample media (`public/clips`, `public/audio`) is not committed (media stays out of this repo); videos show
-  blank without it. Ask the owner's machine copy or drop any short mp4/jpg pairs named as in `src/data.js`.
-- Run: `npm install && npm run dev` → http://127.0.0.1:5192/ . Open a page directly with
+- Run: `npm install && npm run dev` → http://127.0.0.1:5192/ (English by default; 中文 switch top right). Open a page directly with
   `?page=home|quick|story|library|gpu|settings|trash`. Phone layout: any width ≤ 760 px.
 - Optional real assistant: `server/assistant.py` on :5193 (Gemini for proposals, TypeSafe Jev for
   matching) started through the central `AI-Registry/tools/api_run.py`; without it the prototype falls back
@@ -29,6 +27,15 @@ feature in the canonical frontend (`inkseq/sixnine-design`, `studio-app`) on the
    revisions/receipts, no silent retries. Database changes are additive only.
 4. Keep everything the user made: no automatic deletion or retention expiry for now (owner, 2026-10-17).
    Deleting = move to trash, restorable.
+5. **No hard-coded limits** (owner, 2026-10-17). Every cap, threshold or limit has a default **and a place in
+   the UI to change it**: the user's daily spend and "ask me above $X" (设置 → 我的额度), each AI assistant's
+   daily cap (设置 → AI 助手, editable after connecting), and admin defaults for test machines — daily
+   spend, max hourly price, idle auto-stop, max runtime (设置 → 管理员). Backend reads them from settings,
+   never from constants.
+6. **Bilingual, English by default** (owner, 2026-10-17). Every user-facing string exists in English and
+   Chinese; first visit is English; a 中文/EN switch in the header remembers the choice. The prototype does
+   this with a runtime dictionary (`src/i18n.js`, `src/en.json`) only to show the result — production must
+   use proper i18n keys in `studio-app` (and translate server-side messages and Agent-facing errors).
 
 ## Batches (suggested order; each is one issue)
 

@@ -1,10 +1,18 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Bot, Trash2, Cpu, KeyRound, LogOut, Play, Plus, Power, ShieldCheck, SlidersHorizontal, Square, Timer, UserRound, Wallet} from 'lucide-react';
 import {AdvancedSheet, changedSummary} from './advanced.jsx';
 import {MODELS} from './model.js';
 import {queuePositions, useStore} from './store.jsx';
 import {trashItems} from './trash.js';
 import {AgentSettings} from './agent.jsx';
+import {getLang, onLang, setLang} from './i18n.js';
+
+// 中 / EN switch (English is the default).
+export function LangToggle() {
+  const [l, setL] = useState(getLang());
+  useEffect(() => onLang(setL), []);
+  return <button className="ghost lang-toggle keep-label" data-no-i18n title={l === 'en' ? '切换到中文' : 'Switch to English'} onClick={() => setLang(l === 'en' ? 'zh' : 'en')}>{l === 'en' ? '中文' : 'EN'}</button>;
+}
 
 /* ---------- shared header for 作品 / 算力 / 设置 ---------- */
 export function AppHeader() {
@@ -23,6 +31,7 @@ export function AppHeader() {
         <button className={page === 'settings' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'settings'})}>设置</button>
       </nav>
       <div className="spacer" />
+      <LangToggle />
       <button className={'ghost hbar-trash' + (page === 'trash' ? ' on' : '')} title="回收站" onClick={() => dispatch({type: 'page', page: 'trash'})}><Trash2 size={15} />{binned > 0 && <em>{binned}</em>}</button>
       <span className="avatar" title="superdan">S</span>
     </header>
@@ -60,18 +69,49 @@ export function SettingsPage({onToast}) {
             {advOpen && <AdvancedSheet title="生成默认值（全局）" scope="对你之后的所有生成生效。" value={gd} onChange={x => dispatch({type: 'genDefaults', value: x})} onClose={() => setAdvOpen(false)} />}
           </>}
           {tab === 'agent' && <AgentSettings />}
-          {tab === 'budget' && <>
-            <h2>我的额度</h2>
-            <div className="card-box soon"><Wallet size={22} /><div><b>内测期间不限额</b><small className="muted">由管理员统一管理。额度、已花、剩余和每日花费会在 #175 加上。</small></div></div>
-          </>}
-          {tab === 'admin' && <>
-            <h2>管理员</h2>
-            <p className="muted">只有 superdan 能看到这一页。</p>
-            {[['账号额度和价格上限', '#175'], ['后台批量取消任务，并告诉 Agent 原因', '#176'], ['机器排行和黑白名单', '#177'], ['创作记录回收站和测试记录清理', '#182']].map(([t, n]) => (
-              <div key={n} className="card-box soon"><ShieldCheck size={20} /><div><b>{t}</b><small className="muted">即将上线 · {n}</small></div></div>))}
-          </>}
+          {tab === 'budget' && <LimitsPanel />}
+          {tab === 'admin' && <AdminLimits />}
         </section>
       </main>
     </div>
   );
+}
+
+// A number field that saves on change; every limit in the app is edited through one of these.
+function LimitField({label, hint, k, unit = '$', step = 1, min = 0, options}) {
+  const {state, dispatch} = useStore();
+  const v = state.limits[k];
+  return <label className="limit-row"><div><b>{label}</b>{hint && <small className="muted">{hint}</small>}</div>
+    {options ? <select value={v} onChange={e => dispatch({type: 'limits', patch: {[k]: +e.target.value}})}>{options.map(([o, l]) => <option key={o} value={o}>{l}</option>)}</select>
+      : <span className="limit-input">{unit === '$' && '$'}<input type="number" min={min} step={step} value={v} onChange={e => dispatch({type: 'limits', patch: {[k]: Math.max(min, +e.target.value || 0)}})} />{unit !== '$' && unit}</span>}</label>;
+}
+
+function LimitsPanel() {
+  const {state} = useStore();
+  const L = state.limits, pct = L.daily ? Math.min(100, state.spentToday / L.daily * 100) : 0;
+  return <>
+    <h2>我的额度</h2>
+    <p className="muted">这些都由你自己定，随时可以改。到了上限，新的生成会先停下来问你，正在跑的不受影响。</p>
+    <div className="card-box"><div className="agent-spend"><span>今天已花 ${state.spentToday.toFixed(2)}{L.daily ? ` / $${L.daily}` : '（不限）'}</span><i><b style={{width: pct + '%'}} /></i></div></div>
+    <div className="card-box limits">
+      <LimitField label="每天最多花" hint="所有生成加起来，按悉尼时间每天清零；0 = 不限" k="daily" />
+      <LimitField label="单次超过多少先问我" hint="一次提交（比如批量 8 个镜头各 4 条）预计超过这个数，会先弹出确认" k="confirmAbove" step={0.5} />
+    </div>
+    <p className="muted">AI 助手的每日上限在「AI 助手」里，每个助手单独设。</p>
+  </>;
+}
+
+function AdminLimits() {
+  return <>
+    <h2>管理员</h2>
+    <p className="muted">只有管理员能看到这一页。这里的数都是默认值，改了立刻生效；不会有写死在后台、没地方改的限制。</p>
+    <div className="card-box limits"><h4>测试机（开发和验收用）</h4>
+      <LimitField label="测试机每天最多花" hint="主要防止忘记关机；到了自动停掉测试机并通知" k="testDaily" />
+      <LimitField label="单台每小时最高价" hint="租机时超过这个价的报价不考虑" k="maxHourly" step={0.1} />
+      <LimitField label="空闲多久自动关机" k="idleStopMin" unit=" 分钟" options={[[5, '5 分钟'], [10, '10 分钟'], [20, '20 分钟'], [30, '30 分钟'], [60, '1 小时']]} />
+      <LimitField label="测试机最长运行" hint="超过就自动关机，防止忘了" k="maxRunHours" unit=" 小时" options={[[1, '1 小时'], [2, '2 小时'], [4, '4 小时'], [8, '8 小时']]} />
+    </div>
+    {[['后台批量取消任务，并告诉 Agent 原因', '#176'], ['机器排行和黑白名单', '#177']].map(([t, n]) => (
+      <div key={n} className="card-box soon"><ShieldCheck size={20} /><div><b>{t}</b><small className="muted">见算力页 · {n}</small></div></div>))}
+  </>;
 }

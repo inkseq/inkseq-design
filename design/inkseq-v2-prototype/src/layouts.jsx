@@ -8,6 +8,7 @@ import {Splitter, usePanelSize} from './panels.jsx';
 import {ArrowLeft, Captions, ChevronDown, Clapperboard, Download, FileSpreadsheet, PanelLeftClose, PanelLeftOpen, Plus, Settings2, Sparkles, Trash2} from 'lucide-react';
 import {running} from './trash.js';
 import {AgentSheet} from './agent.jsx';
+import {LangToggle} from './pages.jsx';
 import {Bot} from 'lucide-react';
 
 const ids = shots => shots.map(s => 'shot:' + s.id);
@@ -125,6 +126,7 @@ function WorkspaceBar({story, chapter, shots, onToast}) {
         <button onClick={exportCsv}><span className="mi"><FileSpreadsheet size={15} />镜头清单 CSV</span><small>给剪辑师或审片用</small></button>
         {missing.length > 0 && <div className="menu-note">还有 {missing.length} 个镜头没选定版本</div>}
       </Menu>
+      <LangToggle />
       <button className="ghost" onClick={() => setAgentOpen(true)} title="把这个故事交给 AI 助手"><Bot size={16} />AI 助手</button>
       <button className="ghost" onClick={() => setSettings(true)} title="故事设置"><Settings2 size={16} />设置</button>
       {agentOpen && <AgentSheet here={{kind: 'story', id: story.id}} onClose={() => setAgentOpen(false)} />}

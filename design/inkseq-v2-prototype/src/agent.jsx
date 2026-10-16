@@ -77,7 +77,8 @@ export function AgentSettings() {
         <div className="row tight"><Bot size={18} /><b>{a.name}</b><small className="muted">· {a.device} · 连接于 {ago(a.connectedAt)}</small><div className="spacer" />
           {a.paused ? <span className="pill">已暂停</span> : <span className="pill good">可用</span>}</div>
         <small className="muted">范围：{a.scope.label} · {PERMS[a.perm].label}</small>
-        {a.perm === 'generate' && <div className="agent-spend"><span>今天已花 {money(a.spent)} / {money(a.cap)}</span><i><b style={{width: `${Math.min(100, a.spent / a.cap * 100)}%`}} /></i></div>}
+        {a.perm === 'generate' && <div className="agent-spend"><span>今天已花 {money(a.spent)} / <select className="inline-select" value={a.cap} onChange={e => dispatch({type: 'agentCap', id: a.id, cap: +e.target.value})}>
+          {[...new Set([1, 2, 5, 10, 20, 50, a.cap])].sort((x, y) => x - y).map(n => <option key={n} value={n}>{money(n)}</option>)}</select> 每日上限</span><i><b style={{width: `${Math.min(100, a.spent / a.cap * 100)}%`}} /></i></div>}
         <div className="agent-log">{a.log.slice(-4).reverse().map((l, i) => <div key={i}><small className="muted">{ago(l.at)}</small> {l.text}</div>)}
           {!a.log.length && <small className="muted">还没做任何事。</small>}</div>
         <div className="row tight">
