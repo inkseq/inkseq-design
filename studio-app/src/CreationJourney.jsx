@@ -43,6 +43,7 @@ function NumberInput({value,min=1/24,max=3600,onValue}) {
 }
 
 export default function CreationJourney({state,onAdd,onInspect,onPreview}) {
+  const {t:at}=useI18n();
  const {t:lt,locale}=useI18n();
  const stages=journeyStages(lt);const typeLabels={character:lt('journey.character'),location:lt('journey.location')};
   const p=state.project,j=p.journey||{},brief=j.brief||{},sound=j.sound||{};
@@ -85,12 +86,12 @@ export default function CreationJourney({state,onAdd,onInspect,onPreview}) {
     store.addEntity('scene',id,{title:'原始剧本 · 待拆场',data:{script:text}});setJourney({scriptImport:{source:text,chapterId:id}});store.setScope(id);store.select(null);go(2);store.notify(lt('journey.more4'));
   };
   const checks=[
-    {stage:1,title:'故事方向',ok:!!p.logline.trim(),detail:p.logline.trim()?'已经写下项目一句话':'补一句主角、目标与阻碍，让大家知道要讲什么。'},
-    {stage:2,title:'章节与剧本',ok:!!chapter&&scenes.length>0&&scenes.every(s=>String(s.data.script||'').trim()),detail:!chapter?'还没有章节。':!scenes.length?'这一章还没有场戏。':`${scenes.filter(s=>String(s.data.script||'').trim()).length} / ${scenes.length} 场已写剧本`},
-    {stage:3,title:'人物与地点设定',ok:characters.length>0&&locations.length>0,optional:true,detail:`${characters.length} 个角色 · ${locations.length} 个地点。无人或抽象作品可以暂不设置。`},
-    {stage:4,title:'镜头描述与时长',ok:shots.length>0&&shots.every(s=>String(s.data.prompt||s.description||'').trim()&&s.data.seconds>0),detail:shots.length?`${shots.filter(s=>String(s.data.prompt||s.description||'').trim()&&s.data.seconds>0).length} / ${shots.length} 镜已写清画面与时长`:'这一章还没有镜头。'},
-    {stage:5,title:'候选选择与返修',ok:shots.length>0&&shots.every(s=>usableCandidate(s)&&s.status!=='review'&&!['revision','failed','retry','cancelled'].includes(s.data.uxReview?.status)),detail:`${shots.filter(usableCandidate).length} / ${shots.length} 镜已有可用候选选择${shots.some(s=>s.status==='review')?'；内容或参考有改动，原选择保留待复核':''}。示例选择只用于验证审核流程。`},
-    {stage:6,title:'声音与节奏决定',ok:!!sound.mode,detail:sound.mode==='silent'?'已选择静音先行。':sound.mode?'已记录声音需求；导出前还需听审素材。':'还未决定声音方案，也可以明确选择静音。'}
+    {stage:1,title:at('adjunct.creationJourney.copy274'),ok:!!p.logline.trim(),detail:p.logline.trim()?at('adjunct.creationJourney.copy275'):at('adjunct.creationJourney.copy276')},
+    {stage:2,title:at('adjunct.creationJourney.copy277'),ok:!!chapter&&scenes.length>0&&scenes.every(s=>String(s.data.script||'').trim()),detail:!chapter?at('adjunct.creationJourney.copy278'):!scenes.length?at('adjunct.creationJourney.copy279'):at('adjunct.creationJourney.copy280',{v0:scenes.filter(s=>String(s.data.script||'').trim()).length,v1:scenes.length})},
+    {stage:3,title:at('adjunct.creationJourney.copy281'),ok:characters.length>0&&locations.length>0,optional:true,detail:at('adjunct.creationJourney.copy282',{v0:characters.length,v1:locations.length})},
+    {stage:4,title:at('adjunct.creationJourney.copy283'),ok:shots.length>0&&shots.every(s=>String(s.data.prompt||s.description||'').trim()&&s.data.seconds>0),detail:shots.length?at('adjunct.creationJourney.copy284',{v0:shots.filter(s=>String(s.data.prompt||s.description||'').trim()&&s.data.seconds>0).length,v1:shots.length}):at('adjunct.creationJourney.copy285')},
+    {stage:5,title:at('adjunct.creationJourney.copy286'),ok:shots.length>0&&shots.every(s=>usableCandidate(s)&&s.status!=='review'&&!['revision','failed','retry','cancelled'].includes(s.data.uxReview?.status)),detail:at('adjunct.creationJourney.copy287',{v0:shots.filter(usableCandidate).length,v1:shots.length,v2:shots.some(s=>s.status==='review')?at('adjunct.creationJourney.copy288'):''})},
+    {stage:6,title:at('adjunct.creationJourney.copy289'),ok:!!sound.mode,detail:sound.mode==='silent'?at('adjunct.creationJourney.copy290'):sound.mode?at('adjunct.creationJourney.copy291'):at('adjunct.creationJourney.copy292')}
   ];
   const incomplete=deliveryIssues(p,chapter?.id,locale).filter(c=>!c.accepted);
   const stageStatus=[p.logline.trim()?lt('journey.directionSaved'):lt('journey.awaitIdea'),chapters.length?lt('journey.chapterScene',{chapters:chapters.length,scenes:p.entities.filter(e=>e.type==='scene').length}):lt('journey.firstChapter'),lt('journey.charactersLocations',{characters:characters.length,locations:locations.length}),lt('journey.shotCount',{count:allShots.length}),lt('journey.chosenCount',{count:allShots.filter(s=>s.data.uxReview?.chosen||s.data.selectedAssetId).length}),sound.mode==='silent'?lt('legacy.journey59'):sound.mode?lt('journey.audioSaved'):lt('journey.silentFirst'),incomplete.length?lt('journey.remaining',{count:incomplete.length}):lt('journey.decisionsSaved')];

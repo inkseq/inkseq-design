@@ -11,7 +11,7 @@ export default function AgentConnect({account,workspace={},projectId,projectTitl
   const [profile,setProfile]=useState('edit'),[copyState,setCopyState]=useState('idle'),[showBrief,setShowBrief]=useState(false),[message,setMessage]=useState(''),[working,setWorking]=useState(false);
   const textRef=useRef(null),epoch=useRef(0);
   const handoff=useMemo(()=>agentHandoff({origin,account,workspace,projectId,entityId,profile,view,locale}),[origin,account,workspace.mode,workspace.account,workspace.serverVersion,workspace.dirty,projectId,entityId,profile,view,locale]);
-  const execution=executionStatus(capabilities),blocked=busy||working,quick=view==='/freestyle';
+  const execution=executionStatus(capabilities,locale),blocked=busy||working,quick=view==='/freestyle';
   useEffect(()=>{epoch.current++;setCopyState('idle');setMessage('');setWorking(false);return()=>{epoch.current++;};},[account,projectId,entityId,workspace.mode,workspace.account,workspace.serverVersion,workspace.dirty,profile,view]);
   useEffect(()=>{if(copyState==='manual'){textRef.current?.focus();textRef.current?.select();}},[copyState]);
   async function act(callback,failure){if(!callback)return;const current=epoch.current;setWorking(true);setMessage('');try{await callback();}catch{if(current===epoch.current)setMessage(failure);}finally{if(current===epoch.current)setWorking(false);}}
