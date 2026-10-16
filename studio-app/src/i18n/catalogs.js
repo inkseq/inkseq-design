@@ -1,5 +1,7 @@
+import {adjunctCatalogs} from './adjunctCatalogs.js';
 import {accountDetailCatalogs} from './accountDetailCatalogs.js';
 import {operatorPanelCatalogs} from './operatorPanelCatalogs.js';
+import {h3MoreCatalogs} from './h3MoreCatalogs.js';
 import {operatorReasonCatalogs} from './operatorReasonCatalogs.js';
 import {operatorDetailCatalogs} from './operatorDetailCatalogs.js';
 import {legacyOperatorCatalogs} from './legacyOperatorCatalogs.js';
@@ -14,6 +16,8 @@ import {storyboardCatalogs} from './storyboardCatalogs.js';
 import {legacyCatalogs} from './legacyCatalogs.js';
 export const catalogs = {
   en: {
+    ...adjunctCatalogs.en,
+    ...h3MoreCatalogs.en,
     ...operatorPanelCatalogs.en,
     ...legacyOperatorCatalogs.en,
     ...operatorErrorCatalogs.en, ...operatorDetailCatalogs.en, ...operatorReasonCatalogs.en, ...accountDetailCatalogs.en, ...storyCatalogs.en, ...operatorCatalogs.en, ...accountCatalogs.en, ...workspaceCatalogs.en, ...settingsCatalogs.en, ...clientCatalogs.en, ...storyboardCatalogs.en, ...legacyCatalogs.en,
@@ -39,6 +43,8 @@ export const catalogs = {
     'locale.switchToEnglish': 'Switch to English',
   },
   zh: {
+    ...adjunctCatalogs.zh,
+    ...h3MoreCatalogs.zh,
     ...operatorPanelCatalogs.zh,
     ...legacyOperatorCatalogs.zh,
     ...operatorErrorCatalogs.zh, ...operatorDetailCatalogs.zh, ...operatorReasonCatalogs.zh, ...accountDetailCatalogs.zh, ...storyCatalogs.zh, ...operatorCatalogs.zh, ...accountCatalogs.zh, ...workspaceCatalogs.zh, ...settingsCatalogs.zh, ...clientCatalogs.zh, ...storyboardCatalogs.zh, ...legacyCatalogs.zh,
