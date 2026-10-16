@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {capMicros,assistantScope,createAssistantOperations,creatorName} from './assistant-connections-model.js';
+import {capMicros,assistantScope,createAssistantOperations,creatorName,assistantDate} from './assistant-connections-model.js';
 import {createQuickChatClient} from './quick-chat-client.js';
 const memory=()=>{const values=new Map();return {values,getItem:k=>values.get(k)||null,setItem:(k,v)=>values.set(k,v),removeItem:k=>values.delete(k)};};
 const body=()=>({name:'Codex',authorization_profile_id:'profile',authorization_profile_version:1,scope:{kind:'session',id:'s'},permission:'organise',daily_limit_microusd:0});
@@ -17,3 +17,5 @@ test('closed CAS proof clears only exact original request and connection; never 
  const body={expected_version:2,paused:true};for(const mutation of [{request:{...body,paused:false}},{id:'wrong'},{error_code:'other'}]){const op=createAssistantOperations({account:'a',storage:memory(),client:{updateConnection:async()=>({id:'c',no_mutation_committed:true,error_code:'connection_version_conflict',request:body,...mutation})}});await assert.rejects(op.execute('updateConnection',['c'],body));assert.ok(op.read().pending);}
  const op=createAssistantOperations({account:'a',storage:memory(),client:{updateConnection:async()=>({id:'c',state_version:3,paused:false,no_mutation_committed:true,error_code:'connection_version_conflict',request:body})}});const closed=await op.execute('updateConnection',['c'],body);assert.equal(closed.no_mutation_committed,true);assert.equal(closed.paused,false);assert.equal(op.read().pending,null);
 });
+
+test('display dates do not clamp valid policy timestamps or render Invalid Date',()=>{for(const value of [null,undefined,NaN,Infinity,2147483647*86400])assert.equal(assistantDate(value,'en','unknown'),'unknown');assert.notEqual(assistantDate(1792190000,'en','unknown'),'unknown');});

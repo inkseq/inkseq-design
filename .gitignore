@@ -280,3 +280,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/assistant-connections.css
 !studio-app/src/assistant-connections.test.js
 !studio-app/src/i18n/assistantCatalogs.js
+
+!studio-app/src/money.js
+!studio-app/src/money.test.js

@@ -1,6 +1,7 @@
+import {dollarsToMicros} from './money.js';
 import {stableJSON} from './cloud-model.js';
 const clone=value=>structuredClone(value);
-export function capMicros(value){if(!/^(?:0|[1-9]\d*)(?:\.\d{1,6})?$/.test(value))throw Error('assistants.invalid');const [whole,fraction='']=value.split('.'),n=Number(whole)*1e6+Number(fraction.padEnd(6,'0'));if(!Number.isSafeInteger(n)||n>9e15)throw Error('assistants.invalid');return n;}
+export function capMicros(value){try{return dollarsToMicros(value);}catch{throw Error('assistants.invalid');}}
 export function assistantScope(kind,{sessionId,projectId}={}){if(kind==='all')return {kind};const id=kind==='session'?sessionId:kind==='story'?projectId:null;if(typeof id!=='string'||!id)throw Error('assistants.scopeUnavailable');return {kind,id};}
 const same=(a,b)=>stableJSON(a)===stableJSON(b);
 const methods=new Set(['createConnection','updateConnection','revokeConnection','saveConnectionSettings']);
@@ -21,3 +22,5 @@ export function createAssistantOperations({client,account,storage=globalThis.loc
  return {read:()=>({busy,pending}),execute,recover:()=>execute(),destroy(){active=false;}};
 }
 export function creatorName(value){return value?.kind==='agent'&&typeof value.connection_id==='string'&&typeof value.name==='string'?value.name:null;}
+
+export function assistantDate(value,locale,unknown){if(typeof value!=='number'||!Number.isFinite(value))return unknown;const date=new Date(value*1000);if(!Number.isFinite(date.getTime()))return unknown;try{return date.toLocaleString(locale==='zh'?'zh-CN':'en');}catch{return unknown;}}
