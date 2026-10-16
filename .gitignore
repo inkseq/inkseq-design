@@ -274,6 +274,12 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/quick-chat-takes.css
 !studio-app/src/quick-chat-takes.test.js
 
-# Exact integer USD conversion
+# Canonical assistant connections v2
+!studio-app/src/AssistantConnections.jsx
+!studio-app/src/assistant-connections-model.js
+!studio-app/src/assistant-connections.css
+!studio-app/src/assistant-connections.test.js
+!studio-app/src/i18n/assistantCatalogs.js
+
 !studio-app/src/money.js
 !studio-app/src/money.test.js
