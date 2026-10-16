@@ -14,7 +14,7 @@ export function createAssistantOperations({client,account,storage=globalThis.loc
   if(value?.no_mutation_committed===true){if(!['updateConnection','saveConnectionSettings'].includes(op.method)||value.error_code!=='connection_version_conflict'||!same(value.request,op.body)||op.method==='updateConnection'&&(value.connection||value).id!==op.args[0])throw Error('assistants.receipt');return;}
   if(op.method==='saveConnectionSettings'){if(!Number.isInteger(value?.version)||value.version<=op.body.expected_version||!same(value.value,op.body.value))throw Error('assistants.receipt');return;}
   const row=value?.connection||value;if(!row||typeof row.id!=='string'||op.args.length&&row.id!==op.args[0])throw Error('assistants.receipt');
-  if(op.method==='createConnection'){if(row.name!==op.body.name||op.body.scope&&!same(row.scope,op.body.scope)||op.body.permission&&row.permission!==op.body.permission||row.daily_limit_microusd!==op.body.daily_limit_microusd)throw Error('assistants.receipt');}
+  if(op.method==='createConnection'){if(row.name!==op.body.name||op.body.scope&&!same(row.scope,op.body.scope)||op.body.permission&&row.permission!==op.body.permission||row.daily_limit_microusd!==(op.body.daily_limit_microusd??0))throw Error('assistants.receipt');}
   if(op.method==='updateConnection'){if(!Number.isInteger(row.state_version)||row.state_version<=op.body.expected_version)throw Error('assistants.receipt');for(const k of ['paused','daily_limit_microusd'])if(Object.hasOwn(op.body,k)&&row[k]!==op.body[k])throw Error('assistants.receipt');}
   if(op.method==='revokeConnection'&&row.status!=='revoked')throw Error('assistants.receipt');
  }
@@ -24,3 +24,5 @@ export function createAssistantOperations({client,account,storage=globalThis.loc
 export function creatorName(value){return value?.kind==='agent'&&typeof value.connection_id==='string'&&typeof value.name==='string'?value.name:null;}
 
 export function assistantDate(value,locale,unknown){if(typeof value!=='number'||!Number.isFinite(value))return unknown;const date=new Date(value*1000);if(!Number.isFinite(date.getTime()))return unknown;try{return date.toLocaleString(locale==='zh'?'zh-CN':'en');}catch{return unknown;}}
+
+export function mergeConnectionResult(rows,result){const row=result?.connection||result;if(!row||typeof row.id!=='string'||typeof row.status!=='string')return rows;return rows.some(old=>old.id===row.id)?rows.map(old=>old.id===row.id?row:old):[row,...rows];}
