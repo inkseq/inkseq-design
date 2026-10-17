@@ -74,6 +74,9 @@
 !studio-app/src/ProjectActivity.jsx
 !studio-app/src/QuickChatAgent.jsx
 !studio-app/src/QuickChatCard.jsx
+!studio-app/src/QuickChatHistory.jsx
+!studio-app/src/quick-chat-history.js
+!studio-app/src/quick-chat-history.test.js
 !studio-app/src/QuickChatControls.jsx
 !studio-app/src/QuickChatMaterials.jsx
 !studio-app/src/QuickChatWorkspace.jsx
