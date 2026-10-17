@@ -1,11 +1,10 @@
 import {usePageActive,useAppLocation} from './AppRouteCache.jsx';
 import StudioHeader from './StudioHeader.jsx';
-import {AssistantBadge} from './AssistantConnections.jsx';
 import QuickChatPreferences from './QuickChatPreferences.jsx';
 import {checkedPreferences,createConversationFiles} from './quick-chat-takes.js';
 import {useI18n} from './i18n/I18nProvider.jsx';
 import React,{useEffect,useLayoutEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
-import {Plus,ArrowUp,Settings2,Bot,Menu,X,RefreshCw,LogOut,Upload,Image,Video,Music,Paperclip,Send,Trash2,MoreHorizontal,SlidersHorizontal,UserRound} from 'lucide-react';
+import {Plus,ArrowUp,Settings2,Bot,Menu,X,RefreshCw,LogOut,Upload,Image,Video,Music,Paperclip,Send,Trash2,SlidersHorizontal,UserRound} from 'lucide-react';
 import {useCloud} from './CloudStudio.jsx';
 import {cloudController as cloud} from './cloud-controller.js';
 import {createQuickChatController,saveMaterialSelection} from './quick-chat-controller.js';
@@ -16,7 +15,8 @@ import QuickChatCard from './QuickChatCard.jsx';
 import QuickChatHistory from './QuickChatHistory.jsx';
 import {quickThreadEntries,initialThreadLoading,captureThreadAnchor,restoreThreadAnchor} from './quick-chat-history.js';
 import QuickChatAgent from './QuickChatAgent.jsx';
-import CreationHistory from './CreationHistory.jsx';
+import {HistoryFeedback} from './CreationHistory.jsx';
+import QuickChatSidebar from './QuickChatSidebar.jsx';
 import GenerationAvailability from './GenerationAvailability.jsx';
 import {modeAvailability,requireModeAvailable} from './generation-availability.js';
 import OperatorEntry from './OperatorEntry.jsx';
@@ -42,9 +42,9 @@ export default function QuickChatWorkspace(){
   const {t:at}=useI18n();
   const {t,locale}=useI18n();
   useEffect(()=>{if(pageActive)document.title=t('workspace.copy117');},[locale,pageActive]);
-  const c=useCloud(),controller=useMemo(()=>createQuickChatController(),[]),state=useSyncExternalStore(controller.subscribe,controller.getState,controller.getState),[prompt,setPrompt]=useState(()=>readDraft(null,null)),[dialog,setDialog]=useState(null),[rename,setRename]=useState(''),[mobile,setMobile]=useState(false),[staged,setStaged]=useState([]),[localError,setLocalError]=useState(''),[notice,setNotice]=useState(''),[draftSettings,setDraftSettings]=useState(null),[model,setModel]=useState('gemini-3.8-flash'),[assistantMode,setAssistantMode]=useState('assist'),[modeIntent,setModeIntent]=useState(()=>readMode(null,null)),[confirmation,setConfirmation]=useState(null),[dragging,setDragging]=useState(false),[submitting,setSubmitting]=useState(false),input=useRef(),textarea=useRef(),uploading=useRef(false),alive=useRef(true),lastAccount=useRef(null),lastDraft=useRef({account:null,id:null}),lastSelected=useRef(null),carryDraft=useRef(false),needsFileReconfirm=useRef(false),stagedRef=useRef([]),textRef=useRef(prompt),confirmationRef=useRef(null),modeRef=useRef(modeIntent),materialOperation=useRef(false);
+  const c=useCloud(),controller=useMemo(()=>createQuickChatController(),[]),state=useSyncExternalStore(controller.subscribe,controller.getState,controller.getState),[prompt,setPrompt]=useState(()=>readDraft(null,null)),[dialog,setDialog]=useState(null),[mobile,setMobile]=useState(false),[staged,setStaged]=useState([]),[localError,setLocalError]=useState(''),[notice,setNotice]=useState(''),[draftSettings,setDraftSettings]=useState(null),[model,setModel]=useState('gemini-3.8-flash'),[assistantMode,setAssistantMode]=useState('assist'),[modeIntent,setModeIntent]=useState(()=>readMode(null,null)),[confirmation,setConfirmation]=useState(null),[dragging,setDragging]=useState(false),[submitting,setSubmitting]=useState(false),input=useRef(),textarea=useRef(),uploading=useRef(false),alive=useRef(true),lastAccount=useRef(null),lastDraft=useRef({account:null,id:null}),lastSelected=useRef(null),carryDraft=useRef(false),needsFileReconfirm=useRef(false),stagedRef=useRef([]),textRef=useRef(prompt),confirmationRef=useRef(null),modeRef=useRef(modeIntent),materialOperation=useRef(false);
   useEffect(()=>{if(!mobile)return;const opener=document.activeElement;const close=event=>{if(event.key==='Escape'&&!event.defaultPrevented&&!document.querySelector('dialog[open]')){event.preventDefault();setMobile(false);}};document.addEventListener('keydown',close);return()=>{document.removeEventListener('keydown',close);if(opener?.isConnected)opener.focus();};},[mobile]);
-  const [hiddenAssetIds,setHiddenAssetIds]=useState([]),[toast,setToast]=useState(''),[renameError,setRenameError]=useState(''),controlsSnapshot=useRef(null),renameSnapshot=useRef(null);
+  const [hiddenAssetIds,setHiddenAssetIds]=useState([]),[toast,setToast]=useState(''),controlsSnapshot=useRef(null);
   const newSettings=nextSettingsFor(state.capabilities,state.schema);
   const settings=nextSettingsFor(state.capabilities,state.schema,{draft:draftSettings,session:state.session?.next_settings}),recipe=recipeFor(state.capabilities,settings),limits=effectiveLimits(recipe),turns=mergeTimelineTurns(state.timeline),busy=state.busy||submitting,modelSchema=(state.schema?.models||state.schema?.assistant?.models||[]).find(item=>item.id===model),assistantEnabled=state.schema?.assistant_enabled===true&&modelSchema?.inputs?.text?.enabled===true;
   useEffect(()=>{alive.current=true;cloud.initialize();return()=>{alive.current=false;confirmationRef.current?.resolve(false);controller.destroy();filesByConversation.current.clear(url=>URL.revokeObjectURL(url));for(const item of stagedRef.current)URL.revokeObjectURL(item.url);};},[controller]);
@@ -73,9 +73,7 @@ export default function QuickChatWorkspace(){
   function assertEditor(snapshot){const live=controller.getState();if(!snapshot||snapshot.account!==c.account||snapshot.account!==live.account)throw Error(at('adjunct.quickChatWorkspace.copy172'));if(snapshot.sessionId!==(live.session?.id||null))throw Error(at('adjunct.quickChatWorkspace.copy173'));if(snapshot.sessionId&&snapshot.version!==live.session.version)throw Error(at('adjunct.quickChatWorkspace.copy174'));return live;}
   async function openTakePreferences(){setDialog('takes');await act(async()=>setTakePreferences(checkedPreferences(await controller.readPreferences())));}
   function openControls(){act(()=>{controlsSnapshot.current={...captureEditor(),settings:clone(settings),capabilities:state.capabilities,bindings:clone(state.materials),modeIntent};setDialog('controls');});}
-  function openRename(){act(()=>{const snapshot=captureEditor();if(!snapshot.sessionId)throw Error(t('workspace.status5'));renameSnapshot.current=snapshot;setRename(state.session.title);setRenameError('');setDialog('rename');});}
   async function saveNextControls(value,_prompt,meta){const snapshot=controlsSnapshot.current;assertEditor(snapshot);if(snapshot.sessionId)await controller.patch({expected_version:snapshot.version,next_settings:value});else setDraftSettings(value);chooseMode(meta?.modeIntent||recipeFor(snapshot.capabilities,value)?.mode||'auto');setNotice(t('workspace.status6'));}
-  async function saveRename(){setRenameError('');try{const snapshot=renameSnapshot.current;assertEditor(snapshot);await controller.patch({expected_version:snapshot.version,title:rename.trim()});setDialog(null);}catch(error){setRenameError(error.message||t('workspace.status7'));}}
   function hideAsset(id,hidden){setHiddenAssetIds(current=>{const next=hidden?[...new Set([...current,id])]:current.filter(value=>value!==id);try{localStorage.setItem(hiddenKey(c.account,controller.getState().session?.id),JSON.stringify(next));}catch{setLocalError(at('adjunct.quickChatWorkspace.copy175'));}return next;});}
   async function removeMaterial(binding){if(binding.version===0){hideAsset(binding.asset_id,true);setNotice(t('workspace.status8'));return;}return act(()=>updateMaterials(controller.getState().materials.map(item=>({...bindingPayload(item),...(item.asset_id===binding.asset_id?{enabled:false}:{})}))));}
   async function selectSession(id){saveDraft(c.account,state.session?.id,prompt);await act(()=>controller.open(id));setMobile(false);}
@@ -145,10 +143,7 @@ export default function QuickChatWorkspace(){
     {mobile&&<button className="qc-scrim" aria-label={t('workspace.closeHistory')} onClick={()=>setMobile(false)}/>}
     <aside className={'qc-side'+(mobile?' open':'')} aria-label={t('workspace.accessible1')}>
       <button className="primary qc-new" disabled={busy} onClick={newSession}><Plus size={16}/>{t('workspace.copy9')}</button>
-      <div className="qc-list">{state.sessions.map(session=><div key={session.id} className={'qc-row'+(session.id===state.session?.id?' on':'')}>
-        <button className="qc-open" disabled={busy} onClick={()=>selectSession(session.id)}><span className="clip">{session.title||t('history.copy35')}</span><AssistantBadge createdBy={session.created_by}/><small>{date(session.updated_at)}</small></button>
-        <button className="qc-dots" aria-label={t('history.copy27')} onClick={()=>setDialog('history')}><MoreHorizontal size={15}/></button>
-      </div>)}{!state.sessions.length&&<p className="muted qc-none">{t('history.copy40')}</p>}{state.sessionsCursor&&<button disabled={busy} onClick={()=>quietly(controller.list({more:true}))}>{t('history.copy41')}</button>}</div>
+      <QuickChatSidebar state={state} controller={controller} busy={busy} onSelect={selectSession} active={pageActive}/>
       <button className="ghost small qc-agent keep-label" onClick={()=>setDialog('agent')}><Bot size={14}/>{t('quickView.handOff')}</button>
       <button className="ghost small qc-machines" onClick={()=>setDialog('status')}><span>{t('quickView.availableMachines')}</span>{['fl','ref'].map(mode=>{const status=modeAvailability(state.availability,state.capabilities,settings,mode,undefined,locale);return <React.Fragment key={mode}><i className={status.available?'ok':''}/>{t('availability.'+mode)} · {status.label}</React.Fragment>;})}</button>
       <a className="ghost small qc-trash-btn" href="/trash?kind=conversation"><Trash2 size={13}/>{t('history.copy29')}</a>
@@ -197,7 +192,7 @@ export default function QuickChatWorkspace(){
       </div>
     </main></div>
     {toast&&<div className="qc-toast" role="status"><span>{toast}</span><button aria-label={t('workspace.accessible10')} onClick={()=>setToast('')}><X size={12}/></button></div>}
-    {dialog==='history'&&<ChatDialog title={t('history.copy25')} onClose={()=>setDialog(null)}><button disabled={busy||!state.session} onClick={openRename}>{t('workspace.copy11')}</button><CreationHistory state={state} controller={controller} busy={busy} onSelect={id=>{selectSession(id);setDialog(null);}}/></ChatDialog>}
+    <div className="quick-sidebar-feedback"><HistoryFeedback state={state} controller={controller} busy={busy}/></div>
     {dialog==='takes'&&<ChatDialog title={t('takes.preferences')} onClose={()=>setDialog(null)}>{takePreferences?<QuickChatPreferences controller={controller} value={takePreferences} busy={busy||!!state.pending} onSaved={value=>{setTakePreferences(checkedPreferences(value));setDialog(null);}}/>:<p role="alert">{t('takes.preferencesError')}</p>}</ChatDialog>}
     {dialog==='status'&&<ChatDialog title={t('workspace.accessible11')} onClose={()=>setDialog(null)}>
       <p>{c.account?at('adjunct.quickChatWorkspace.copy209')+c.account+' · '+(state.schema?t('workspace.status61'):t('workspace.status62')):t('workspace.status63')}</p>
@@ -209,7 +204,6 @@ export default function QuickChatWorkspace(){
       {assistantEnabled&&<label className="qc-field">{t('workspace.copy23')}<select value={assistantMode} onChange={event=>setAssistantMode(event.target.value)}><option value="none">{t('adjunct.option6')}</option><option value="assist">{t('workspace.copy24')}</option><option value="discuss">{t('workspace.copy25')}</option></select></label>}
       <p className="qc-muted">{t('workspace.copy134')}</p>
     </ChatDialog>}
-    {dialog==='rename'&&<ChatDialog title={t('workspace.status68')} onClose={()=>setDialog(null)}><form onSubmit={event=>{event.preventDefault();saveRename();}}><label className="qc-field">{t('workspace.copy26')}<input aria-label={t('workspace.copy26')} value={rename} maxLength={160} required onChange={event=>setRename(event.target.value)}/></label>{renameError&&<p className="qc-error" role="alert">{renameError}</p>}<button className="qc-primary" disabled={busy||!rename.trim()}>{t('workspace.copy27')}</button></form></ChatDialog>}
     {dialog==='login'&&<Login onClose={()=>setDialog(null)} onDone={()=>setDialog(null)}/>}
     {dialog==='controls'&&controlsSnapshot.current&&<QuickChatControls copiesMax={takePreferences?.copies_max??4} availability={state.availability} operator={state.operatorAccess} onRefreshAvailability={()=>quietly(controller.refreshAvailability())} availabilityChecking={state.availabilityChecking} capabilities={controlsSnapshot.current.capabilities} settings={controlsSnapshot.current.settings} bindings={controlsSnapshot.current.bindings} modeIntent={controlsSnapshot.current.modeIntent} onClose={()=>setDialog(null)} busy={busy} onSave={saveNextControls}/>}
     {dialog==='agent'&&<QuickChatAgent account={c.account} sessionId={state.session?.id} onClose={()=>setDialog(null)} onLogin={()=>setDialog('login')}/>}

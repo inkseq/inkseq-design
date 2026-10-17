@@ -102,8 +102,30 @@
 }
 .quick-live .quick-thread-loading{width:100%;max-width:880px;margin:0 auto;padding:8px 0 24px}
 .quick-thread-loading>p{font-size:12px;color:var(--muted);margin:8px 0 16px}
-.quick-card-skeleton{border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 16px;background:var(--card);display:grid;gap:10px}
-.quick-card-skeleton>span,.quick-card-skeleton>div{display:block;background:var(--soft);border-radius:6px;animation:quick-loading-pulse 1.5s ease-in-out infinite}
+.quick-card-skeleton{border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 16px;background:var(--surface);display:grid;gap:10px}
+.quick-card-skeleton>span,.quick-card-skeleton>div{display:block;background:var(--surface-3);border-radius:6px;animation:quick-loading-pulse 1.5s ease-in-out infinite}
 .quick-card-skeleton>span{height:12px;width:78%}.quick-card-skeleton>span:first-child{width:36%;height:16px}.quick-card-skeleton>span:nth-child(3){width:60%}.quick-card-skeleton>div{height:132px;margin-top:6px}
 @keyframes quick-loading-pulse{50%{opacity:.45}}
 @media(prefers-reduced-motion:reduce){.quick-card-skeleton>*{animation:none}}
+
+/* Quick Create row actions follow the demo; menus retain original API guards. */
+.quick-live .quick-sidebar-tools{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:0 4px 8px}
+.quick-live .quick-sidebar-tools>label{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);white-space:nowrap}
+.quick-live .quick-sidebar-tools input,.quick-live .quick-row-select{width:14px;height:14px;min-height:0;margin:0;accent-color:var(--accent);flex:none}
+.quick-live .quick-sidebar-selection{display:flex;align-items:center;flex-wrap:wrap;gap:5px;margin:0 4px 8px;padding:8px;border:1px solid var(--line);border-radius:8px}
+.quick-live .quick-sidebar-selection>span{width:100%;font-size:11px;color:var(--muted)}
+.quick-live .quick-sidebar-tools button,.quick-live .quick-sidebar-selection button,.quick-live .qc-list>button{height:28px;min-height:28px;font-size:11px;padding:4px 7px}
+.quick-live .qc-row>.qc-dots{width:28px;height:28px;min-height:28px;display:grid;place-items:center;flex:none;padding:0}
+.quick-live .quick-row-select{margin-left:7px}
+.quick-live .quick-row-rename{display:flex;flex:1;min-width:0;margin:0}
+.quick-live .qc-rename{min-width:0;width:100%;height:32px;min-height:32px;margin:4px;font-size:13px;padding:5px 8px;box-sizing:border-box}
+.quick-live .quick-sidebar-error{font-size:11px;line-height:1.5;color:var(--bad);padding:0 6px;margin:0 0 8px;overflow-wrap:anywhere}
+.quick-row-menu{z-index:1000;box-sizing:border-box;max-height:calc(100dvh - 24px);overflow:auto;min-width:0;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:5px;box-shadow:0 8px 28px #0004}
+.quick-row-menu>button{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-start;text-align:left;width:100%;height:32px;min-height:32px;padding:4px 9px;border:0;border-radius:6px;background:transparent;color:var(--ink);font-size:12px;line-height:1.4}
+.quick-row-menu>button:hover:not(:disabled){background:var(--surface-3)}
+.quick-row-menu>.quick-row-hint{display:block;padding:0 9px 5px 30px;font-size:11px;line-height:1.5;color:var(--muted)}
+.quick-row-menu>button.danger-item{color:var(--bad)}.quick-row-menu>button:disabled{opacity:.55;cursor:not-allowed}
+.quick-row-menu>hr{border:0;border-top:1px solid var(--line);margin:4px}
+.quick-sidebar-feedback:empty{display:none}
+.quick-sidebar-feedback>.qc-history-receipt,.quick-sidebar-feedback>.qc-warning{position:fixed;z-index:70;bottom:82px;left:50%;transform:translateX(-50%);max-width:min(560px,calc(100vw - 24px));padding:10px 14px;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;font-size:12px}
+.quick-sidebar-feedback button{height:28px;min-height:28px;font-size:12px;margin-left:6px}
