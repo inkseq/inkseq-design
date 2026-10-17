@@ -329,3 +329,11 @@ design/inkseq-v2-prototype/dist/
 # Prototype page components and real-service view adapters
 !studio-app/src/v2/
 !studio-app/src/v2/**
+
+# Quick Create row-bound sidebar actions273
+!studio-app/src/QuickChatSidebar.jsx
+!studio-app/src/quick-chat-sidebar.js
+!studio-app/src/quick-chat-sidebar.test.js
+!studio-app/src/QuickPrompt.jsx
+!studio-app/src/ui-audit.js
+!studio-app/src/v2/works-adapter.css
