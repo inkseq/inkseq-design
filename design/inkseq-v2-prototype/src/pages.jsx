@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Bot, Trash2, Cpu, KeyRound, LogOut, Play, Plus, Power, ShieldCheck, SlidersHorizontal, Square, Timer, UserRound, Wallet} from 'lucide-react';
+import {Bot, Trash2, Cpu, LayoutGrid, MessageSquare, Images, Settings2, KeyRound, LogOut, Play, Plus, Power, ShieldCheck, SlidersHorizontal, Square, Timer, UserRound, Wallet} from 'lucide-react';
 import {AdvancedSheet, changedSummary} from './advanced.jsx';
 import {MODELS} from './model.js';
 import {queuePositions, useStore} from './store.jsx';
@@ -24,11 +24,11 @@ export function AppHeader() {
     <header className="hbar">
       <b className="logo">映序</b>
       <nav>
-        <button className={page === 'home' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'home'})}>作品</button>
-        <button className={page === 'quick' ? 'on' : ''} onClick={() => state.sessions.some(x => x.id === state.activeSession && !x.trashedAt) ? dispatch({type: 'page', page: 'quick'}) : state.sessions.find(x => !x.trashedAt) ? dispatch({type: 'qcOpen', id: state.sessions.find(x => !x.trashedAt).id}) : dispatch({type: 'qcNew'})}>快速创作</button>
-        <button className={page === 'library' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'library'})}>素材库</button>
-        <button className={page === 'gpu' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'gpu'})}>算力{busy > 0 && <em className="navdot">{busy}</em>}</button>
-        <button className={page === 'settings' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'settings'})}>设置</button>
+        <button className={page === 'home' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'home'})}><LayoutGrid className="nav-ico" size={20} /><span>作品</span></button>
+        <button className={page === 'quick' ? 'on' : ''} onClick={() => state.sessions.some(x => x.id === state.activeSession && !x.trashedAt) ? dispatch({type: 'page', page: 'quick'}) : state.sessions.find(x => !x.trashedAt) ? dispatch({type: 'qcOpen', id: state.sessions.find(x => !x.trashedAt).id}) : dispatch({type: 'qcNew'})}><MessageSquare className="nav-ico" size={20} /><span>快速创作</span></button>
+        <button className={page === 'library' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'library'})}><Images className="nav-ico" size={20} /><span>素材库</span></button>
+        <button className={page === 'gpu' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'gpu'})}><Cpu className="nav-ico" size={20} /><span>算力</span>{busy > 0 && <em className="navdot">{busy}</em>}</button>
+        <button className={page === 'settings' ? 'on' : ''} onClick={() => dispatch({type: 'page', page: 'settings'})}><Settings2 className="nav-ico" size={20} /><span>设置</span></button>
       </nav>
       <div className="spacer" />
       <LangToggle />
