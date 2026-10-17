@@ -314,6 +314,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/library-commands.js
 !studio-app/src/library-commands.test.js
 !studio-app/src/library-ui.test.js
+!studio-app/src/library-loading.test.js
 
 # Shared approved v2 presentation
 !studio-app/src/StudioHeader.jsx
