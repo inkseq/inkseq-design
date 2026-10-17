@@ -1,0 +1,49 @@
+{
+  "schema": "library251-source-port-cas-v1",
+  "base": "81988a8133f28400165b8d3cedc45cdb155c08c3",
+  "source_commit": "49d58e13f67b52360f94cb96354c5a41d55e4441",
+  "files": [
+    {
+      "path": "studio-app/src/Library.jsx",
+      "expected_original_sha256": "2e925c1e92cd8b72a263833810d3306ea36d5cea08b9da16ef45ccbfeab982bc",
+      "expected_absent": false,
+      "result_sha256": "96bf2b6a457ac8e5acc85a065ceeeaae6ea68cc861ec2f0eed0ef2b1ee833966"
+    },
+    {
+      "path": "studio-app/src/i18n/libraryCatalogs.js",
+      "expected_original_sha256": "fa201daf17688dfc9fc65a74e6596d001bb6f59084de37a4eb566586ad105514",
+      "expected_absent": false,
+      "result_sha256": "b68830237ae61c69781a38c86d3c869fce75d1ed9db8d06cbe5769fa64634b56"
+    },
+    {
+      "path": "studio-app/src/v2/LibraryView.jsx",
+      "expected_original_sha256": "4fe8eed5190ca794630be6962ab64f7a143c1ad68e15ecab95a8d00c8c9091fe",
+      "expected_absent": false,
+      "result_sha256": "f6308135ed04939db0c41194756983b73dd9234f10a4dc4604958c0fb8b312e6"
+    },
+    {
+      "path": "studio-app/src/v2/fonts/OFL-Inter.txt",
+      "expected_original_sha256": null,
+      "expected_absent": true,
+      "result_sha256": "d7cee39dfa656bffe74385c76debffe635788a83c00ce4370718c99d4c2650ff"
+    },
+    {
+      "path": "studio-app/src/v2/fonts/README.md",
+      "expected_original_sha256": null,
+      "expected_absent": true,
+      "result_sha256": "8657f84c721e906c2b16a847493f4b4b8fd933c9a14b4bf661db679a6e388f3e"
+    },
+    {
+      "path": "studio-app/src/v2/fonts/inter-latin-v20.woff2",
+      "expected_original_sha256": null,
+      "expected_absent": true,
+      "result_sha256": "4ce3dc1af0117e2edfd9c8c5fb978251018f5f4d3ef88325796abfc3e680ef18"
+    },
+    {
+      "path": "studio-app/src/v2/library-adapter.css",
+      "expected_original_sha256": null,
+      "expected_absent": true,
+      "result_sha256": "d6bd4305a308aef27f3fc409e604121f5cd137f10ddac2cceb55c53951c0aa15"
+    }
+  ]
+}

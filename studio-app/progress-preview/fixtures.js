@@ -5,6 +5,7 @@ export const project={schemaVersion:4,id:'preview-night-delivery',title:'Night d
 const clone=x=>structuredClone(x);
 const recipes=['fl','ref'].map(mode=>({id:'preview-'+mode,name:mode==='fl'?'FL · preview disabled':'REF · preview disabled',mode,model_id:'preview',controls:{duration:{type:'number',default:5,minimum:1,maximum:10},resolution:{type:'string',enum:['480p'],default:'480p'},aspect_ratio:{type:'string',enum:['16:9','9:16'],default:'16:9'}},limits:{min_clip_duration:1,max_clip_duration:10},execution_support:{configured:false,enabled:false,reason:'Synthetic progress preview. Paid actions are disabled.'}}));
 const library=['character','location','prop'].map((type,i)=>({target:{kind:'entity',project_id:project.id,id:'preview-library-'+i},project_version:1,title:['The courier','Lantern street','Paper lantern'][i],type,tags:['synthetic','progress preview'],usage:[],project_id:project.id,project_title:project.title,description:'A synthetic fixture for this public progress preview.'}));
+const libraryImages=['Geometric skyline','Paper lantern','Evening crossing'].map((title,i)=>({target:{kind:'asset',project_id:project.id,id:'preview-image-'+i},asset_id:'preview-image-'+i,project_version:1,title,type:'image',tags:['synthetic','progress preview'],usage:[],project_id:project.id,project_title:project.title}));
 export function fixture(path){
  const url=new URL(path,'https://preview.invalid'),p=url.pathname,now=Date.now()/1000;
  if(p==='/api/auth/config')return {mode:'preview',auth_mode:'preview',ready:true,users:[]};
@@ -19,9 +20,13 @@ export function fixture(path){
  if(p==='/v1/quick-chat/sessions')return {sessions:[],next_cursor:null,as_of:'2026-10-17T00:00:00Z'};
  if(p==='/v1/library'){
   const type=url.searchParams.get('type'),query=(url.searchParams.get('q')||'').toLowerCase();
-  const images=['Geometric skyline','Paper lantern','Evening crossing'].map((title,i)=>({target:{kind:'asset',project_id:project.id,id:'preview-image-'+i},asset_id:'preview-image-'+i,project_version:1,title,type:'image',tags:['synthetic','progress preview'],usage:[],project_id:project.id,project_title:project.title}));
-  const rows=(type==='image'||type==='file'?images:library).filter(row=>(!type||type==='file'||row.type===type)&&row.title.toLowerCase().includes(query));
+  const rows=(type==='image'||type==='file'?libraryImages:library).filter(row=>(!type||type==='file'||row.type===type)&&row.title.toLowerCase().includes(query));
   return {storage_scope:'project',usage_scope:'authorized_projects',aggregate_read_only:true,items:clone(rows),next_offset:null};
+ }
+ if(p==='/v1/library/usage'){
+  const row=[...library,...libraryImages].find(row=>Object.entries(row.target).every(([key,value])=>url.searchParams.get(key)===value));
+  if(!row)throw Error('Unknown synthetic library target');
+  return {...clone(row),retention_is_separate:true};
  }
  if(p==='/v1/trash')return {items:[],next_offset:null,auto_purge:false};
  if(p==='/v1/operator/dstack/catalog')return {profiles:[]};

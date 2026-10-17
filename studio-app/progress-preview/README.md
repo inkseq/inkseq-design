@@ -3,10 +3,12 @@
 This is a separate static progress host. It is not staging acceptance or production.
 The view imports the actual canonical `src/main.jsx`, App, page components and styles.
 The initial source snapshot is `68a3b5738cc896a976b9d0ee4c512f83d5d9ef89`: base a624b082 plus the11 canonical component WIP files captured without modifying the source worktree/index.
+The Library source checkpoint is now `49d58e13f67b52360f94cb96354c5a41d55e4441`; its bounded source commit and original-file CAS hashes are provided in [the Library comparison packet](evidence/library251/README.md) for root to port without overwriting canonical WIP.
 
 Only curated fictional project/profile/image fixtures are provided. Quick Create has an empty conversation; GPUs and Trash have synthetic empty states. No live generation, assistant call, upload, sign-in, credential, budget mutation, rental or deletion works. Seven-page visual parity is still incomplete; this site makes no acceptance claim.
 
 Before importing the app, bootstrap installs memory-only storage, disables persistent media storage and form/file inputs, replaces fetch with an allowlisted in-memory GET transport (no network fallback), and rejects every write. Early CSP blocks all script network connections; other resource types are same-origin/blob/data only. A build-only adapter gives the actual root-path router a Pages prefix; the production router/source remain unchanged. Known real routes receive static HTML entry files for refresh. Story/session/shot queries remain ordinary query parameters.
+The prototype Inter Latin font is bundled with its OFL license and served from the same origin. The bundle checker pins the exact reviewed font SHA-256; no external font connection is enabled.
 
 ## Update a completed page
 
