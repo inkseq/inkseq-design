@@ -293,3 +293,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/storyboard-workbench.css
 
 !studio-app/src/storyboard-workbench.test.js
+
+# Universal trash236
+!studio-app/src/ItemMenu.jsx
+!studio-app/src/trash.css
+!studio-app/src/UniversalTrash.jsx
+!studio-app/src/trash-commands.js
+!studio-app/src/trash-commands.test.js
