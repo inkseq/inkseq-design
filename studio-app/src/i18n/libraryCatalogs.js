@@ -1,6 +1,7 @@
 export const libraryCatalogs = {
   "en": {
     "library.title": "Library",
+    "library.openImported": "Open imported work",
     "library.all": "All my stories",
     "library.type": "Type",
     "library.allTypes": "All types",
@@ -74,6 +75,7 @@ export const libraryCatalogs = {
   },
   "zh": {
     "library.title": "素材库",
+    "library.openImported": "打开导入内容",
     "library.all": "我的全部故事",
     "library.type": "类型",
     "library.allTypes": "全部类型",
