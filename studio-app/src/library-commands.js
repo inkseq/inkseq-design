@@ -12,7 +12,7 @@ export async function checkedLibraryImport(value,op){
  if(!Number.isSafeInteger(value.source_project_version)||value.source_project_version<1||op.body.source.expected_version!==undefined&&value.source_project_version!==op.body.source.expected_version||typeof value.source_snapshot_sha256!=='string'||!/^([a-f0-9]{64})$/.test(value.source_snapshot_sha256))throw Error('library.invalid');
  if(op.sourceSnapshot&&(value.source_project_version!==op.sourceSnapshot.version||value.source_snapshot_sha256!==op.sourceSnapshot.sha256))throw Error('library.invalid');
  if(value.state==='completed'&&(!Number.isSafeInteger(value.project_version)||value.project_version<=op.body.expected_project_version||value.no_authoring_committed!==false||!value.entity_ids||Array.isArray(value.entity_ids)||typeof value.entity_ids!=='object'||Object.values(value.entity_ids).some(id=>typeof id!=='string'||!id)))throw Error('library.invalid');
- if(value.state==='blocked'&&(value.no_authoring_committed!==true||value.reason!=='library_target_version_conflict'))throw Error('library.invalid');return value;
+ if(value.state==='blocked'&&(value.no_authoring_committed!==true||!['library_target_version_conflict','library_authoring_validation_failed'].includes(value.reason)))throw Error('library.invalid');return value;
 }
 export function createLibraryController({api,account,getAccount,storage,keyFactory=()=>crypto.randomUUID()}){
  const name='inkseq-library-command-v1:'+account;let active=false;

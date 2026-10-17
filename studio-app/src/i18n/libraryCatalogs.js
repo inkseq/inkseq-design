@@ -1,5 +1,6 @@
 export const libraryCatalogs = {
   "en": {
+    "library.previewUnavailable": "Preview unavailable",
     "library.title": "Library",
     "library.openImported": "Open imported work",
     "library.all": "All my stories",
@@ -74,6 +75,7 @@ export const libraryCatalogs = {
     "library.positiveDuration": "Enter a positive, finite duration in seconds."
   },
   "zh": {
+    "library.previewUnavailable": "\u9884\u89c8\u6682\u4e0d\u53ef\u7528",
     "library.title": "素材库",
     "library.openImported": "打开导入内容",
     "library.all": "我的全部故事",
