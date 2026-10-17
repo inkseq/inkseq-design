@@ -283,3 +283,13 @@ design/inkseq-v2-prototype/dist/
 
 !studio-app/src/money.js
 !studio-app/src/money.test.js
+
+# Storyboard version workbench235
+!studio-app/src/StoryboardWorkbench.jsx
+!studio-app/src/storyboard-selection.js
+!studio-app/src/storyboard-selection.test.js
+!studio-app/src/storyboard-commands.js
+!studio-app/src/storyboard-commands.test.js
+!studio-app/src/storyboard-workbench.css
+
+!studio-app/src/storyboard-workbench.test.js
