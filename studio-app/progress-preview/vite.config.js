@@ -4,7 +4,7 @@ import path from 'node:path';
 const here=path.dirname(fileURLToPath(import.meta.url));
 export default defineConfig({
  root:here,publicDir:false,base:process.env.PREVIEW_BASE||'/sixnine-design/p251/local/',
- define:{__SOURCE_SNAPSHOT__:JSON.stringify('49d58e13f67b52360f94cb96354c5a41d55e4441'),__PREVIEW_BUILD__:JSON.stringify(process.env.PREVIEW_BUILD||'local')},
+ define:{__SOURCE_SNAPSHOT__:JSON.stringify('fc1c28440657988d9a5047e4edd4ac387d6559fc'),__PREVIEW_BUILD__:JSON.stringify(process.env.PREVIEW_BUILD||'local')},
  plugins:[{name:'isolated-progress-preview',enforce:'pre',
  load(id){if(id.endsWith('/src/legacy-seed.json'))return JSON.stringify({title:'Synthetic preview',chapters:[]});},
  transform(code,id){

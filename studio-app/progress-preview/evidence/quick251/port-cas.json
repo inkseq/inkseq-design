@@ -1,0 +1,32 @@
+{
+  "schema": "quick251-source-port-cas-v1",
+  "base": "2d5f111108eeddd4d852dc7486e042fdcffa2b1a",
+  "source_commit": "fc1c28440657988d9a5047e4edd4ac387d6559fc",
+  "new_files": [],
+  "files": [
+    {
+      "path": "studio-app/src/QuickChatWorkspace.jsx",
+      "expected_original_sha256": "b385e3118eb77e9e43bfc56e692ddc6c1e33c07d83da1d067508e6f8d9c8ac1d",
+      "expected_absent": false,
+      "expected_original_git_blob": "cd48f59f6df64b443a6f4c5f4aa9d60f2639c108",
+      "result_sha256": "9dafa3fd60a8fcdcda6b911a8de53e75aee7309536f97423da82c6df3a6b5a08",
+      "result_git_blob": "e84dae80b0641527c310117e5a6ea03d4dc758fb"
+    },
+    {
+      "path": "studio-app/src/i18n/quickViewCatalogs.js",
+      "expected_original_sha256": "396853dbd261fa5ce48e6116055a0da051c4c1b250b0d240a700e7d324d69ee0",
+      "expected_absent": false,
+      "expected_original_git_blob": "491e9045f508f246840cce34db946d0c4c06d772",
+      "result_sha256": "5b820bfb761da84af84c3c031ee86c0d9239ceb5fc16ef14ab23cc82142f508f",
+      "result_git_blob": "30ce9e285af7c1669ed903ec71cad0f044cb1124"
+    },
+    {
+      "path": "studio-app/src/v2/quick-view.css",
+      "expected_original_sha256": "0669550a4da97c0ab79e27627f83902983c8e0c6614e1e6374898f5c3d605490",
+      "expected_absent": false,
+      "expected_original_git_blob": "d7976b6932d7836efc1ec0b84b7542fb6ba7decd",
+      "result_sha256": "22a53acb942aa60cf31bf632280b6eca1a71458b37e47af7d7328de364ff2408",
+      "result_git_blob": "11c84df3fda7229c30192903886c76ee22dbab21"
+    }
+  ]
+}
