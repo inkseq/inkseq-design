@@ -1,7 +1,8 @@
+import StudioHeader from './StudioHeader.jsx';
 import {AssistantBadge} from './AssistantConnections.jsx';
 import QuickChatPreferences from './QuickChatPreferences.jsx';
 import {checkedPreferences,createConversationFiles} from './quick-chat-takes.js';
-import {useI18n,LanguageSwitcher} from './i18n/I18nProvider.jsx';
+import {useI18n} from './i18n/I18nProvider.jsx';
 import React,{useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Plus,ArrowUp,Settings2,Bot,Menu,X,RefreshCw,LogOut,Upload,Image,Video,Music} from 'lucide-react';
 import {useCloud} from './CloudStudio.jsx';
@@ -20,6 +21,7 @@ import {DeploymentProfileSelect} from './DeploymentProfile.jsx';
 import {draftKey,readDraft,saveDraft,draftSnapshot,carryDraft as carryPromptDraft} from './quick-chat-draft.js';
 import './quick-chat.css';
 import './i18n/workspace-language.css';
+import './quick-chat-v2.css';
 const quietly=promise=>promise.catch(()=>{}),date=value=>value?new Date(typeof value==='number'?value*1000:value).toLocaleString():'';
 const modeKey=(account,id)=>`yingxu:quick-chat:mode:${account||'anonymous'}:${id||'new'}`;
 function readMode(account,id,fallback='auto'){try{const value=localStorage.getItem(modeKey(account,id));return ['auto','fl','ref'].includes(value)?value:fallback;}catch{return fallback;}}
@@ -129,7 +131,8 @@ export default function QuickChatWorkspace(){
   }
   useEffect(()=>{if(new URLSearchParams(window.location.search).get('preferences')==='takes')setDialog('takes');},[]);
   const renderCard=card=><QuickChatCard key={card.id} card={card} state={state} controller={controller} takePreferences={takePreferences} onContinue={continueRevision} onUseResult={useResult} onUseMaterial={reuseMaterial}/>;
-  return <div className="qc-shell">
+  return <div className="qc-shell qc-v2">
+    <StudioHeader account={c.account} active="quick" accountMenu={<button className="qc-app-account" onClick={()=>setDialog('login')} aria-label={c.account||t('workspace.status32')}><span className="qc-avatar">{(c.account||t('workspace.status31')).slice(0,1).toUpperCase()}</span></button>}/>
     <a className="skip" href="#quick-chat-main">{t('workspace.copy7')}</a>
     {mobile&&<button className="qc-history-backdrop" aria-label={t('workspace.closeHistory')} onClick={()=>setMobile(false)}/>}
     <aside className={'qc-sidebar '+(mobile?'qc-sidebar-open':'')} aria-label={t('workspace.accessible1')}>
@@ -142,13 +145,13 @@ export default function QuickChatWorkspace(){
       <button className="qc-account" onClick={()=>setDialog('login')}><span className="qc-avatar">{(c.account||t('workspace.status31')).slice(0,1).toUpperCase()}</span><span><b>{c.account||t('workspace.status32')}</b><small>{c.account?t('workspace.status33'):t('workspace.status34')}</small></span></button>
     </aside>
     <main id="quick-chat-main" className="qc-main">
-      <header className="qc-header"><LanguageSwitcher/><a className="account-settings-link" href="/settings">{t('settings.title')}</a>
+      <header className="qc-header">
         <button className="qc-mobile-menu" aria-label={t('workspace.accessible2')} onClick={()=>setMobile(!mobile)}><Menu size={19}/></button>
         <span>{state.session?.title||t('workspace.status35')}<AssistantBadge createdBy={state.session?.created_by}/>{state.session?.version&&<button className="qc-rename" disabled={busy} aria-label={t('workspace.accessible3')} onClick={openRename}>{t('workspace.copy11')}</button>}</span>
         <div><button className="qc-connection-state" onClick={()=>setDialog('status')} aria-label={t('workspace.accessible4')}>{connectionLabel}</button>{c.account&&<button disabled={busy} onClick={()=>quietly(controller.refresh())} aria-label={t('workspace.accessible5')}><RefreshCw size={15}/></button>}</div>
       </header>
       <div className="qc-thread" role="region" aria-label={t('workspace.accessible6')} tabIndex={0}>
-        <section className="qc-welcome" hidden={threadEntries.length>0}><span className="qc-eyebrow">FROM AN IDEA TO A SCENE</span><h1>{t('workspace.copy12')}</h1><p>{t('workspace.copy13')}</p><div className="qc-star" aria-hidden="true">✳</div></section>
+        <section className="qc-welcome" hidden={threadEntries.length>0}><h1>{t('workspace.copy12')}</h1><p>{t('workspace.copy13')}</p></section>
         {state.historyCursor&&<button disabled={busy} onClick={()=>quietly(controller.history())}>{t('workspace.copy14')}</button>}
         {threadEntries.map(entry=>entry.kind==='card'?renderCard(entry.record):(()=>{const turn=entry.record;return <article className="qc-turn" key={turn.id}>
           <div className="qc-user-message">{turn.text}</div>
