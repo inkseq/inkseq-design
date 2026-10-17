@@ -334,3 +334,4 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/QuickChatSidebar.jsx
 !studio-app/src/quick-chat-sidebar.js
 !studio-app/src/quick-chat-sidebar.test.js
+!studio-app/src/QuickPrompt.jsx
