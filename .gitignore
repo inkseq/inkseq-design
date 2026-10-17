@@ -337,3 +337,11 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/QuickPrompt.jsx
 !studio-app/src/ui-audit.js
 !studio-app/src/v2/works-adapter.css
+
+# Bounded authenticated video cache sources only.
+!studio-app/src/video-cache-store.js
+!studio-app/src/video-cache-core.js
+!studio-app/src/video-cache-worker.js
+!studio-app/src/video-cache-client.js
+!studio-app/src/VideoCacheSettings.jsx
+!studio-app/src/video-cache.test.js
