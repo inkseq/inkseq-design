@@ -169,6 +169,7 @@ function AppContent(){
  return <TrashProvider account={account}><PersistenceWarning key={'persistence:'+workspaceKey}/>{path.replace(/\/$/,'')==='/library'?<Library key={account||'signed-out'} account={account}/>:path.replace(/\/$/,'')==='/trash'?<UniversalTrash/>:path.replace(/\/$/,'')==='/settings'?<SpendingSettings key={account||'signed-out'} account={account}/>:path.replace(/\/$/,'')==='/operator'?<React.Suspense fallback={<p role="status">{t('loading.operator')}</p>}><OperatorConsole/></React.Suspense>:path.replace(/\/$/,'')==='/quick-chat'?<React.Suspense fallback={<p role="status">{t('loading.quickCreate')}</p>}><QuickChatWorkspace/></React.Suspense>:path.replace(/\/$/,'')==='/freestyle'?<Freestyle key={workspaceKey}/>:<SeriesApp key={workspaceKey} sidebarView={sidebarView} onSidebarView={changePage}/>}<nav className="app-mobile-nav" aria-label={t('nav.mobile')}>
    <a href="/quick-chat" aria-current={path==='/quick-chat'?'page':undefined}><Clapperboard size={18}/>{t('nav.quickCreate')}</a>
    <a href="/" aria-current={path==='/'?'page':undefined}><BookOpen size={18}/>{t('nav.library')}</a>
+   <a href="/library" aria-current={path==='/library'?'page':undefined}><FolderOpen size={18}/>{t('library.title')}</a>
    <a href="/operator" aria-current={path==='/operator'?'page':undefined}><Workflow size={18}/>{t('operator.copy127')}</a>
    <a href="/settings" aria-current={path==='/settings'?'page':undefined}><Settings2 size={18}/>{t('settings.title')}</a>
  </nav></TrashProvider>;
