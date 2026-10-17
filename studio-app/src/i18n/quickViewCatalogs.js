@@ -1,5 +1,7 @@
 export const quickViewCatalogs={
  en:{
+  'quickView.backToWorks':'Back to Works','quickView.openingWorkspace':'Opening the story workspace…','quickView.invalidWorkspaceLink':'This story link is not valid. Your draft has been kept.',
+  'quickView.accessDetails':'Connection and service details','quickView.compatibilityStories':'Compatible story import and recovery',
   'quickView.showMore':'Show more','quickView.showLess':'Show less','quickView.machineReady':'ready','quickView.machineMissing':'no machine ready','quickView.assistantOptions':'Assistant options','quickView.reuseMaterials':'Reuse media ({count})','quickView.inputDetails':'Input details','quickView.modelDetails':'Model details',
   'quickSidebar.changed':'This creation changed. Reopen its menu and try again; the current draft is unchanged.',
   'quickSidebar.invalid':'This row action is not valid. Reopen the menu and try again.',
@@ -27,6 +29,8 @@ export const quickViewCatalogs={
   "quickHistory.textLoading":"Loading conversation text…",
 'quickView.oneTake':'1 take',"quickView.example.rain":"Rainy night street corner, swordsman turns back, neon reflections","quickView.example.station":"Early morning at the old station, a girl pushes the door open and walks in","quickView.example.dragon":"Mecha dragon peeks from behind building, sparks flying","quickView.duration":"Duration","quickView.resolution":"Resolution","quickView.aspect_ratio":"Aspect ratio","quickView.copies":"Take count","quickView.editParameter":"Edit {name} in the complete generation controls","quickView.parameterValue":"{name}: {value}","quickView.takeCount":"{count} takes",'quickView.handOff':'Hand off to AI','quickView.advanced':'Advanced','quickView.emptyTitle':'What do you want to shoot?','quickView.emptyHelp':'Just describe the visual. The assistant will propose a shot plan before generating.','quickView.availableMachines':'Available machines'},
  zh:{
+  'quickView.backToWorks':'返回作品','quickView.openingWorkspace':'正在打开故事工作台…','quickView.invalidWorkspaceLink':'故事链接无效，原草稿仍保留。',
+  'quickView.accessDetails':'连接与服务详情','quickView.compatibilityStories':'兼容故事导入与恢复',
   'quickView.showMore':'展开','quickView.showLess':'收起','quickView.machineReady':'已就绪','quickView.machineMissing':'暂无就绪机器','quickView.assistantOptions':'助手选项','quickView.reuseMaterials':'复用素材（{count}）','quickView.inputDetails':'输入详情','quickView.modelDetails':'模型详情',
   'quickSidebar.changed':'这条创作已经更新，请重新打开它的菜单再试；当前草稿保持不变。',
   'quickSidebar.invalid':'这项行操作无效，请重新打开菜单再试。',
