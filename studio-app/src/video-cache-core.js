@@ -77,11 +77,12 @@ async function completeBody(response, size) {
 }
 function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args) }) {
   const filling = new Map();
-  async function authorize(target, epoch) {
+  async function authorize(target, epoch, signal) {
     let head;
     try {
-      head = await fetcher(target.url, { method: "HEAD", credentials: "same-origin", cache: "no-store", redirect: "error", headers: target.expected !== null ? { "X-Expected-Account": target.expected } : {} });
-    } catch {
+      head = await fetcher(target.url, { method: "HEAD", credentials: "same-origin", cache: "no-store", redirect: "error", signal, headers: target.expected !== null ? { "X-Expected-Account": target.expected } : {} });
+    } catch (error) {
+      if (signal?.aborted) throw error;
       return { error: 503 };
     }
     if (head.status !== 200 || head.redirected || ["opaque", "opaqueredirect"].includes(head.type)) {
@@ -156,7 +157,7 @@ function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args)
         const owner = target.expected || snapshot?.account;
         if (!snapshot || owner !== snapshot.account || !cacheKey(owner, target.id) || !await store.get(cacheKey(owner, target.id), snapshot.epoch)) return fetcher(request);
       }
-      const auth = await authorize(target, snapshot?.epoch ?? null);
+      const auth = await authorize(target, snapshot?.epoch ?? null, request.signal);
       if (auth.error) return failure(auth.error);
       if (auth.epoch === null || !auth.eligible) return fetcher(request);
       const hit = await store.get(auth.key, auth.epoch);
@@ -169,7 +170,8 @@ function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args)
       // original stream or starting another full download.
       if (!request.headers.has("Range") && response.status === 200 && !["opaque", "opaqueredirect", "error"].includes(response.type)) waitUntil(fill(target, auth, response.clone()));
       return response;
-    } catch {
+    } catch (error) {
+      if (request.signal.aborted) throw error;
       return failure(503);
     }
   }

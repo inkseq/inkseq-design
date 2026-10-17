@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {byteRange,cacheKey,createVideoCache,videoTarget} from './video-cache-core.js';
 import {playedVideoTarget} from './video-cache-client.js';
 import {createCloudClient} from './cloud-client.js';
+import {createMediaReadGate} from './media-read-gate.js';
 import {evictionPlan,VIDEO_CACHE_LIMIT,VIDEO_FILE_LIMIT} from './video-cache-store.js';
 
 const ORIGIN='https://inkseq.example',A='superdan',B='supervan';
@@ -23,7 +24,7 @@ function memoryStore(){
   async stats(account){const values=account===meta.account?[...entries.values()]:[];return {bytes:values.reduce((n,e)=>n+e.size,0),count:values.length,limit:VIDEO_CACHE_LIMIT};}
  };
 }
-function fixture({body='0123456789',account=A}={}){
+function fixture({body='0123456789',account=A,wrapFetcher=fetcher=>fetcher}={}){
  const store=memoryStore(),calls=[];let headStatus=200,headAccount=account,headMime='video/mp4',headSize=body.length,offline=false,full=()=>new Response(body,{headers:{'Content-Type':'video/mp4','Content-Length':String(body.length)}}),beforeHead=null,beforeFull=null;
  const fetcher=async(value,options={})=>{
   const url=typeof value==='string'?value:value.url,method=options.method||value.method||'GET';calls.push({url,method,options,request:value});
@@ -32,7 +33,7 @@ function fixture({body='0123456789',account=A}={}){
   if(method==='HEAD'){if(beforeHead)await beforeHead();return new Response(null,{status:headStatus,headers:{'Content-Type':headMime,'Content-Length':String(headSize),'X-Authenticated-Account':headAccount,'Content-Disposition':url.includes('download=1')?'attachment; filename="video.mp4"':'inline; filename="video.mp4"'}});}
   if(beforeFull)await beforeFull();return full();
  };
- const raw=createVideoCache({store,origin:ORIGIN,fetcher}),cache={...raw,async handle(req){const background=[];const response=await raw.handle(req,{waitUntil:task=>background.push(task)});await Promise.all(background);return response;}};
+ const raw=createVideoCache({store,origin:ORIGIN,fetcher:wrapFetcher(fetcher)}),cache={...raw,async handle(req){const background=[];const response=await raw.handle(req,{waitUntil:task=>background.push(task)});await Promise.all(background);return response;}};
  return {store,calls,cache,set(values){({headStatus=headStatus,headAccount=headAccount,headMime=headMime,headSize=headSize,offline=offline,full=full,beforeHead=beforeHead,beforeFull=beforeFull}=values);}};
 }
 
@@ -192,4 +193,17 @@ test('the real cloud download client receives fresh account/disposition headers 
  const client=createCloudClient({fetcher:async(url,options)=>{const response=await f.cache.handle(new Request(ORIGIN+url,options));responses.push(response);return response;}});client.setAccount(A);
  const blob=await client.download('/v1/artifacts/v1/content?download=1');assert.equal(await blob.text(),'0123456789');assert.equal(responses[0].headers.get('X-Authenticated-Account'),A);assert.equal(responses[0].headers.get('Content-Disposition'),'attachment; filename="video.mp4"');assert.equal(responses[0].headers.get('X-Inkseq-Video-Cache'),'hit');assert.equal(f.calls.at(-1).options.headers['X-Expected-Account'],A);
  client.setAccount(B);await assert.rejects(client.download('/v1/artifacts/v1/content'),error=>error.status===409);assert.equal(responses[1].status,409);
+});
+
+test('one shared gate permits nested cache HEAD/native GET/full-fill progress without an outer-handler deadlock',async()=>{
+ const f=fixture({wrapFetcher:fetcher=>createMediaReadGate({origin:ORIGIN,fetcher})});await f.cache.identity(A);
+ await Promise.all(['one','two','three','four'].map(async id=>assert.equal(await (await f.cache.handle(request(id))).text(),'0123456789')));
+ const copied=f.store.entries.size;assert.ok(copied>=2&&copied<=4); // The existing two-fill cap may skip copies during a burst.
+ assert.deepEqual(await Promise.all(['fill-one','fill-two'].map(id=>f.cache.ensure(A,id))),[{cached:true},{cached:true}]);assert.equal(f.store.entries.size,copied+2);
+});
+
+test('aborting a cache request removes its queued authorization HEAD without fetching or returning a synthetic success',async()=>{
+ let gate;const f=fixture({wrapFetcher:fetcher=>(gate=createMediaReadGate({origin:ORIGIN,fetcher,maxActive:1}))});const held=await gate('/v1/assets/held/content'),controller=new AbortController();
+ const pending=f.cache.handle(new Request(ORIGIN+path(),{signal:controller.signal}));await new Promise(resolve=>setImmediate(resolve));controller.abort();await assert.rejects(pending,error=>error.name==='AbortError');
+ assert.equal(f.calls.filter(c=>c.method==='HEAD').length,0);assert.equal(f.store.entries.size,0);await held.text();
 });

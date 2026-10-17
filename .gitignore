@@ -345,3 +345,5 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/video-cache-client.js
 !studio-app/src/VideoCacheSettings.jsx
 !studio-app/src/video-cache.test.js
+!studio-app/src/media-read-gate.js
+!studio-app/src/media-read-gate.test.js
