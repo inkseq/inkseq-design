@@ -4,7 +4,7 @@ Owner-approved UX reference (updated 2026-10-17). A local React prototype with s
 simulated generation/GPUs. **The shipped app must look, navigate and behave like it** (design system,
 app shell, page layouts, copy — reuse its `styles.css` tokens and components). What is *not* production
 code is its data layer: replace the local store and simulations with the real API. See #251. Rebuild each
-feature in the canonical frontend (`inkseq/sixnine-design`, `studio-app`) on the real backend
+feature in the canonical frontend (`inkseq/inkseq-design`, `studio-app`) on the real backend
 (`inkseq/h3-studio`). Supersedes the 2026-10-14 storyboard handoff.
 
 - Run: `npm install && npm run dev` → http://127.0.0.1:5192/ (English by default; 中文 switch top right). Open a page directly with
