@@ -314,3 +314,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/demo-v2.css
 !studio-app/src/quick-chat-v2.css
 !studio-app/src/operator-v2.css
+
+!studio-app/src/library-thumbnails.js
+!studio-app/src/library-thumbnails.test.js
