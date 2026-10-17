@@ -242,3 +242,17 @@ test('restored explicit recipe preflight preserves non-storyboard inputs and qua
   assert.equal(h.calls.some(x=>['upload','frame','plan','savedPlan','submit'].includes(x[0])),false);
  }finally{h.controller.destroy();}
 });
+
+test('restored no-profile draft remains exact while an explicit unavailable profile refuses',async()=>{
+ const h=await harness();try{
+  h.store.editProject(p=>{const shot=p.entities.find(x=>x.id===h.shot);delete shot.data.storyboard;delete shot.data.h3.deploymentProfileId;shot.data.h3.explicitReferences=[{asset_id:'original',role:'reference'}];});
+  await h.controller.save();const before=clone(h.store.getState().project.entities.find(x=>x.id===h.shot).data);
+  const original=h.api.generationDraft;let missing=false;
+  h.api.generationDraft=async(...args)=>{const r=await original(...args);delete r.draft.deployment_profile_id;if(missing)r.draft.deployment_profile_id='unavailable-exact';return r;};
+  h.api.request=async(path,options)=>({id:'no-profile-pf',request_hash:await digest(options.body),project_id:h.store.getState().project.id,project_version:options.body.expected_version,status:'completed',ready:true,items:[{shot_id:h.shot,index:0,plan_id:'p',plan:{}}]});
+  await h.controller.workbenchCommand('preflight',{shot_ids:[h.shot],copies:1});
+  assert.deepEqual(h.store.getState().project.entities.find(x=>x.id===h.shot).data,before);
+  missing=true;await assert.rejects(h.controller.workbenchCommand('preflight',{shot_ids:[h.shot],copies:1}),/workbench.capabilities/);
+  assert.equal(h.calls.some(x=>['upload','frame','plan','savedPlan','submit'].includes(x[0])),false);
+ }finally{h.controller.destroy();}
+});

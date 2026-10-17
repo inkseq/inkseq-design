@@ -251,8 +251,8 @@ export function createCloudController({store=defaultStore,client,storage=globalT
       let preview = await api.generationDraft(ctx.projectId, shotId); guard(ctx);
       const recipe = state.capabilities?.recipes?.find(row => row.id === preview.draft?.recipe_id);
       const profile = state.capabilities?.deployment_profiles?.find(row => row.id === preview.draft?.deployment_profile_id);
-      if (!recipe || !profile) throw Error('workbench.capabilities');
-      const mode = recipe.mode, support = profile.generation_support?.[mode];
+      if (!recipe || (preview.draft.deployment_profile_id && !profile)) throw Error('workbench.capabilities');
+      const mode = recipe.mode, support = profile ? profile.generation_support?.[mode] : recipe;
       const shot = current().project.entities.find(row => row.id === shotId), b = shot?.data.storyboard;
       if (!shot) throw Error('workbench.changed');
       if (shot.data.h3?.explicitReferences) {
@@ -277,8 +277,8 @@ export function createCloudController({store=defaultStore,client,storage=globalT
       const view = storyboardView(project, {chapterId:chapter?.id,capabilities:state.capabilities,jobs:state.jobs});
       const projected = view.shots.find(row => row.id === shotId);
       // Select uploads with the server's effective profile, without persisting it.
-      const effective = {...projected,mode:mode.toUpperCase(),quality:profile.model_id==='MiniMax-H3-Base-INT8'?'final':'draft',entity:{...projected.entity,data:{...projected.entity.data,h3:{...projected.entity.data.h3,deploymentProfileId:profile.id}}}};
-      for (const id of new Set(expandStoryboard(effective,view,{forSync:true,effectiveProfile:profile}).items.filter(item=>item.sent&&item.a?.id).map(item=>item.a.id))) {
+      const effective = {...projected,mode:mode.toUpperCase(),quality:projected.quality,entity:{...projected.entity,data:{...projected.entity.data,h3:{...projected.entity.data.h3,deploymentProfileId:profile?.id}}}};
+      for (const id of new Set(expandStoryboard(effective,view,{forSync:true,effectiveProfile:profile,effectiveRecipe:recipe}).items.filter(item=>item.sent&&item.a?.id).map(item=>item.a.id))) {
         if (!current().project.entities.find(row=>row.id===id)?.data.cloudAssetId) { await syncEntity(id); guard(ctx); }
       }
       if (current().workspace.dirty) { await save(); guard(ctx); }
