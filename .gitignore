@@ -317,3 +317,8 @@ design/inkseq-v2-prototype/dist/
 
 !studio-app/src/library-thumbnails.js
 !studio-app/src/library-thumbnails.test.js
+
+# Isolated public synthetic progress preview
+!studio-app/progress-preview/
+!studio-app/progress-preview/**
+!.github/workflows/progress-preview.yml
