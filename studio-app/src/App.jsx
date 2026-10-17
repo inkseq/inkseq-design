@@ -41,6 +41,8 @@ import PersistenceWarning from './PersistenceWarning.jsx';
 import {installPersistenceGuard} from './persistence-guard.js';
 import SpendingSettings from './SpendingSettings.jsx';
 import {I18nProvider, LanguageSwitcher, useI18n} from './i18n/I18nProvider.jsx';
+import AppRouteCache,{useAppLocation} from './AppRouteCache.jsx';
+import {installAppNavigation,navigateApp} from './app-navigation.js';
 
 const icons={chapter:BookOpen,scene:Clapperboard,shot:Clapperboard,character:Users,location:MapPin,image:Image,audio:Workflow,video:Clapperboard,note:BookOpen,generation:Workflow};
 const mediaKinds=['image','audio','video'];
@@ -169,18 +171,27 @@ function Animatic({project:p,chapterId}){const {t,locale}=useI18n();
  return <><p className="muted">{t('story.copy283')}</p><div className="animatic-screen"><small>{t('story.shotNumber',{index:index+1,count:shots.length})}</small><h2>{current.title}</h2>{selectedMedia?<Preview entity={selectedMedia}/>:demoCandidate?<figure className="animatic-candidate"><img src={storyboardUrl(current,demoCandidate)} alt={t('story.copy284')+demoCandidate}/><figcaption>{t('story.example',{id:demoCandidate})}</figcaption></figure>:<span className="animatic-placeholder">{t('story.copy285')}</span>}<p>{current.description||t('story.copy286')}</p><span>{t('story.seconds',{value:current.data.seconds||5})}</span></div><div className="animatic-timeline">{shots.map((e,i)=><button key={e.id} aria-pressed={i===index} onClick={()=>{setPlaying(false);setIndex(i)}}>{i+1}<small>{e.data.seconds||5}s</small></button>)}</div><div className="modal-actions"><span className="muted">{t('story.chapterTotal',{seconds:total})}</span><button className="primary" onClick={()=>setPlaying(x=>!x)}>{playing?t('story.copy287'):t('story.copy288')}</button></div></>;
 }
 
-const storyPageFromUrl=()=>readAgentLink(window.location.search)||new URLSearchParams(window.location.search).get('view')==='workspace'?'story':'library';
+const storyPageFromUrl=(search=window.location.search)=>readAgentLink(search)||new URLSearchParams(search).get('view')==='workspace'?'story':'library';
 function AppContent(){
  const {t,locale}=useI18n(), account=useCloud().account;
  useEffect(()=>installPersistenceGuard(store),[]);
  const workspace=useSyncExternalStore(store.subscribe,store.getState,store.getState),workspaceKey=[workspace.workspace.mode,workspace.workspace.account||'',workspace.project.id,workspace.workspaceEpoch].join(':');
- const [path,setPath]=useState(window.location.pathname),[sidebarView,setSidebarView]=useState(storyPageFromUrl);
- useEffect(()=>{if(['/settings','/trash','/library'].includes(path.replace(/\/$/,'')))void cloud.initialize();},[path]);
- const changePage=(next,{selected=false}={})=>{const url=new URL(window.location.href);if(next==='library'){for(const key of ['view','project','entity','panel'])url.searchParams.delete(key);}else{url.searchParams.set('view','workspace');if(selected){const live=store.getState();url.searchParams.delete('entity');url.searchParams.delete('panel');if(live.workspace.mode==='cloud')url.searchParams.set('project',live.project.id);else url.searchParams.delete('project');}}window.history.pushState(null,'',url.pathname+url.search);setSidebarView(next);};
+ const location=useAppLocation(),path=location.path,sidebarView=storyPageFromUrl(location.search);
+ useEffect(()=>installAppNavigation(),[]);
+ useEffect(()=>{if(['/settings','/trash','/library'].includes(path))void cloud.initialize();},[]);
+ const changePage=(next,{selected=false}={})=>{const url=new URL(window.location.href);if(next==='library'){for(const key of ['view','project','entity','panel'])url.searchParams.delete(key);}else{url.searchParams.set('view','workspace');if(selected){const live=store.getState();url.searchParams.delete('entity');url.searchParams.delete('panel');if(live.workspace.mode==='cloud')url.searchParams.set('project',live.project.id);else url.searchParams.delete('project');}}navigateApp('/'+url.search,{restore:false});};
  const pageFocusMounted=useRef(false);
- useEffect(()=>{if(!pageFocusMounted.current){pageFocusMounted.current=true;return;}document.querySelector(sidebarView==='library'?'#story-library-heading':'.story-home-back')?.focus({preventScroll:true});},[sidebarView]);
- useEffect(()=>{const change=()=>{setPath(window.location.pathname);setSidebarView(storyPageFromUrl());};window.addEventListener('popstate',change);return()=>window.removeEventListener('popstate',change);},[]);
- return <TrashProvider account={account}><PersistenceWarning key={'persistence:'+workspaceKey}/>{path.replace(/\/$/,'')==='/library'?<Library key={account||'signed-out'} account={account}/>:path.replace(/\/$/,'')==='/trash'?<UniversalTrash/>:path.replace(/\/$/,'')==='/settings'?<SpendingSettings key={account||'signed-out'} account={account}/>:path.replace(/\/$/,'')==='/operator'?<React.Suspense fallback={<p role="status">{t('loading.operator')}</p>}><OperatorConsole/></React.Suspense>:path.replace(/\/$/,'')==='/quick-chat'?<React.Suspense fallback={<p role="status">{t('loading.quickCreate')}</p>}><QuickChatWorkspace/></React.Suspense>:path.replace(/\/$/,'')==='/freestyle'?<Freestyle key={workspaceKey}/>:<SeriesApp key={workspaceKey} sidebarView={sidebarView} onSidebarView={changePage}/>}{!(path==='/'&&sidebarView==='story')&&<nav className="app-mobile-nav" aria-label={t('nav.mobile')}>
+ useEffect(()=>{if(!pageFocusMounted.current){pageFocusMounted.current=true;return;}if(path==='/')document.querySelector(sidebarView==='library'?'#story-library-heading':'.story-home-back')?.focus({preventScroll:true});},[path,sidebarView]);
+ const routes={
+   '/':({location:page})=><SeriesApp key={workspaceKey} sidebarView={storyPageFromUrl(page.search)} onSidebarView={changePage}/>,
+   '/library':({active})=><Library key={account||'signed-out'} account={account} active={active}/>,
+   '/trash':({active})=><UniversalTrash active={active}/>,
+   '/settings':({active})=><SpendingSettings key={account||'signed-out'} account={account} active={active}/>,
+   '/operator':({active})=><React.Suspense fallback={<p role="status">{t('loading.operator')}</p>}><OperatorConsole active={active}/></React.Suspense>,
+   '/quick-chat':({active})=><React.Suspense fallback={<p role="status">{t('loading.quickCreate')}</p>}><QuickChatWorkspace active={active}/></React.Suspense>,
+   '/freestyle':({active})=><Freestyle key={workspaceKey} active={active}/>,
+ };
+ return <TrashProvider account={account}><PersistenceWarning key={'persistence:'+workspaceKey}/><AppRouteCache location={location} routes={routes}/>{!(path==='/'&&sidebarView==='story')&&<nav className="app-mobile-nav" aria-label={t('nav.mobile')}>
    <a href="/" aria-current={path==='/'?'page':undefined}><BookOpen size={18}/>{t('v2.works')}</a>
    <a href="/quick-chat" aria-current={path==='/quick-chat'?'page':undefined}><Clapperboard size={18}/>{t('nav.quickCreate')}</a>
    <a href="/library" aria-current={path==='/library'?'page':undefined}><FolderOpen size={18}/>{t('library.title')}</a>
