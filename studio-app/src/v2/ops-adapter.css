@@ -1,6 +1,40 @@
 /* Real business forms and dialogs inside the prototype's page view layer. */
 .ops-adapter [hidden],.ops-dialog [hidden]{display:none!important}
 .ops-tab-panel{display:flex;flex-direction:column;gap:14px}
+.ops-adapter .ops-page-tabs{margin:0 0 18px;max-width:100%;overflow-x:auto;justify-content:flex-start}
+.ops-adapter .ops-page-tabs>button{flex:none;white-space:nowrap;font-size:12px}
+.ops-adapter .ops-gpu-page,.ops-adapter .spanel,.ops-adapter .snav{min-width:0}
+.ops-adapter .mrow{grid-template-columns:22px minmax(0,1.2fr) minmax(180px,1fr) auto}
+.ops-adapter .mrow-main b,.ops-adapter .mrow-main small{flex-wrap:wrap;overflow-wrap:anywhere}
+.ops-adapter .mrow-main b{font-size:14px}
+.ops-adapter .mrow-main small,.ops-adapter .mrow .mode,.ops-adapter .mrow .q,.ops-adapter .mrow .pill{font-size:11px}
+.ops-adapter .mrow-state{min-width:0;overflow-wrap:anywhere}
+.ops-adapter .mrow-actions{max-width:250px}
+.ops-adapter .p4-keep{display:inline;white-space:normal}
+.ops-adapter .mgroup>header{flex-wrap:wrap}
+.ops-adapter .p4-inventorybar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:12px}
+.ops-adapter .p4-inventorybar>label{display:flex;flex:1;flex-direction:column;gap:6px;min-width:180px;max-width:360px;font-size:12px}
+.ops-adapter .p4-offers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+.ops-adapter .p4-offer{display:flex;flex-direction:column;gap:8px;margin:0}
+.ops-adapter .p4-offer>.p4-pill{align-self:flex-start}
+.ops-adapter .p4-offer h2{font-size:16px;margin:8px 0 0}
+.ops-adapter .p4-offer>small,.ops-adapter .p4-offer .p4-kv small{font-size:11px;color:var(--muted)}
+.ops-adapter .p4-offer-price{font-size:26px;font-weight:650;letter-spacing:-.02em;margin:8px 0}
+.ops-adapter .p4-offer-price small{margin-left:4px;font-size:11px;font-weight:400;letter-spacing:0;color:var(--muted)}
+.ops-adapter .p4-offer .p4-kv{font-size:12px}
+.ops-adapter .p4-offer>footer{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+.ops-adapter .p4-accountspend>section{display:flex;flex-direction:column;gap:6px}
+.ops-adapter .p4-accountspend strong{font-size:24px;font-weight:650}
+.ops-adapter .p4-accountspend small{font-size:11px;color:var(--muted)}
+.ops-adapter .settings-page .spanel>header{display:flex;align-items:center;gap:12px}
+.ops-adapter .limit-row{min-width:0;gap:14px}
+.ops-adapter .limit-row>div{min-width:0}
+.ops-adapter .limit-row b{font-size:13px}
+.ops-adapter .limit-input{flex-shrink:0}
+.ops-adapter .trash-row{grid-template-columns:22px 44px minmax(0,1fr) auto auto}
+.ops-adapter .trash-row .name small,.ops-adapter .trash-row .left{font-size:11px}
+.ops-adapter .trash-filter{max-width:100%;overflow-x:auto;justify-content:flex-start}
+.ops-adapter .trash-filter>button{white-space:nowrap;flex:none}
 .ops-tools{margin:12px 0;color:var(--muted);font-size:12px}
 .ops-tools>div{margin-top:10px}
 .ops-tools select{width:auto;max-width:100%}
@@ -87,7 +121,20 @@
 .item-menu{position:relative;display:inline-flex}
 .item-menu-popover{position:absolute;z-index:100;right:0;top:100%;display:flex;flex-direction:column;min-width:180px;max-width:min(280px,90vw);padding:6px;border:1px solid var(--line-2);border-radius:var(--r);background:var(--surface);box-shadow:var(--shadow)}
 .item-menu-popover button{text-align:start;white-space:normal}
+@media(min-width:761px) and (max-width:1220px){
+  .ops-adapter .mrow{grid-template-columns:22px minmax(0,1.2fr) minmax(180px,1fr)}
+  .ops-adapter .mrow-actions{grid-column:2 / -1;justify-self:start;max-width:none}
+  .ops-adapter .p4-offers{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
 @media(max-width:760px){
+  .ops-adapter .mrow{grid-template-columns:22px minmax(0,1fr);gap:10px;padding:12px}
+  .ops-adapter .mrow-state,.ops-adapter .mrow-actions{grid-column:2;max-width:none;justify-content:flex-start}
+  .ops-adapter .p4-offers{grid-template-columns:1fr}
+  .ops-adapter .p4-inventorybar>label{min-width:0;max-width:none;flex-basis:100%}
+  .ops-adapter .snav{position:static}
+  .ops-adapter .trash-row{grid-template-columns:22px 36px minmax(0,1fr);gap:8px;padding:10px}
+  .ops-adapter .trash-row .thumb{width:36px}
+  .ops-adapter .trash-row .left,.ops-adapter .trash-row .acts{grid-column:3}
   .ops-adapter .p4-configfields,.ops-adapter .p4-formgrid,.ops-adapter .p4-kv,.ops-adapter .p4-metrics,.ops-adapter .budget-accounts,.ops-adapter .p4-accountspend{grid-template-columns:1fr}
   .ops-adapter :is(.p4-dialog,.op-dialog),.ops-dialog{padding:16px;width:94vw;max-height:86dvh}
   .ops-adapter :is(.p4-dialog,.op-dialog)>footer{align-items:flex-start;flex-direction:column}

@@ -164,3 +164,47 @@ export const operatorPanelCatalogs = {
     "operatorPanel.failureStage.oom": "内存不足"
   }
 };
+Object.assign(operatorPanelCatalogs.en,{
+  'operatorPanel.ownerBudget':'Account budget · {owner}',
+  'operatorPanel.projectBudget':'Project budget · {owner} / {project}',
+  'operatorPanel.sharedGpuBudget':'Shared GPU budget',
+  'operatorPanel.sharedJobBudget':'Shared generation budget',
+  'operatorPanel.sharedBudget':'Shared budget',
+  'operatorPanel.executionHold':'Reserved for active execution',
+  'operatorPanel.retiredCap':'The original fixed cap is retired and no longer restricts starts. Spending limits are controlled in Settings.',
+  'operatorPanel.pendingInvoice':'Pending invoice estimate {amount} · {count} items',
+  'operatorPanel.pendingInvoiceHelp':'Actual costs are unconfirmed; the estimate is still included in Settings usage.',
+  'operatorPanel.historicalLimit':'Historical cumulative allowance · USD (does not restrict starts)',
+  'operatorPanel.accountIdentity':'Account identifier',
+  'operatorPanel.allBudgetAccounts':'All accounts, including shared GPU and shared generation budgets. The service verifies the original balance and audit record on save.',
+  'operatorPanel.accountsMore':'{count} budget accounts loaded; more accounts remain.',
+  'operatorPanel.accountsComplete':'{count} budget accounts loaded; all accounts have been read.',
+  'operatorPanel.loadBudgetAccounts':'Load more budget accounts',
+  'operatorPanel.settingsAdmin':'Settings · Administrator',
+  'operatorPanel.pendingAdmin':'The original administrative operation needs checking. Its original identifier is retained.',
+  'operatorPanel.checkAdmin':'Check original operation',
+  'operatorPanel.adminPermissionPending':'Checking administrator permission…',
+  'operatorPanel.adminPermissionDenied':'This account does not have administrator budget permission.'
+});
+Object.assign(operatorPanelCatalogs.zh,{
+  'operatorPanel.ownerBudget':'账户预算 · {owner}',
+  'operatorPanel.projectBudget':'项目预算 · {owner} / {project}',
+  'operatorPanel.sharedGpuBudget':'共享 GPU 预算',
+  'operatorPanel.sharedJobBudget':'共享生成预算',
+  'operatorPanel.sharedBudget':'共享预算',
+  'operatorPanel.executionHold':'执行中预留',
+  'operatorPanel.retiredCap':'原固定额度已停用，不再限制启动；支出限制以设置为准。',
+  'operatorPanel.pendingInvoice':'待核账单预估 {amount} · {count} 项',
+  'operatorPanel.pendingInvoiceHelp':'实际费用尚未确认，预估仍计入设置中的使用量。',
+  'operatorPanel.historicalLimit':'历史累计额度 · USD（不限制启动）',
+  'operatorPanel.accountIdentity':'账户标识',
+  'operatorPanel.allBudgetAccounts':'所有账户，包含共享 GPU 与共享生成预算。保存仍由服务核对原余额和审核记录。',
+  'operatorPanel.accountsMore':'已读取 {count} 个预算账户，还有更多账户。',
+  'operatorPanel.accountsComplete':'已读取 {count} 个预算账户，全部账户已读取。',
+  'operatorPanel.loadBudgetAccounts':'读取更多预算账户',
+  'operatorPanel.settingsAdmin':'设置 · 管理员',
+  'operatorPanel.pendingAdmin':'原管理操作结果待核对，保留原操作标识。',
+  'operatorPanel.checkAdmin':'核对原操作',
+  'operatorPanel.adminPermissionPending':'正在核对管理员权限…',
+  'operatorPanel.adminPermissionDenied':'此账户没有管理员预算权限。'
+});

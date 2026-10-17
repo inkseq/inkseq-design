@@ -12,13 +12,14 @@ export function usdInput(value){
   return String(whole)+(fraction?'.'+fraction:'');
 }
 export function budgetUsage(budget){
+  if(budget?.limit_mode==='settings'||budget?.legacy_projection_only===true)return null;
   if(!amount(budget?.limit_microusd)||!amount(budget?.spent_microusd)||!amount(budget?.reserved_microusd))return null;
   const used=budget.spent_microusd+budget.reserved_microusd;
   if(!Number.isSafeInteger(used))return null;
   const ratio=budget.limit_microusd===0?1:used/budget.limit_microusd;
   return {used,percent:Math.min(100,Math.round(ratio*100)),status:ratio>=1?'exhausted':ratio>=.8?'warning':'ok'};
 }
-export function budgetLabel(budget,locale='zh'){return budget?.label||budget?.name||(budget?.owner_id?(budget.project_id?translate(locale,'operator.display.budget.project',{id:budget.project_id.slice(0,8)}):translate(locale,'operator.display.budget.account')):translate(locale,'operator.display.budget.'+(budget?.id?.includes('-gpu-')?'gpu':budget?.id?.includes('-job-')?'job':'shared')));}
+export function budgetLabel(budget,locale='zh'){return budget?.label||budget?.name||(budget?.owner_id?translate(locale,budget.project_id?'operatorPanel.projectBudget':'operatorPanel.ownerBudget',{owner:budget.owner_id,project:budget.project_id}):translate(locale,'operatorPanel.'+(budget?.id?.includes('-gpu-')?'sharedGpuBudget':budget?.id?.includes('-job-')?'sharedJobBudget':'sharedBudget')));}
 export function validBudgetPage(value,account,{admin=false}={}){
   return value?.account===account&&value.basis==='cumulative'&&value.currency==='USD'&&value.timezone==='UTC'&&Array.isArray(value.budgets)&&value.budgets.length<=100&&value.budgets.every(budget=>typeof budget.id==='string'&&budget.id&&amount(budget.limit_microusd)&&amount(budget.spent_microusd)&&amount(budget.reserved_microusd)&&Number.isSafeInteger(budget.remaining_microusd)&&['ok','warning','exhausted'].includes(budget.status)&&typeof budget.snapshot==='string'&&budget.snapshot&&Array.isArray(budget.daily7)&&budget.daily7.length<=7&&budget.daily7.every(day=>/^\d{4}-\d{2}-\d{2}$/.test(day.date)&&amount(day.cost_microusd))&&(admin||budget.owner_id===account));
 }

@@ -9,10 +9,11 @@ import {useI18n} from './i18n/I18nProvider.jsx';
 import {ChatDialog} from './QuickChatControls.jsx';
 import {store} from './store.js';
 import ItemMenu from './ItemMenu.jsx';
-import {RotateCcw,Trash2} from 'lucide-react';
+import {BookOpen,Box,Clapperboard,Film,Image,Layers,MapPin,Music,RotateCcw,Trash2,UserRound} from 'lucide-react';
 import {usePageActive} from './AppRouteCache.jsx';
 import './v2/ops-adapter.css';
 const Context=createContext(null);
+const trashIcon=kind=>({project:BookOpen,chapter:BookOpen,scene:Clapperboard,shot:Clapperboard,character:UserRound,look:UserRound,location:MapPin,location_version:MapPin,prop:Box,image:Image,video:Film,audio:Music,artifact:Layers,take:Layers})[kind]||Box;
 export const useTrash=()=>useContext(Context);
 export function TrashProvider({account,children}){
  const {t}=useI18n(),identity=useRef(account);identity.current=account;
@@ -54,15 +55,15 @@ export default function UniversalTrash(){
      {kind==='conversation'?<div className="ops-conversation-trash"><ConversationTrash key={ctx.account} account={ctx.account} busy={ctx.busy||!!ctx.pending}/></div>:<>
        <details className="ops-tools"><summary>{t('trash.menu')}</summary><div className="row tight"><select aria-label={t('trash.all')} value={kind} onChange={e=>{setKind(e.target.value);setGroup('all');}}>{['','project','chapter','scene','shot','character','location','prop','look','location_version','image','video','audio','asset','artifact','take'].map(k=><option key={k} value={k}>{t(k?'trash.kind.'+k:'trash.all')}</option>)}</select><button className="small" disabled={locked} onClick={()=>load()}>{t('trash.refresh')}</button><button className="small" disabled={locked} onClick={()=>setSelected(items.filter(r=>r.state==='trashed').map(r=>r.trash_id))}>{t('trash.selectAll')}</button></div></details>
        {error&&<p role="alert">{error}</p>}
-       {items.length?<div className="trash-list">{targets.length>0&&<div className="trash-bar">{targets.length}<div className="spacer"/><button className="small" disabled={locked} onClick={()=>ctx.request('restore',targets)}><RotateCcw size={13}/>{t('trash.restore')}</button><button className="small danger" disabled={locked} onClick={()=>ctx.request('purge',targets)}>{t('trash.purge')}</button></div>}
-         {items.map(row=><div className="trash-row" key={row.trash_id}>
+       {items.length?<div className="trash-list" aria-busy={loading}>{targets.length>0&&<div className="trash-bar" role="status">{locale==='zh'?`已选 ${targets.length} 项`:`${targets.length} selected`}<div className="spacer"/><button className="small" disabled={locked} onClick={()=>ctx.request('restore',targets)}><RotateCcw size={13}/>{t('trash.restore')}</button><button className="small danger" disabled={locked} onClick={()=>ctx.request('purge',targets)}>{t('trash.purge')}</button></div>}
+         {items.map(row=>{const Icon=trashIcon(row.kind);return <div className="trash-row" key={row.trash_id}>
            <input type="checkbox" disabled={locked||row.state!=='trashed'} checked={selected.includes(row.trash_id)} aria-label={row.title||t('trash.untitled')} onChange={e=>setSelected(old=>e.target.checked?[...old,row.trash_id]:old.filter(id=>id!==row.trash_id))}/>
-           <span className="thumb" aria-hidden="true"><Trash2 size={14}/></span>
+           <span className="thumb" aria-hidden="true"><Icon size={18}/></span>
            <div className="name"><b className="clip" title={row.title}>{row.title||t('trash.untitled')}</b><small>{t('trash.kind.'+row.kind)} · {row.state==='purging'?t('trash.pending'):t('trash.moved')}</small></div>
-           <span className="left">{row.trashed_at?new Date(row.trashed_at*1000).toLocaleDateString(locale==='zh'?'zh-CN':'en'):'—'}</span>
+           <span className="left" title={t('trash.moved')}>{row.trashed_at?new Date(row.trashed_at*1000).toLocaleDateString(locale==='zh'?'zh-CN':'en'):'—'}</span>
            <div className="acts"><button className="small" disabled={locked||row.state!=='trashed'} onClick={()=>ctx.request('restore',[row.target])}><RotateCcw size={13}/>{t('trash.restore')}</button><button className="small ghost danger" title={t('trash.purge')} aria-label={t('trash.purge')} disabled={locked||row.state!=='trashed'} onClick={()=>ctx.request('purge',[row.target])}><Trash2 size={13}/></button></div>
-         </div>)}
-       </div>:<div className="empty-state"><span><Trash2 size={22}/></span><b>{loading?t('settings.loading'):t('trash.none')}</b><small className="muted">{t('trash.retention')}</small></div>}
+         </div>;})}
+       </div>:!error&&<div className="empty-state" role={loading?'status':undefined}><span><Trash2 size={22}/></span><b>{loading?t('settings.loading'):t('trash.none')}</b><small className="muted">{t('trash.retention')}</small></div>}
        {next!==null&&<button className="small" disabled={locked} onClick={()=>load(true)}>{t('trash.more')}</button>}
      </>}
    </>}

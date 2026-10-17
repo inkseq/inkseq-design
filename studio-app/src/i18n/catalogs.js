@@ -1,3 +1,4 @@
+import {quickViewCatalogs} from './quickViewCatalogs.js';
 import {v2Catalogs} from './v2Catalogs.js';
 import {libraryCatalogs} from './libraryCatalogs.js';
 import {trashCatalogs} from './trashCatalogs.js';
@@ -22,7 +23,7 @@ import {storyboardCatalogs} from './storyboardCatalogs.js';
 import {legacyCatalogs} from './legacyCatalogs.js';
 export const catalogs = {
   en: {
-    ...v2Catalogs.en,...libraryCatalogs.en,...trashCatalogs.en,...workbenchCatalogs.en,
+    ...v2Catalogs.en, ...quickViewCatalogs.en,...libraryCatalogs.en,...trashCatalogs.en,...workbenchCatalogs.en,
     ...takesCatalogs.en,...assistantCatalogs.en,
     'workspace.closeHistory': 'Close creation history',
     ...adjunctCatalogs.en,
@@ -31,7 +32,7 @@ export const catalogs = {
     ...legacyOperatorCatalogs.en,
     ...operatorErrorCatalogs.en, ...operatorDetailCatalogs.en, ...operatorReasonCatalogs.en, ...accountDetailCatalogs.en, ...storyCatalogs.en, ...operatorCatalogs.en, ...accountCatalogs.en, ...workspaceCatalogs.en, ...settingsCatalogs.en, ...clientCatalogs.en, ...storyboardCatalogs.en, ...legacyCatalogs.en,
     'app.name': 'Inkseq',
-    'app.libraryTitle': 'Inkseq · Library',
+    'app.libraryTitle': 'Inkseq · Works',
     'app.storyTitle': 'Inkseq · Story workspace',
     'nav.skipWorkspace': 'Skip to workspace',
     'nav.library': 'Library',
@@ -52,7 +53,7 @@ export const catalogs = {
     'locale.switchToEnglish': 'Switch to English',
   },
   zh: {
-    ...v2Catalogs.zh,...libraryCatalogs.zh,...trashCatalogs.zh,...workbenchCatalogs.zh,
+    ...v2Catalogs.zh, ...quickViewCatalogs.zh,...libraryCatalogs.zh,...trashCatalogs.zh,...workbenchCatalogs.zh,
     ...takesCatalogs.zh,...assistantCatalogs.zh,
     'workspace.closeHistory': '关闭创作记录',
     ...adjunctCatalogs.zh,
