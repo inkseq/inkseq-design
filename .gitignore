@@ -300,3 +300,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/UniversalTrash.jsx
 !studio-app/src/trash-commands.js
 !studio-app/src/trash-commands.test.js
+
+# Project-scoped library238
+!studio-app/src/Library.jsx
+!studio-app/src/library.css
+!studio-app/src/library-commands.js
+!studio-app/src/library-commands.test.js
+!studio-app/src/library-ui.test.js
