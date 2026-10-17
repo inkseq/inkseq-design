@@ -1,7 +1,6 @@
 import {TrashMenu} from './UniversalTrash.jsx';
 import {translate} from './i18n/locale.js';
 import {useI18n} from './i18n/I18nProvider.jsx';
-import './i18n/workspace-language.css';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {BookOpen,Check,ChevronDown,Clapperboard,Cloud,HardDrive,LayoutGrid,MessageSquare,Plus,RefreshCw,Search,Trash2,X} from 'lucide-react';
 import {ChatDialog} from './QuickChatControls.jsx';
@@ -12,7 +11,6 @@ import {createLocalStory,openLocalStory,readLocalStoryLibrary,storyCoverFileId,s
 import {createCloudClient} from './cloud-client.js';
 import {checkedProjectRecord} from './cloud-model.js';
 import {getFile} from './media.js';
-import './story-navigation.css';
 
 export default function StoryNavigation({state,onOpenCloud,onOpenLocal,onSelect}){const {t,locale}=useI18n();
   const c=useCloud(),[creating,setCreating]=useState(false),[title,setTitle]=useState(''),[source,setSource]=useState('local'),[query,setQuery]=useState(''),[error,setError]=useState(''),[pending,setPending]=useState(''),[library,setLibrary]=useState(()=>readLocalStoryLibrary()),inputRef=useRef();
@@ -69,7 +67,7 @@ function useStoryLibrary(state){
 }
 
 function editedLabel(value,locale='zh'){const stamp=storyEditedTimestamp(value);return stamp?new Intl.DateTimeFormat(locale==='zh'?'zh-CN':'en',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(stamp):translate(locale,'legacy.visible13');}
-function StoryLocation({mode}){const {t,locale}=useI18n();return <span className={'story-location '+mode}>{mode==='cloud'?<Cloud size={12}/>:<HardDrive size={12}/>} {mode==='cloud'?t('account.interface5'):t('account.interface6')}</span>;}
+function StoryLocation({mode}){const {t,locale}=useI18n();return <span className={'badge '+mode}>{mode==='cloud'?<Cloud size={12}/>:<HardDrive size={12}/>} {mode==='cloud'?t('account.interface5'):t('account.interface6')}</span>;}
 
 function useLibraryReader(account){
  const {t}=useI18n();
@@ -95,10 +93,11 @@ function StoryLibraryCard({story,reader,working,onOpen}){const {t,locale}=useI18
     return()=>{alive=false;if(url)URL.revokeObjectURL(url);};
   },[visible,reader,file?.fileId,file?.kind,file?.cloudPath]);
   const known=summary.shotCount!==null;
-  return <article className="story-library-card-wrap"><button ref={ref} type="button" className="story-library-card" disabled={working} onClick={onOpen} aria-label={t('legacy.openStory',{location:story.mode==='cloud'?t('account.interface5'):t('account.interface6'),title:summary.title})}>
-    <div className="story-library-cover">{coverUrl?file.kind==='video'?<video src={coverUrl} muted playsInline preload="metadata" aria-hidden="true"/>:<img src={coverUrl} alt="" draggable={false}/>:<Clapperboard size={32} aria-hidden="true"/>}<StoryLocation mode={story.mode}/>{(project.journey?.brief?.aspect||project.journey?.storyboardDefaults?.aspect)&&<span className="story-card-aspect">{project.journey?.brief?.aspect||project.journey?.storyboardDefaults?.aspect}</span>}</div>
-    <div className="story-library-card-body"><h2 title={summary.title}>{summary.title}</h2><p className="story-card-logline">{project.logline||t('v2.noLogline')}</p><small>{known?<>{t('v2.storyChapters',{count:project.entities.filter(e=>e.type==='chapter').length})} · {t('v2.storyShots',{count:summary.shotCount})} · {t('v2.storySelected',{selected:summary.chosenCount,total:summary.shotCount})}</>:detailError?t('legacy.visible16'):t('legacy.visible17')}</small><time dateTime={storyEditedTimestamp(summary.updatedAt)?new Date(storyEditedTimestamp(summary.updatedAt)).toISOString():undefined}>{editedLabel(summary.updatedAt,locale)}</time></div>
-  </button>{story.mode==='cloud'&&<TrashMenu target={{kind:'project',project_id:story.project.id,id:story.project.id}} onEdit={onOpen}/>}</article>;
+  return <div className="story-wrap"><button ref={ref} type="button" className="story-card" disabled={working} onClick={onOpen} aria-label={t('legacy.openStory',{location:story.mode==='cloud'?t('account.interface5'):t('account.interface6'),title:summary.title})}>
+    <div className="cover">{coverUrl?file.kind==='video'?<video src={coverUrl} muted playsInline preload="metadata" aria-hidden="true"/>:<img src={coverUrl} alt="" draggable={false}/>:<span className="cover-empty"><Clapperboard size={30}/></span>}<StoryLocation mode={story.mode}/>{(project.journey?.brief?.aspect||project.journey?.storyboardDefaults?.aspect)&&<em className="aspect">{project.journey?.brief?.aspect||project.journey?.storyboardDefaults?.aspect}</em>}</div>
+    <b title={summary.title}>{summary.title}</b><small className="clip">{project.logline||t('v2.noLogline')}</small><small className="muted">{known?<>{t('v2.storyChapters',{count:project.entities.filter(e=>e.type==='chapter').length})} · {t('v2.storyShots',{count:summary.shotCount})} · {t('v2.storySelected',{selected:summary.chosenCount,total:summary.shotCount})} · </>:detailError?t('legacy.visible16'):t('legacy.visible17')}{editedLabel(summary.updatedAt,locale)}</small>
+  </button>{story.mode==='cloud'&&<TrashMenu target={{kind:'project',project_id:story.project.id,id:story.project.id}} onEdit={onOpen}/>}</div>;
+
 }
 
 export function StoryLibraryHome({state,onOpenCloud,onOpenLocal,onSelect}){const {t,locale}=useI18n();
@@ -109,12 +108,12 @@ export function StoryLibraryHome({state,onOpenCloud,onOpenLocal,onSelect}){const
   const begin=()=>{setTitle('');setSource(c.account?'cloud':'local');setCreating(true);};
   const create=event=>{event.preventDefault();void act(t('legacy.visible2'),async()=>{const done=source==='cloud'?await cloud.create(title.trim()):createLocalStory(title,{store,cloud});library.refreshLocal();if(done){setCreating(false);setTitle('');store.notify(t('legacy.visible3'));onSelect?.();}else if(cloud.getState().draftOffer)onOpenCloud?.();return done;});};
   const visible=stories.filter(story=>String(story.project.title||'').toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
-  return <section className="story-library-home" aria-labelledby="story-library-heading">
-    <header className="story-library-heading"><h1 id="story-library-heading" tabIndex={-1}><LayoutGrid size={22}/>{t('v2.myStories')}<small>{stories.length}</small></h1><label className="story-library-search"><Search size={15}/><input type="search" aria-label={t('account.accessible5')} value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('account.accessible6')}/></label><a className="story-quick-action" href="/quick-chat"><MessageSquare size={16}/>{t('nav.quickCreate')}</a><button type="button" className="primary" disabled={working} onClick={begin}><Plus size={16}/>{t('account.copy2')}</button></header>
+  return <section className="home-main" aria-labelledby="story-library-heading">
+    <header className="home-head"><h1 className="page-title" id="story-library-heading" tabIndex={-1}><LayoutGrid size={22}/>{t('v2.myStories')}<small>{stories.length}</small></h1><label className="v2-home-search"><Search size={15}/><input type="search" aria-label={t('account.accessible5')} value={query} onChange={event=>setQuery(event.target.value)} placeholder={t('account.accessible6')}/></label><a className="v2-home-quick" href="/quick-chat"><MessageSquare size={16}/>{t('nav.quickCreate')}</a><button type="button" className="primary" disabled={working} onClick={begin}><Plus size={16}/>{t('account.copy2')}</button></header>
     {creating&&<ChatDialog title={t('account.copy2')} onClose={()=>{if(!working)setCreating(false);}}><form className="story-library-create-form" onSubmit={create}><label>{t('account.copy3')}<input ref={input} required maxLength={80} value={title} onChange={event=>setTitle(event.target.value)} placeholder={t('account.accessible3')} disabled={working}/></label><label>{t('account.copy4')}<select value={source} onChange={event=>setSource(event.target.value)} disabled={working}>{c.account&&<option value="cloud">{t('legacy.cloudAccount',{account:c.account})}</option>}<option value="local">{t('account.copy21')}</option></select></label><button type="submit" className="primary" disabled={working||!title.trim()}>{t('account.copy6')}</button><button type="button" disabled={working} aria-label={t('account.accessible2')} onClick={()=>setCreating(false)}><X size={16}/></button></form></ChatDialog>}
     {!c.account&&<p className="story-library-note">{t('account.copy22')}<button type="button" onClick={onOpenCloud}>{t('account.copy23')}</button></p>}
-    <div className="story-library-grid">{visible.slice(0,visibleLimit).map(story=><StoryLibraryCard key={(story.mode==='cloud'?c.account:'local')+':'+story.mode+':'+story.project.id} story={story} reader={reader} working={working} onOpen={()=>library.openStory(story,onSelect,onOpenCloud)}/>)}<button className="story-library-new-card" disabled={working} onClick={begin}><Plus size={40} strokeWidth={1.5}/><b>{t('account.copy2')}</b><small>{t('v2.newStoryHint')}</small></button></div>
-    <footer className="story-library-footer"><a href="/trash"><Trash2 size={14}/>{t('trash.title')}</a><button type="button" className="story-library-refresh" disabled={working} aria-label={t('account.accessible7')} onClick={()=>act(t('legacy.visible18'),async()=>{library.refreshLocal();if(c.account)await cloud.list();})}><RefreshCw size={14}/></button></footer>
+    <div className="story-grid">{visible.slice(0,visibleLimit).map(story=><StoryLibraryCard key={(story.mode==='cloud'?c.account:'local')+':'+story.mode+':'+story.project.id} story={story} reader={reader} working={working} onOpen={()=>library.openStory(story,onSelect,onOpenCloud)}/>)}<button className="story-card new" disabled={working} onClick={begin}><Plus size={40} strokeWidth={1.5}/><b>{t('account.copy2')}</b><small>{t('v2.newStoryHint')}</small></button></div>
+    <footer className="home-foot"><a href="/trash"><Trash2 size={14}/>{t('trash.title')}</a><button type="button" className="story-library-refresh" disabled={working} aria-label={t('account.accessible7')} onClick={()=>act(t('legacy.visible18'),async()=>{library.refreshLocal();if(c.account)await cloud.list();})}><RefreshCw size={14}/></button></footer>
     {!visible.length&&<div className="story-library-empty"><BookOpen size={28}/><h2>{query?t('legacy.visible19'):t('legacy.visible20')}</h2><p>{query?t('legacy.visible21'):t('legacy.visible22')}</p></div>}
     {c.account&&!c.projectsLoaded&&<p className="story-library-note">{t('account.copy24')}</p>}
     {visible.length>visibleLimit?<button type="button" className="story-library-more" disabled={working} onClick={()=>setVisibleLimit(value=>value+12)}>{t('account.copy25')}</button>:c.moreProjects&&<button type="button" className="story-library-more" disabled={working} onClick={()=>act(t('legacy.visible23'),async()=>{await cloud.loadMoreProjects();setVisibleLimit(value=>value+12);})}>{t('account.copy26')}</button>}

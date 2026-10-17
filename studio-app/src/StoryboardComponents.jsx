@@ -133,10 +133,9 @@ const LIB_TABS = [['character', tr('storyboard.detail10'),UserRound], ['location
         {onToggle?<button className="small ghost library-toggle" aria-label={collapsed?tr('storyboard.detail14'):tr('storyboard.detail15')} aria-expanded={!collapsed} onClick={onToggle} title={collapsed?tr('storyboard.detail14'):tr('storyboard.detail15')}>{collapsed?'›':'‹'}</button>:<button className="small ghost" onClick={() => setWide(!wide)}>{wide ? tr('storyboard.detail16') : tr('storyboard.detail17')}</button>}</div>
       <div className="row tight"><button className="small" onClick={()=>uploadInput.current.click()} disabled={state.busy}>{tr('storyboard.copy42')}</button><input ref={uploadInput} type="file" hidden multiple accept="image/*,video/*,audio/*" onChange={event=>{dispatch({type:'uploadFiles',files:[...event.target.files]});event.target.value='';}}/></div>
       <input className="lib-search" aria-label={tr('storyboard.detail72')} placeholder={tr('storyboard.detail73')} value={q} onChange={e => setQ(e.target.value)} />
-      <div className="lib-tabs">{LIB_TABS.map(([k, l,Icon], i) => (
-        <React.Fragment key={k}>{i === 3 && <span className="lib-sep">{tr('storyboard.copy43')}</span>}
-          <button className={(tab === k ? 'on ' : '') + (k === 'inbox' && inbox.length ? 'alert' : '')} onClick={() => setTab(k)} title={l} aria-label={l} aria-pressed={tab===k}><Icon size={15}/><span>{l}</span><small>{count(k)}</small></button>
-        </React.Fragment>))}</div>
+      <div className="lib-tabs">{LIB_TABS.map(([k,l,Icon])=>(
+        <button key={k} type="button" className={'sb-library-tab'+(tab===k?' on':'')+(k==='inbox'&&inbox.length?' alert':'')} onClick={()=>setTab(k)} title={l} aria-label={l} aria-pressed={tab===k}><Icon size={13}/><span>{l}</span><small>{count(k)}</small></button>
+      ))}</div>
       {selectedShot && <div className="lib-ctx">{tr('storyboard.mixed15',{title:selectedShot.title})}</div>}
 
       {isProfileTab && <>
@@ -461,7 +460,7 @@ function SaveFrame({shot,version,onDone}){const {t:tr,locale}=useI18n();const {T
   return <div className="saveframe"><b>{tr('storyboard.copy78')}</b><StoryboardVideo asset={version.asset||version} controls onTimeUpdate={event=>setT(Number(event.currentTarget.currentTime.toFixed(3)))}/><label className="field"><span>{tr('storyboard.copy79')}</span><input type="number" min={0} max={max} step={0.001} value={t} onChange={event=>setT(Number(event.target.value))}/></label><select aria-label={tr('storyboard.detail76')} value={target} onChange={event=>setTarget(event.target.value)}><option value="">{tr('storyboard.copy80')}</option>{sugg.map(x=><option key={x.id} value={`${x.id}|${x.variant||x.p.def}`}>{tr('storyboard.mixed19',{profile:x.p.name,version:variantOf(x.p,x.variant)?.name})}</option>)}{state.profiles.map(p=><optgroup key={p.id} label={TYPE_LABEL[p.type]+' · '+p.name}>{p.variants.map(v=><option key={v.id} value={`${p.id}|${v.id}`}>{p.name} · {v.name}</option>)}</optgroup>)}</select>{error&&<p role="alert" className="warn">{error}</p>}<button className="primary small" disabled={busy||!version.artifactId||!Number.isFinite(t)||t<0||t>max} onClick={save}>{busy?tr('storyboard.detail46'):tr('storyboard.detail47')}</button></div>;
 }
 
-export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI18n();const {TYPE_LABEL,VARIANT_LABEL,KIND_LABEL,MODE_LABEL,QUALITY_LABEL}=displayLabels(tr);
+export function ShotEditor({shotId, onClose, inline,wide,onWide}) {const {t:tr,locale}=useI18n();const {TYPE_LABEL,VARIANT_LABEL,KIND_LABEL,MODE_LABEL,QUALITY_LABEL}=displayLabels(tr);
   const {state, dispatch, db} = useStore();
   const shot = state.shots.find(s => s.id === shotId);
   const [copies,setCopies]=useState('1');
@@ -479,13 +478,13 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
   const chosen=chosenVersion(shot),qualityLabel=QUALITY_LABEL[shot.quality]||tr('storyboard.detail48'),durationRange=info.durationRange;
 
   return (
-    <section className={'editor' + (inline ? ' inline' : '')}>
+    <section className={'editor' + (inline ? ' inline' : '')+(wide?' wide':'')}>
       <header className="ed-head">
         <div><small>{tr('storyboard.finish19',{number:String(index+1).padStart(2,'0')})}</small><input className="ed-title" aria-label={tr('storyboard.finish10')} value={shot.title} onChange={e => upd({title: e.target.value})} /></div>
         <TrashMenu target={{kind:'entity',project_id:state.project.id,id:shot.id}} onRename={()=>document.querySelector('.ed-title')?.focus()}/>{onClose && <button className="x big" aria-label={tr('storyboard.closeEditor')} onClick={onClose}>×</button>}
       </header>
 
-      <div className="ed-preview">
+      <div className="ed-media"><div className="ed-preview">
         {['done','succeeded'].includes(viewing?.status)?<StoryboardVideo key={viewing.id} asset={viewing.asset||viewing} controls />
           : <div className="ed-preview-empty">{busy ? tr('storyboard.detail49') : tr('storyboard.detail50')}</div>}
         {viewing && viewing.id !== shot.chosen && ['done','succeeded'].includes(viewing.status) &&
@@ -494,7 +493,8 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
       {['done','succeeded'].includes(viewing?.status)&& (saving ? <SaveFrame shot={shot} version={viewing} onDone={t => { setSaving(false); setMsg(t); }} />
         : <div className="row tight"><StoryboardDownloads version={viewing} title={shot.title}/><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>{tr('storyboard.copy81')}</button>{msg && <small className="okmsg">{msg}</small>}</div>)}
 
-      <WorkbenchTakes shot={shot}/><WorkbenchDefaults shotId={shot.id}/>
+      <WorkbenchTakes shot={shot} wide={wide} onWide={onWide} previewId={viewing?.id} onPreview={row=>setPreview(row.entity_id||row.id)}/>
+      </div><div className="ed-form"><WorkbenchDefaults shotId={shot.id}/>
       <label className="field"><span>{tr('storyboard.copy84')}</span><textarea rows={2} value={shot.script} onChange={e => upd({script: e.target.value})} /></label>
       <label className="field"><span>{tr(restoredExact?'workbench.restoredPrompt':'storyboard.copy85')}</span>
         <textarea rows={2} value={shot.prompt} onChange={e => upd({prompt: e.target.value})} placeholder={tr('storyboard.finish11')} /></label>
@@ -574,6 +574,7 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
 
       </div>
       {picker && <AssetPicker shotId={shot.id} {...picker} onClose={() => setPicker(null)} />}
+    </div>
     </section>
   );
 }
@@ -642,7 +643,7 @@ export function Timeline({player, selectedId, onPick}) {const {t:tr,locale}=useI
         {segs.map(seg => <Segment key={seg.shot.id} seg={seg} selected={seg.shot.id === selectedId} onPick={pick} />)}
         <div className="playhead" style={{left: `${total ? (t / total) * 100 : 0}%`}} />
       </div>
-      <div className="track audio"><span>{tr('storyboard.copy95')}</span></div>
+      <div className="track audio" role="img" aria-label={tr('storyboard.copy95')} title={tr('storyboard.copy95')}/>
       <div className="ticks">{segs.map(s => <span key={s.shot.id} style={{flexGrow: s.dur, flexBasis: 0}}>{fmt(s.start)}</span>)}</div>
     </div>
   );

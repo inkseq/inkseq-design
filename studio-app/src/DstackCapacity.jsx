@@ -1,20 +1,20 @@
 import {dstackNodeStatus as rawDstackNodeStatus} from './dstack-presentation.js';
 import {operatorFormatters,operatorDisplay} from './i18n/legacyOperatorPresentation.js';
 import {useI18n,LanguageSwitcher} from './i18n/I18nProvider.jsx';
-import './i18n/legacy-operator-language.css';
 import React,{useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
 import {Clock,Info,Play,Plus,RefreshCw,Server,X} from 'lucide-react';
 import {createOperatorController} from './operator-controller.js';
 import {createDstackClient} from './dstack-client.js';
 import {age,dollars,duration} from './operator-model.js';
 import {dstackGroups,dstackKeepOnSelection,dstackLifecycle,dstackLifetime,dstackMode,dstackNodeStatus,dstackPreviewCurrent,dstackProvider} from './dstack-presentation.js';
-import './dstack.css';
+import {usePageActive} from './AppRouteCache.jsx';
+import './v2/ops-adapter.css';
 
 const quietly=promise=>promise.catch(()=>{});
 const date=value=>typeof value==='number'&&Number.isFinite(value)?new Date(value*1000).toLocaleString('zh-CN'):'尚未确认';
 function Dialog({title,onClose,children}){const {t:lo,locale}=useI18n();
-  const ref=useRef(),opener=useRef(document.activeElement);
-  useEffect(()=>{ref.current.showModal();return()=>{ref.current?.close();opener.current?.isConnected&&opener.current.focus();};},[]);
+  const active=usePageActive(),ref=useRef(),opener=useRef(document.activeElement);
+  useEffect(()=>{const dialog=ref.current;if(!active){dialog.close();return;}dialog.showModal();return()=>{dialog.close();if(opener.current?.isConnected&&!opener.current.closest('[inert]'))opener.current.focus();};},[active]);
   return <dialog ref={ref} className="op-dialog" aria-label={title} onCancel={event=>{event.preventDefault();onClose();}}><header><div><span className="op-eyebrow">GPU CONTROL</span><h2>{title}</h2></div><button className="op-icon" aria-label={lo('legacyOp.copy1')} onClick={onClose}><X size={19}/></button></header>{children}</dialog>;
 }
 
@@ -58,12 +58,13 @@ function NodeDialog({node,controller,busy,now,onClose}){const {t:lo,locale}=useI
 }
 
 export default function DstackCapacity({account}){const {t:lo,locale}=useI18n();const {age,dollars,dstackNodeStatus,dstackProvider,dstackMode,dstackLifetime}=operatorFormatters(locale);
+  const pageActive=usePageActive();
   const controller=useMemo(()=>createOperatorController({client:createDstackClient(),pendingNamespace:'dstack'}),[]);
   const state=useSyncExternalStore(controller.subscribe,controller.getState,controller.getState),[now,setNow]=useState(Date.now()),[dialog,setDialog]=useState(null),[view,setView]=useState('current');
   useEffect(()=>{setDialog(null);setView('current');void controller.setAccount(account);},[account,controller]);
   useEffect(()=>{if(!state.snapshot||!state.catalog||state.denied||state.unavailable)setDialog(null);},[state.snapshot,state.catalog,state.denied,state.unavailable]);
   useEffect(()=>()=>controller.destroy(),[controller]);
-  useEffect(()=>{let stopped=false,timer;const tick=async()=>{setNow(Date.now());if(document.visibilityState!=='hidden')try{await controller.poll();}catch{}if(!stopped)timer=setTimeout(tick,5000);};timer=setTimeout(tick,5000);return()=>{stopped=true;clearTimeout(timer);};},[controller,account]);
+  useEffect(()=>{if(!pageActive)return;let stopped=false,timer;const tick=async()=>{setNow(Date.now());if(document.visibilityState!=='hidden')try{await controller.poll();}catch{}if(!stopped)timer=setTimeout(tick,5000);};timer=setTimeout(tick,5000);return()=>{stopped=true;clearTimeout(timer);};},[controller,account,pageActive]);
   const snapshot=state.snapshot,catalog=state.catalog,busy=state.busy||!!state.pending,groups=dstackGroups(snapshot?.nodes,now),enabled=catalog?.enabled===true&&snapshot?.enabled===true,confirmed=!!snapshot&&!!catalog&&!state.denied&&!state.unavailable;
   const nodes=view==='history'?groups.history:[...groups.current,...groups.review];
   const selected=dialog?.node?(snapshot?.nodes||[]).find(node=>node.id===dialog.node.id)||dialog.node:null;

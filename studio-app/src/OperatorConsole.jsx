@@ -1,15 +1,14 @@
 import StudioHeader from './StudioHeader.jsx';
-import './operator-v2.css';
 import {operatorFormatters,operatorDisplay} from './i18n/legacyOperatorPresentation.js';
 import {useI18n,LanguageSwitcher} from './i18n/I18nProvider.jsx';
-import './i18n/legacy-operator-language.css';
 import React,{useEffect,useMemo,useReducer,useRef,useState,useSyncExternalStore} from 'react';
 import {ArrowLeft,ArrowUpRight,Clock,Cpu,Info,LogOut,Play,Plus,RefreshCw,Search,Server,Settings2,ShieldCheck,X} from 'lucide-react';
 import {useCloud} from './CloudStudio.jsx';
 import {cloudController as cloud} from './cloud-controller.js';
 import {createOperatorController} from './operator-controller.js';
 import {age,allowed,dollars,duration,hasBoundOperatorSelection,runtimeDuration,reasonText,staleSnapshot,stateLabel,providerLabel,operatorMarketProvider,operatorModels,operatorCandidateKey,operatorCandidateSelection,operatorCandidateCurrent,operatorCandidatePreviewMatches,initialOperatorMarket,operatorMarketReducer,operatorMarketSummary,roundedSpec} from './operator-model.js';
-import './operator.css';
+import {usePageActive} from './AppRouteCache.jsx';
+import './v2/ops-adapter.css';
 import {operatorNodeGroups,operatorCapacitySummary,filterOperatorHistory,operatorExtensionCurrent,operatorExtensionReadback} from './operator-presentation.js';
 import {Reasons,Badge,NodeCard,MachineRow,CandidateCard} from './operator-machine-view.jsx';
 import DstackCapacity from './DstackCapacity.jsx';
@@ -19,8 +18,8 @@ const quietly=promise=>promise.catch(()=>{});
 const known=value=>Number.isFinite(value)?value:'—';
 const date=value=>typeof value==='number'?new Date(value*1000).toLocaleString('zh-CN'):'尚未记录';
 function Dialog({title,subtitle,onClose,children,wide=false}){const {t:lo,locale}=useI18n();
-  const ref=useRef(),opener=useRef(document.activeElement);
-  useEffect(()=>{ref.current.showModal();return()=>{ref.current?.close();opener.current?.isConnected&&opener.current.focus();};},[]);
+  const active=usePageActive(),ref=useRef(),opener=useRef(document.activeElement);
+  useEffect(()=>{const dialog=ref.current;if(!active){dialog.close();return;}dialog.showModal();return()=>{dialog.close();if(opener.current?.isConnected&&!opener.current.closest('[inert]'))opener.current.focus();};},[active]);
   return <dialog ref={ref} className={'op-dialog'+(wide?' op-market-dialog':'')} aria-label={title} onCancel={e=>{e.preventDefault();onClose();}}><header><div><span className="op-eyebrow">GPU CONTROL</span><h2>{title}</h2>{subtitle&&<p>{subtitle}</p>}</div><button className="op-icon" aria-label={lo('legacyOp.copy1')} onClick={onClose}><X size={19}/></button></header>{children}</dialog>;
 }
 function RecipeEvidence({profile}){const {t:lo,locale}=useI18n();const {duration}=operatorFormatters(locale);
@@ -152,10 +151,12 @@ function StartDrawer({catalog,policy,controller,busy,onClose}){const {t:lo,local
 }
 
 export default function OperatorConsole(){const {t:lo,locale}=useI18n();const {age,duration,dollars,stateLabel,reasonText}=operatorFormatters(locale);
+  const pageActive=usePageActive();
   const c=useCloud(),controller=useMemo(()=>createOperatorController(),[]),state=useSyncExternalStore(controller.subscribe,controller.getState,controller.getState),[dialog,setDialog]=useState(null),[actionError,setActionError]=useState(''),[now,setNow]=useState(Date.now()),[machineView,setMachineView]=useState('current'),[historySearch,setHistorySearch]=useState(''),[historyProvider,setHistoryProvider]=useState('all');
-  useEffect(()=>{document.title=lo('legacyOp.copy153');quietly(cloud.initialize());return()=>controller.destroy();},[controller]);
+  useEffect(()=>{quietly(cloud.initialize());return()=>controller.destroy();},[controller]);
+  useEffect(()=>{if(pageActive)document.title=lo('legacyOp.copy153');},[pageActive,locale]);
   useEffect(()=>{setDialog(null);setActionError('');setMachineView('current');setHistorySearch('');setHistoryProvider('all');void controller.setAccount(c.account);},[c.account,controller]);
-  useEffect(()=>{let stopped=false,timer;const tick=async()=>{setNow(Date.now());if(document.visibilityState!=='hidden')try{await controller.poll();}catch{}if(!stopped)timer=setTimeout(tick,5000);};timer=setTimeout(tick,5000);return()=>{stopped=true;clearTimeout(timer);};},[controller,c.account]);
+  useEffect(()=>{if(!pageActive)return;let stopped=false,timer;const tick=async()=>{setNow(Date.now());if(document.visibilityState!=='hidden')try{await controller.poll();}catch{}if(!stopped)timer=setTimeout(tick,5000);};timer=setTimeout(tick,5000);return()=>{stopped=true;clearTimeout(timer);};},[controller,c.account,pageActive]);
   const snapshot=state.snapshot,stale=staleSnapshot(snapshot,now),profiles=state.catalog?.profiles||state.catalog?.deployment_profiles||[],busy=state.busy||!!state.pending;
   const groups=operatorNodeGroups(snapshot?.nodes),capacity=operatorCapacitySummary(snapshot,now),history=filterOperatorHistory(groups.history,{search:historySearch,provider:historyProvider});
   const selectedNode=dialog?.node?.id?(snapshot?.nodes||[]).find(node=>node.id===dialog.node.id)||dialog.node:null;

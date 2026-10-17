@@ -1,9 +1,9 @@
 import {useI18n} from './i18n/I18nProvider.jsx';
-import './i18n/operator-language.css';
+import {usePageActive} from './AppRouteCache.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {failureLabel,hostPolicyOptions,hostText,knownNumber,secondsLabel,validHostSummary} from './operator-host-model.js';
 import {money,time} from './p4-operator-model.js';
-import './operator-host.css';
+import './v2/ops-adapter.css';
 const localizedPolicy=(value,t)=>t('operator.policy.'+(['default','prefer','deny'].includes(value)?value:'unknown'));
 
 function SampleGroups({groups=[]}){const {t,locale}=useI18n();
@@ -27,8 +27,8 @@ export function OfferHostHistory({members=[],profileId,now=Date.now()}){const {t
   return <details className="p4-offer-hosts"><summary>{t('operatorPanel.history',{detail:known.length?t('operatorPanel.mappings',{count:known.length}):t('operator.status81')})}</summary>{known.length?known.map((host,index)=>{const fresh=typeof host.offer_observed_at==='number'&&host.offer_observed_at*1000<=now&&typeof host.selection_expires_at==='number'&&host.selection_expires_at*1000>now;return <section key={String(host.offer_id)+':'+index}><b>{t('operatorPanel.hostNumber',{id:host.machine_id})}</b><small>Offer #{host.offer_id} · {fresh?t('operatorPanel.mappingValid'):t('operator.status82')}<br/>{t('operatorPanel.observed',{time:time(host.offer_observed_at,locale)})} · {localizedPolicy(host.policy.effective,t)}</small><span>{t('operatorPanel.runsSamples',{runs:host.runs??'—',samples:host.groups?.reduce((sum,group)=>sum+(Number.isSafeInteger(group.samples)?group.samples:0),0)??'—'})}</span><LastFailure failure={host.last_failure}/><SampleGroups groups={host.groups||[]}/></section>;}):<p>{t('operator.copy170')}</p>}<small>{t('operator.copy171')}</small></details>;
 }
 function PolicyReview({host,selection,current,busy,onClose,onConfirm}){const {t,locale}=useI18n();
-  const ref=useRef(),opener=useRef(globalThis.document?.activeElement);
-  useEffect(()=>{ref.current.showModal();return()=>{ref.current?.close();opener.current?.isConnected&&opener.current.focus();};},[]);
+  const active=usePageActive(),ref=useRef(),opener=useRef(globalThis.document?.activeElement);
+  useEffect(()=>{const dialog=ref.current;if(!active){dialog.close();return;}dialog.showModal();return()=>{dialog.close();if(opener.current?.isConnected&&!opener.current.closest('[inert]'))opener.current.focus();};},[active]);
   return <dialog ref={ref} className="p4-dialog" aria-label={t('operator.status125')} onCancel={event=>{event.preventDefault();if(!busy)onClose();}}><header><div><h2>{t('operatorPanel.confirmPolicy',{id:host.machine_id})}</h2><p>{localizedPolicy(host.policy.manual,t)} → {localizedPolicy(selection,t)}</p></div><button disabled={busy} onClick={onClose}>{t('operator.copy32')}</button></header><p>{t('operator.copy172')}</p>{selection==='prefer'&&<p className="p4-meta">{t('operator.copy173')}</p>}{!current&&<p role="alert">{t('operator.copy174')}</p>}<footer><button disabled={busy} onClick={onClose}>{t('operator.copy175')}</button><button className="p4-primary" disabled={busy||!current} onClick={onConfirm}>{busy?t('operator.status83'):t('operator.status84')}</button></footer></dialog>;
 }
 function HostEditor({host,busy,onSave}){const {t,locale}=useI18n();

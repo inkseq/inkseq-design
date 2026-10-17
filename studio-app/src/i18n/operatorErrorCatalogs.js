@@ -88,3 +88,13 @@ export const operatorErrorCatalogs = {
     "operatorError.copy42": "管理员权限已改变，原操作仍待核对。"
   }
 };
+Object.assign(operatorErrorCatalogs.en,{
+  'operatorError.budgetPageChanged':'The original budget page changed. Refresh and try again.',
+  'operatorError.budgetPermissionChanged':'Administrator permission changed; the original budget response was not displayed.',
+  'operatorError.budgetReadSuperseded':'A newer budget read completed; the original response was not displayed.'
+});
+Object.assign(operatorErrorCatalogs.zh,{
+  'operatorError.budgetPageChanged':'原预算分页已改变，请刷新。',
+  'operatorError.budgetPermissionChanged':'管理员权限已改变，原预算响应未展示。',
+  'operatorError.budgetReadSuperseded':'较新的预算读取已完成，原响应未展示。'
+});

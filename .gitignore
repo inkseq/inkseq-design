@@ -317,3 +317,7 @@ design/inkseq-v2-prototype/dist/
 
 !studio-app/src/library-thumbnails.js
 !studio-app/src/library-thumbnails.test.js
+
+# Prototype page components and real-service view adapters
+!studio-app/src/v2/
+!studio-app/src/v2/**
