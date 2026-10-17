@@ -249,3 +249,7 @@
 !studio-app/src/storyboard-workspace.css
 !studio-app/src/storyboard-playback.js
 !studio-app/src/storyboard-playback.test.js
+
+# Production-compatible budget administration entry (#254)
+!studio-app/src/BudgetSettings.jsx
+!studio-app/src/budget-settings.css
