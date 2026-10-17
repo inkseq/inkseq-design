@@ -131,3 +131,5 @@
  .qc-v2 .qc-connection-dot{display:inline;color:#929c95;font-size:14px;line-height:1}
  .qc-v2 .qc-mode-options button{min-height:36px}
 }
+
+.qc-v2 .v2-global-nav a{color:var(--ink-2)}.qc-v2 .qc-mode-options button{font-size:11px;padding:4px 8px;min-height:32px}.qc-v2 .qc-mode-options button:first-child{border-radius:20px}
