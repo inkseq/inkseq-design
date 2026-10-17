@@ -1,3 +1,4 @@
+import {cloudController as cloud} from './cloud-controller.js';
 import CreationHistory from './CreationHistory.jsx';
 import {createQuickChatController} from './quick-chat-controller.js';
 import React,{createContext,useContext,useEffect,useMemo,useRef,useState,useSyncExternalStore} from 'react';
@@ -22,6 +23,7 @@ export function TrashProvider({account,children}){
   if(identity.current!==account)return;
   setPreview(null);setNotice({action:receipt.action,targets:receipt.items.map(row=>row.target)});
   window.dispatchEvent(new CustomEvent('inkseq-trash-changed',{detail:receipt}));
+  if(receipt.items.some(row=>row.target.kind==='project'))void cloud.list({replace:true}).catch(()=>{});
   const targets=receipt.items.map(row=>row.target),fresh=()=>identity.current===account&&store.getState().workspaceEpoch===current.workspaceEpoch&&!store.getState().workspace.dirty;
   if(current.workspace.mode!=='cloud'||!fresh()||!targets.some(row=>row.project_id===current.project.id))return;
   if(receipt.action==='trash'&&targets.some(row=>row.kind==='project'&&row.id===current.project.id)){store.leaveCloudProject();return;}
