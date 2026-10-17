@@ -461,7 +461,7 @@ function SaveFrame({shot,version,onDone}){const {t:tr,locale}=useI18n();const {T
   return <div className="saveframe"><b>{tr('storyboard.copy78')}</b><StoryboardVideo asset={version.asset||version} controls onTimeUpdate={event=>setT(Number(event.currentTarget.currentTime.toFixed(3)))}/><label className="field"><span>{tr('storyboard.copy79')}</span><input type="number" min={0} max={max} step={0.001} value={t} onChange={event=>setT(Number(event.target.value))}/></label><select aria-label={tr('storyboard.detail76')} value={target} onChange={event=>setTarget(event.target.value)}><option value="">{tr('storyboard.copy80')}</option>{sugg.map(x=><option key={x.id} value={`${x.id}|${x.variant||x.p.def}`}>{tr('storyboard.mixed19',{profile:x.p.name,version:variantOf(x.p,x.variant)?.name})}</option>)}{state.profiles.map(p=><optgroup key={p.id} label={TYPE_LABEL[p.type]+' · '+p.name}>{p.variants.map(v=><option key={v.id} value={`${p.id}|${v.id}`}>{p.name} · {v.name}</option>)}</optgroup>)}</select>{error&&<p role="alert" className="warn">{error}</p>}<button className="primary small" disabled={busy||!version.artifactId||!Number.isFinite(t)||t<0||t>max} onClick={save}>{busy?tr('storyboard.detail46'):tr('storyboard.detail47')}</button></div>;
 }
 
-export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI18n();const {TYPE_LABEL,VARIANT_LABEL,KIND_LABEL,MODE_LABEL,QUALITY_LABEL}=displayLabels(tr);
+export function ShotEditor({shotId, onClose, inline,wide,onWide}) {const {t:tr,locale}=useI18n();const {TYPE_LABEL,VARIANT_LABEL,KIND_LABEL,MODE_LABEL,QUALITY_LABEL}=displayLabels(tr);
   const {state, dispatch, db} = useStore();
   const shot = state.shots.find(s => s.id === shotId);
   const [copies,setCopies]=useState('1');
@@ -479,13 +479,13 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
   const chosen=chosenVersion(shot),qualityLabel=QUALITY_LABEL[shot.quality]||tr('storyboard.detail48'),durationRange=info.durationRange;
 
   return (
-    <section className={'editor' + (inline ? ' inline' : '')}>
+    <section className={'editor' + (inline ? ' inline' : '')+(wide?' wide':'')}>
       <header className="ed-head">
         <div><small>{tr('storyboard.finish19',{number:String(index+1).padStart(2,'0')})}</small><input className="ed-title" aria-label={tr('storyboard.finish10')} value={shot.title} onChange={e => upd({title: e.target.value})} /></div>
         <TrashMenu target={{kind:'entity',project_id:state.project.id,id:shot.id}} onRename={()=>document.querySelector('.ed-title')?.focus()}/>{onClose && <button className="x big" aria-label={tr('storyboard.closeEditor')} onClick={onClose}>×</button>}
       </header>
 
-      <div className="ed-preview">
+      <div className="ed-media"><div className="ed-preview">
         {['done','succeeded'].includes(viewing?.status)?<StoryboardVideo key={viewing.id} asset={viewing.asset||viewing} controls />
           : <div className="ed-preview-empty">{busy ? tr('storyboard.detail49') : tr('storyboard.detail50')}</div>}
         {viewing && viewing.id !== shot.chosen && ['done','succeeded'].includes(viewing.status) &&
@@ -494,7 +494,8 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
       {['done','succeeded'].includes(viewing?.status)&& (saving ? <SaveFrame shot={shot} version={viewing} onDone={t => { setSaving(false); setMsg(t); }} />
         : <div className="row tight"><StoryboardDownloads version={viewing} title={shot.title}/><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>{tr('storyboard.copy81')}</button>{msg && <small className="okmsg">{msg}</small>}</div>)}
 
-      <WorkbenchTakes shot={shot}/><WorkbenchDefaults shotId={shot.id}/>
+      <WorkbenchTakes shot={shot} wide={wide} onWide={onWide} onPreview={row=>setPreview(row.entity_id||row.id)}/>
+      </div><div className="ed-form"><WorkbenchDefaults shotId={shot.id}/>
       <label className="field"><span>{tr('storyboard.copy84')}</span><textarea rows={2} value={shot.script} onChange={e => upd({script: e.target.value})} /></label>
       <label className="field"><span>{tr(restoredExact?'workbench.restoredPrompt':'storyboard.copy85')}</span>
         <textarea rows={2} value={shot.prompt} onChange={e => upd({prompt: e.target.value})} placeholder={tr('storyboard.finish11')} /></label>
@@ -574,6 +575,7 @@ export function ShotEditor({shotId, onClose, inline}) {const {t:tr,locale}=useI1
 
       </div>
       {picker && <AssetPicker shotId={shot.id} {...picker} onClose={() => setPicker(null)} />}
+    </div>
     </section>
   );
 }

@@ -158,3 +158,6 @@ export const libraryCatalogs = {
     "library.positiveDuration": "请输入有效的正数秒数。"
   }
 };
+
+Object.assign(libraryCatalogs.en,{'library.selected':'Selected {count}','library.clear':'Clear selection'});
+Object.assign(libraryCatalogs.zh,{'library.selected':'已选 {count} 项','library.clear':'取消选择'});
