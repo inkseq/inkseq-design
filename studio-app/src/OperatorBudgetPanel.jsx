@@ -1,10 +1,10 @@
 import {useI18n} from './i18n/I18nProvider.jsx';
-import './i18n/operator-language.css';
+import {usePageActive} from './AppRouteCache.jsx';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {createP4OperatorClient} from './p4-operator-client.js';
 import {money,time} from './p4-operator-model.js';
 import {budgetLabel,budgetUsage,usdInput,usdMicrousd} from './operator-budget-model.js';
-import './operator-budget.css';
+import './v2/ops-adapter.css';
 
 export function BudgetAccounts({budgets=[],compact=false}){const {t,locale}=useI18n();
   return <div className={'budget-accounts'+(compact?' compact':'')}>{budgets.map(budget=>{const usage=budgetUsage(budget),status=budget.status==='exhausted'||usage?.status==='exhausted'?'exhausted':budget.status==='warning'||usage?.status==='warning'?'warning':'ok';return <section key={budget.id} className={'budget-account '+status} aria-label={budgetLabel(budget,locale)}><header><b>{budgetLabel(budget,locale)}</b>{status!=='ok'&&<span role="status">{status==='exhausted'?t('operator.status95'):t('operator.status96')}</span>}</header><dl>{[[t('operator.status97'),budget.limit_microusd],[t('operator.status98'),budget.spent_microusd],[t('operator.status99'),budget.reserved_microusd],[t('operator.status100'),budget.remaining_microusd]].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{money(value)}</dd></div>)}</dl>{usage&&<progress max="100" value={usage.percent} aria-label={t('operatorPanel.usage',{value:usage.percent})}/>}<small>{t('operator.copy1')}</small>{!compact&&<details><summary>{t('operator.copy2')}</summary>{budget.daily7.length?<ul>{budget.daily7.map(day=><li key={day.date}><time>{day.date}</time><b>{money(day.cost_microusd)}</b></li>)}</ul>:<p>{t('operator.copy3')}</p>}<p>{t('operator.copy4')}</p>{budget.unattributed_legacy&&<p>{t('operatorPanel.legacy',{amount:money(budget.unattributed_legacy.cost_microusd),count:budget.unattributed_legacy.reservation_count??'—'})}</p>}</details>}</section>;})}</div>;
@@ -13,6 +13,7 @@ export function BudgetAccounts({budgets=[],compact=false}){const {t,locale}=useI
 // Each mounted view owns an account-bound read client. No budget state is saved
 // in the project, draft or generation command journal.
 export default function OperatorBudgetPanel({account,compact=false}){const {t,locale}=useI18n();
+  const pageActive=usePageActive(),visible=useRef(pageActive);visible.current=pageActive;
   const client=useMemo(()=>createP4OperatorClient(),[]),generation=useRef(0),[state,setState]=useState({account:null,value:null,loading:false,error:''});
   async function read(after_id){
     if(!account)return;const current=++generation.current;
@@ -20,7 +21,7 @@ export default function OperatorBudgetPanel({account,compact=false}){const {t,lo
     try{const value=await client.budgets({after_id});if(value.account!==account)throw Error(t('operator.status101'));if(generation.current===current)setState(previous=>({account,value:after_id&&previous.account===account&&previous.value?{...value,budgets:[...new Map([...previous.value.budgets,...value.budgets].map(budget=>[budget.id,budget])).values()]}:value,loading:false,error:''}));}
     catch(error){if(generation.current===current)setState({account,value:null,loading:false,error:error.message});}
   }
-  useEffect(()=>{client.setAccount(account);generation.current++;setState({account,value:null,loading:false,error:''});if(account)void read();const timer=account?setInterval(()=>{if(globalThis.document?.visibilityState!=='hidden')void read();},30000):null;return()=>{clearInterval(timer);generation.current++;client.reset();};},[account,client]);
+  useEffect(()=>{client.setAccount(account);generation.current++;setState({account,value:null,loading:false,error:''});if(account)void read();const timer=account?setInterval(()=>{if(visible.current&&globalThis.document?.visibilityState!=='hidden')void read();},30000):null;return()=>{clearInterval(timer);generation.current++;client.reset();};},[account,client]);
   const value=state.account===account?state.value:null;
   if(!account)return null;
   return <section className={'operator-budget'+(compact?' compact':'')} aria-label={t('operator.copy5')}><header><div><h3>{t('operator.copy5')}</h3><small>{t('operator.copy6')}</small></div><button type="button" disabled={state.loading} onClick={()=>void read()}>{state.loading?t('operator.status70'):t('operator.status102')}</button></header>{value?<><BudgetAccounts budgets={value.budgets} compact={compact}/><small>{t('operatorPanel.readBudget',{time:time(value.as_of,locale)})}</small>{!value.budgets.length&&<p>{t('operator.copy7')}</p>}{value.next_after_id&&<button type="button" disabled={state.loading} onClick={()=>void read(value.next_after_id)}>{t('operator.copy8')}</button>}</>:<p role={state.error?'alert':'status'}>{state.error||t('operator.status103')}</p>}</section>;

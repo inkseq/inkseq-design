@@ -2,11 +2,14 @@ import {microsToDollars,dollarsToMicros} from './money.js';
 import AssistantConnections from './AssistantConnections.jsx';
 import React,{useEffect,useMemo,useRef,useState} from 'react';
 import {createCloudClient} from './cloud-client.js';
-import {LanguageSwitcher,useI18n} from './i18n/I18nProvider.jsx';
-import './spending-settings.css';
+import {useI18n} from './i18n/I18nProvider.jsx';
 import StudioHeader from './StudioHeader.jsx';
 import AccountPassword from './AccountPassword.jsx';
-import {UserRound,SlidersHorizontal,Bot,Wallet,ShieldCheck} from 'lucide-react';
+import {UserRound,SlidersHorizontal,Bot,Wallet,ShieldCheck,LogOut,RefreshCw} from 'lucide-react';
+import {cloudController as cloud} from './cloud-controller.js';
+import {usePageActive} from './AppRouteCache.jsx';
+import {navigateApp} from './app-navigation.js';
+import './v2/ops-adapter.css';
 
 const dollars=microsToDollars;
 function micros(value){try{return dollarsToMicros(value);}catch{throw Error('settings.invalid');}}
@@ -14,7 +17,8 @@ const money=value=>'$'+microsToDollars(value);
 
 export default function SpendingSettings({account}){
   const {t}=useI18n(),api=useMemo(()=>{const client=createCloudClient();client.setAccount(account);return client;},[account]);
-  useEffect(()=>{document.title=t('settings.documentTitle');},[t]);
+  const pageActive=usePageActive();
+  useEffect(()=>{if(pageActive)document.title=t('settings.documentTitle');},[t,pageActive]);
   const [section,setSection]=useState('account');
   const [user,setUser]=useState(null),[admin,setAdmin]=useState(null),[draft,setDraft]=useState(null),[adminDraft,setAdminDraft]=useState(null);
   const [busy,setBusy]=useState(false),[notice,setNotice]=useState(''),[error,setError]=useState(''),epoch=useRef(0);
@@ -51,17 +55,18 @@ export default function SpendingSettings({account}){
     }catch(failure){if(current===epoch.current)setError(failure.message==='settings.invalid'?t(failure.message):failure.message);}
     finally{if(current===epoch.current)setBusy(false);}
   }
-  const field=(label,value,onChange)=><label className="spending-field"><span>{t(label)}</span><input inputMode="decimal" value={value} disabled={busy} onChange={event=>onChange(event.target.value)}/></label>;
-  return <div className="settings-shell"><StudioHeader account={account} active="settings"/><main className="spending-page"><nav className="settings-nav" aria-label={t('settings.title')}>{[['account','settings.account',UserRound],['defaults','settings.defaults',SlidersHorizontal],['assistants','assistants.title',Bot],['budget','settings.budget',Wallet],...(admin?[['admin','settings.admin',ShieldCheck]]:[])].map(([id,label,Icon])=><button key={id} className={section===id?'on':''} onClick={()=>setSection(id)}><Icon size={16}/>{t(label)}</button>)}</nav><div className="settings-panel"><h1>{t(section==='assistants'?'assistants.title':'settings.'+section)}</h1><section className="settings-account-card" hidden={section!=='account'}><div className="settings-identity"><span className="v2-avatar">{account?.slice(0,1).toLocaleUpperCase()||'·'}</span><strong>{account||t('settings.login')}</strong></div></section>{account&&<section className="settings-password-card" hidden={section!=='account'}><AccountPassword inline busy={busy}/></section>}<section className="settings-default-links" hidden={section!=='defaults'}><p>{t('settings.defaultsHelp')}</p><a className="settings-open-advanced" href="/quick-chat?preferences=takes">{t('takes.preferences')} →</a></section>
-    {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{t(notice)}</p>}
-    {section==='budget'&&user&&<div className="settings-usage-card"><strong>{t('settings.usage',{amount:money(user.usage.projected_microusd)})}</strong>{user.value.daily_limit_microusd>0&&<progress max={user.value.daily_limit_microusd} value={Math.min(user.usage.projected_microusd,user.value.daily_limit_microusd)}/>}</div>}{!user||!draft?<p role="status">{busy?t('settings.loading'):t('settings.login')}</p>:<>
-      <form hidden={section!=='budget'} onSubmit={event=>{event.preventDefault();void save();}}><section id="my-budget" aria-labelledby="budget-settings-title"><h2 id="budget-settings-title">{t('settings.budget')}</h2>
-        {field('settings.daily',draft.daily,value=>setDraft(previous=>({...previous,daily:value})))}
-        {field('settings.ask',draft.ask,value=>setDraft(previous=>({...previous,ask:value})))}
-        <p>{t('settings.zero')}</p><p>{t('settings.day')}</p><p>{t('settings.usage',{amount:money(user.usage.projected_microusd)})}</p>
-      </section><button disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></form>
-      {admin&&adminDraft&&<form hidden={section!=='admin'} onSubmit={event=>{event.preventDefault();void save(true);}}><section id="my-admin" aria-labelledby="admin-settings-title"><h2 id="admin-settings-title">{t('settings.admin')}</h2>
-        {[['settings.testDaily','testDaily'],['settings.hourly','hourly'],['settings.fleetHourly','fleetHourly'],['settings.idle','idle'],['settings.runtime','runtime']].map(([label,key])=><React.Fragment key={key}>{field(label,adminDraft[key],value=>setAdminDraft(previous=>({...previous,[key]:value})))}</React.Fragment>)}
-        <p>{t('settings.adminHelp')}</p></section><button disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></form>}
-    </>}<div id="my-assistants" hidden={section!=='assistants'}><AssistantConnections account={account} onLogin={()=>{window.location.href='/quick-chat';}}/></div><button disabled={busy} onClick={()=>void load()}>{t('settings.reload')}</button></div></main></div>;
+  const field=(label,value,onChange)=><label className="limit-row"><div><b>{t(label)}</b></div><span className="limit-input"><input inputMode="decimal" value={value} disabled={busy} onChange={event=>onChange(event.target.value)}/></span></label>;
+  return <div className="home ops-adapter"><StudioHeader account={account} active="settings"/><main className="home-main settings-page">
+    <aside className="snav" aria-label={t('settings.title')}>{[['account','settings.account',UserRound],['defaults','settings.defaults',SlidersHorizontal],['assistants','assistants.title',Bot],['budget','settings.budget',Wallet],...(admin?[['admin','settings.admin',ShieldCheck]]:[])].map(([id,label,Icon])=><button key={id} className={section===id?'on':''} onClick={()=>setSection(id)}><Icon size={16}/>{t(label)}</button>)}</aside>
+    <section className="spanel"><div className="row tight"><h2>{t(section==='assistants'?'assistants.title':'settings.'+section)}</h2><div className="spacer"/><button className="small ghost" title={t('settings.reload')} aria-label={t('settings.reload')} disabled={busy} onClick={()=>void load()}><RefreshCw size={14}/></button></div>
+      {error&&<p role="alert">{error}</p>}{notice&&<p role="status">{t(notice)}</p>}
+      <div className="ops-tab-panel" hidden={section!=='account'}><div className="card-box"><div className="row tight"><span className="avatar big">{account?.slice(0,1).toLocaleUpperCase()||'·'}</span><div><b>{account||t('settings.login')}</b>{admin&&<small className="muted"> · {t('settings.admin')}</small>}<br/><small className="muted">{t('settings.account')}</small></div></div></div>{account&&<><div className="card-box"><AccountPassword inline busy={busy}/></div><button className="ghost danger" disabled={busy} onClick={()=>void cloud.logout().catch(failure=>setError(failure.message))}><LogOut size={15}/>{t('operator.status117')}</button></>}</div>
+      <div className="ops-tab-panel" hidden={section!=='defaults'}><p className="muted">{t('settings.defaultsHelp')}</p><div className="card-box"><div className="row tight"><SlidersHorizontal size={18}/><div><b>{t('takes.preferences')}</b><br/><small className="muted">{t('settings.defaults')}</small></div><div className="spacer"/><button className="primary" onClick={()=>navigateApp('/quick-chat?preferences=takes')}>{t('takes.preferences')}</button></div></div><button className="ghost" onClick={()=>navigateApp('/')}>{t('settings.storyDefaults')}</button></div>
+      {(!user||!draft)&&section!=='account'&&section!=='defaults'&&section!=='assistants'&&<p role="status">{busy?t('settings.loading'):t('settings.login')}</p>}
+      {user&&draft&&<form className="ops-tab-panel" hidden={section!=='budget'} onSubmit={event=>{event.preventDefault();void save();}}><div className="card-box"><div className="agent-spend"><span>{t('settings.usage',{amount:money(user.usage.projected_microusd)})}{user.value.daily_limit_microusd>0?' / '+money(user.value.daily_limit_microusd):''}</span>{user.value.daily_limit_microusd>0&&<i><b style={{width:Math.min(100,user.usage.projected_microusd/user.value.daily_limit_microusd*100)+'%'}}/></i>}</div></div><section id="my-budget" className="card-box limits" aria-label={t('settings.budget')}>
+        {field('settings.daily',draft.daily,value=>setDraft(previous=>({...previous,daily:value})))}{field('settings.ask',draft.ask,value=>setDraft(previous=>({...previous,ask:value})))}
+      </section><p className="muted">{t('settings.zero')} · {t('settings.day')}</p><div className="row tight" style={{justifyContent:'flex-end'}}><button className="primary" disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></div></form>}
+      {admin&&adminDraft&&<form className="ops-tab-panel" hidden={section!=='admin'} onSubmit={event=>{event.preventDefault();void save(true);}}><section id="my-admin" className="card-box limits" aria-label={t('settings.admin')}>{[['settings.testDaily','testDaily'],['settings.hourly','hourly'],['settings.fleetHourly','fleetHourly'],['settings.idle','idle'],['settings.runtime','runtime']].map(([label,key])=><React.Fragment key={key}>{field(label,adminDraft[key],value=>setAdminDraft(previous=>({...previous,[key]:value})))}</React.Fragment>)}</section><p className="muted">{t('settings.adminHelp')}</p><div className="row tight" style={{justifyContent:'flex-end'}}><button className="primary" disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></div></form>}
+      <div id="my-assistants" hidden={section!=='assistants'}><AssistantConnections embedded account={account} active={pageActive&&section==='assistants'} onLogin={()=>navigateApp('/quick-chat')}/></div>
+    </section></main></div>;
 }

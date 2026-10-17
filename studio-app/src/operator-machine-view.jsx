@@ -2,7 +2,6 @@ import {operatorOfferReadiness as rawOfferReadiness} from './operator-model.js';
 import {operatorNodeStatus as rawOperatorNodeStatus} from './operator-presentation.js';
 import {operatorFormatters,operatorDisplay} from './i18n/legacyOperatorPresentation.js';
 import {useI18n,LanguageSwitcher} from './i18n/I18nProvider.jsx';
-import './i18n/legacy-operator-language.css';
 import React from 'react';
 import {ChevronRight,Clock,Cpu,Info,Pause,Play,Server,ShieldCheck,Square} from 'lucide-react';
 import {age,deadlineLabel,nodeDeadline,nodeRemovalConfirmation,dollars,reasonText,stateLabel,stateTone,providerLabel,operatorOfferReadiness,operatorSlotsLabel,roundedSpec,operatorRankReason} from './operator-model.js';

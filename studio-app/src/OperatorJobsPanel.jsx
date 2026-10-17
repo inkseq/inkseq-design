@@ -1,5 +1,5 @@
 import {useI18n} from './i18n/I18nProvider.jsx';
-import './i18n/operator-language.css';
+import {usePageActive} from './AppRouteCache.jsx';
 import React,{useEffect,useRef,useState} from 'react';
 import {cancellationReasons,canCancelJob,jobStatus,jobDiagnostics,selectionCurrent} from './operator-jobs-model.js';
 import {time} from './p4-operator-model.js';
@@ -8,8 +8,8 @@ export function OperatorJobsTable({jobs=[],selected=[],disabled=false,onSelect=(
   return <div className="p4-admin-jobs-table"><table><thead><tr><th>{t('operator.copy27')}</th><th>{t('operator.copy28')}</th><th>{t('operator.copy29')}</th><th>{t('operator.copy30')}</th></tr></thead><tbody>{jobs.map(job=><tr key={job.id}><td><input type="checkbox" aria-label={t('operatorPanel.selectJob',{id:job.id})} checked={selected.some(row=>row.id===job.id)} disabled={disabled||!canCancelJob(job)||selected.length>=100&&!selected.some(row=>row.id===job.id)} onChange={event=>onSelect(job,event.target.checked)}/></td><td><b>{job.owner_id}</b><small>#{job.id.slice(0,8)}</small>{job.project_id&&<small>{job.project_id}</small>}</td><td>{jobStatus(job.status,locale)}{jobDiagnostics(job,locale).map((line,index)=><small key={index}>{line}</small>)}<small>{canCancelJob(job)?t('operator.status66'):job.cancellable_reason||t('operator.status67')}</small></td><td>{time(job.created_at,locale)}</td></tr>)}</tbody></table></div>;
 }
 function CancelReview({jobs,reason,busy,current,onClose,onConfirm}){const {t,locale}=useI18n();
-  const ref=useRef(),opener=useRef(globalThis.document?.activeElement),label=cancellationReasons.some(item=>item.code===reason)?t('operator.reason.'+reason):reason;
-  useEffect(()=>{ref.current.showModal();return()=>{ref.current?.close();opener.current?.isConnected&&opener.current.focus();};},[]);
+  const active=usePageActive(),ref=useRef(),opener=useRef(globalThis.document?.activeElement),label=cancellationReasons.some(item=>item.code===reason)?t('operator.reason.'+reason):reason;
+  useEffect(()=>{const dialog=ref.current;if(!active){dialog.close();return;}dialog.showModal();return()=>{dialog.close();if(opener.current?.isConnected&&!opener.current.closest('[inert]'))opener.current.focus();};},[active]);
   return <dialog ref={ref} className="p4-dialog" aria-label={t('operator.status120')} onCancel={event=>{event.preventDefault();if(!busy)onClose();}}><header><div><h2>{t('operator.confirmJobs',{count:jobs.length})}</h2><p>{t('operator.copy31')}</p></div><button disabled={busy} aria-label={t('operator.status121')} onClick={onClose}>{t('operator.copy32')}</button></header><ul className="p4-cancel-review">{jobs.map(job=><li key={job.id}>{job.owner_id} · #{job.id.slice(0,8)} · {jobStatus(job.status,locale)}</li>)}</ul><p>{t('operator.copy33')}<b>{label}</b></p><p className="p4-meta">{t('operator.copy34')}</p>{!current&&<p role="alert" className="p4-warning">{t('operator.copy35')}</p>}<footer><button disabled={busy} onClick={onClose}>{t('operator.copy36')}</button><button className="p4-primary" disabled={busy||!current} onClick={onConfirm}>{busy?t('operator.status68'):t('operator.status69')}</button></footer></dialog>;
 }
 export default function OperatorJobsPanel({controller,state,busy=false}){const {t,locale}=useI18n();
