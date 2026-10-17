@@ -336,3 +336,4 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/quick-chat-sidebar.test.js
 !studio-app/src/QuickPrompt.jsx
 !studio-app/src/ui-audit.js
+!studio-app/src/v2/works-adapter.css
