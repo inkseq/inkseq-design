@@ -1,5 +1,9 @@
 export const libraryCatalogs = {
   "en": {
+    "library.tagHeading": "Tags",
+    "library.loadedCount": "{count} loaded",
+    "library.allFiles": "All files",
+    "library.clearSelection": "Clear selection ({count})",
     "library.previewUnavailable": "Preview unavailable",
     "library.title": "Library",
     "library.openImported": "Open imported work",
@@ -75,6 +79,10 @@ export const libraryCatalogs = {
     "library.positiveDuration": "Enter a positive, finite duration in seconds."
   },
   "zh": {
+    "library.tagHeading": "\u6807\u7b7e",
+    "library.loadedCount": "\u5df2\u52a0\u8f7d {count} \u9879",
+    "library.allFiles": "\u5168\u90e8\u6587\u4ef6",
+    "library.clearSelection": "\u53d6\u6d88\u9009\u62e9 ({count})",
     "library.previewUnavailable": "\u9884\u89c8\u6682\u4e0d\u53ef\u7528",
     "library.title": "素材库",
     "library.openImported": "打开导入内容",
