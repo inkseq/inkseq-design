@@ -5,7 +5,7 @@ import {AssetLibrary, ProfileEditor, Screen, ShotCard, ShotEditor, Timeline, Tra
 import {chosenVersion, estimate, fmt, segments, shotControls, totalDuration} from './model.js';
 import {queuePositions, useStore} from './store.jsx';
 import {Splitter, usePanelSize} from './panels.jsx';
-import {ArrowLeft, Captions, ChevronDown, Clapperboard, Download, FileSpreadsheet, PanelLeftClose, PanelLeftOpen, Plus, Settings2, Sparkles, Trash2} from 'lucide-react';
+import {ArrowLeft, Captions, ChevronDown, Clapperboard, Download, FileSpreadsheet, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Plus, Settings2, Sparkles, Trash2} from 'lucide-react';
 import {running} from './trash.js';
 import {AgentSheet} from './agent.jsx';
 import {LangToggle} from './pages.jsx';
@@ -207,7 +207,7 @@ export function Workspace({selected, setSelected, pickAsset, onToast}) {
   const chapter = story?.chapters.find(c => c.id === state.activeChapter) || story?.chapters[0];
   const shots = story ? db.chapterShots(story.id, chapter.id) : [];
   const player = usePlayer(shots);
-  const lib = usePanelSize('W.lib', 260, 170, 560), dock = usePanelSize('W.dock', 190, 110, 460), drawer = usePanelSize('W.drawer', 440, 340, 820);
+  const lib = usePanelSize('W.lib', 260, 170, 560), dock = usePanelSize('W.dock', 190, 110, 900), drawer = usePanelSize('W.drawer', 440, 340, 820);
   const [libOpen, setLibOpen] = useState(() => typeof window === 'undefined' || window.innerWidth > 760);
   // 多选: Ctrl/Shift-click or the circle on a card; Shift selects a range in chapter order. Esc clears.
   const [picked, setPicked] = useState([]), lastPick = useRef(null);
@@ -246,6 +246,35 @@ export function Workspace({selected, setSelected, pickAsset, onToast}) {
     return () => { window.removeEventListener('popstate', pop); window.removeEventListener('keydown', key); if (!unwinding.current && window.history.state?.sixnineEditor === 2) window.history.back(); };
   }, [wideOpen]); // eslint-disable-line
   useEffect(() => { if (selected && !shots.some(s => s.id === selected)) setSelected(null); }, [chapter?.id]); // eslint-disable-line
+  // Preview dock: until the user drags it, it grows into the empty space under a short card wall;
+  // double-click the bar toggles compact / large; 影院 mode puts a big preview over the card wall.
+  const colRef = useRef(), mainRef = useRef();
+  const [room, setRoom] = useState({col: 0, content: 0});
+  useEffect(() => {
+    const measure = () => {
+      const col = colRef.current, main = mainRef.current;
+      if (!col || !main) return;
+      const last = main.lastElementChild, top = main.getBoundingClientRect().top;
+      const content = last ? last.getBoundingClientRect().bottom - top + main.scrollTop + 32 : 0;
+      setRoom(r => (Math.abs(r.col - col.clientHeight) < 2 && Math.abs(r.content - content) < 2 ? r : {col: col.clientHeight, content}));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (colRef.current) ro.observe(colRef.current);
+    if (mainRef.current) { ro.observe(mainRef.current); [...mainRef.current.children].forEach(c => ro.observe(c)); }
+    return () => ro.disconnect();
+  });
+  const COMPACT = 190, large = Math.max(COMPACT, Math.round(room.col * 0.58)), maxDock = Math.max(COMPACT, room.col - 140);
+  const autoDock = Math.min(large, Math.max(COMPACT, room.col - room.content - 8));
+  const dockH = Math.min(maxDock, dock.custom ? dock.size : autoDock);
+  const toggleDock = () => dock.set(dockH > (COMPACT + large) / 2 ? COMPACT : large);
+  const [theater, setTheater] = useState(false);
+  useEffect(() => {
+    if (!theater) return;
+    const k = e => { if (e.key === 'Escape' && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) setTheater(false); };
+    window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
+  }, [theater]);
+  useEffect(() => { setTheater(false); }, [state.activeChapter, state.activeStory]);
   if (!story) return null;
   const pending = shots.filter(s => !s.versions.length);
   const target = story.settings.targetSec, total = totalDuration(shots);
@@ -256,8 +285,8 @@ export function Workspace({selected, setSelected, pickAsset, onToast}) {
       <div className="layout A" style={{gridTemplateColumns: libOpen ? `${lib.size}px 8px minmax(0, 1fr)` : '0 0 minmax(0, 1fr)', '--libw': (libOpen ? lib.size : 0) + 'px'}}>
         {libOpen ? <AssetLibrary onPick={pickAsset} selectedShot={state.shots.find(s => s.id === selected)} /> : <div />}
         {libOpen ? <Splitter panel={lib} axis="x" sign={1} /> : <div />}
-        <div className="col">
-          <main className="main">
+        <div className="col" ref={colRef}>
+          <main className="main" ref={mainRef}>
             <div className="chapter-head">
               <div className="row tight">
                 <button className="small ghost" title={libOpen ? '收起素材库' : '展开素材库'} onClick={() => setLibOpen(!libOpen)}>{libOpen ? <PanelLeftClose size={16} /> : <><PanelLeftOpen size={16} />素材库</>}</button>
@@ -277,9 +306,16 @@ export function Workspace({selected, setSelected, pickAsset, onToast}) {
             })}
             {picked.length > 0 && <BulkBar story={story} shots={shots} picked={picked} setPicked={setPicked} />}
           </main>
-          <Splitter panel={dock} axis="y" sign={-1} />
-          <div className="dock" style={{height: dock.size}}>
-            <Screen player={player} />
+          {theater && <div className="theater" role="dialog" aria-label="影院模式" style={{bottom: COMPACT - 60 + 8}}>
+            <div className="theater-stage"><Screen player={player} big /></div>
+            <button className="ghost theater-close" title="退出影院模式 (Esc)" onClick={() => setTheater(false)}><Minimize2 size={16} />退出</button>
+          </div>}
+          <Splitter panel={dock} axis="y" sign={-1} current={dockH} onDouble={toggleDock} title="拖动调整预览大小 · 双击在紧凑 / 大预览之间切换" />
+          <div className={'dock' + (theater ? ' in-theater' : dockH > 300 ? ' tall' : '')} style={{height: theater ? COMPACT - 60 : dockH}}>
+            <div className="dock-screen">
+              <Screen player={player} />
+              <button className="screen-expand" title="影院模式：放大预览，时间线保留" onClick={() => setTheater(true)}><Maximize2 size={15} /></button>
+            </div>
             <div className="dock-right">
               <Transport player={player} />
               <Timeline player={player} selectedId={selected} onPick={setSelected} />
