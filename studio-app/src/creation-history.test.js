@@ -129,3 +129,19 @@ test('fresh session reads update sidebar generating eligibility instead of retai
  assert.equal(controller.getState().sessions[0].trashable,true);await controller.open('s');
  assert.equal(controller.getState().sessions[0].trashable,false);assert.equal(controller.getState().sessions[0].blocked_reason,'active_work');
 });
+
+test('recovering a lost row rename acknowledges its exact key without rolling back newer loaded settings',async()=>{
+ let live=row('s',{next_settings:{controls:{duration:5}}}),originalReceipt;const calls=[],opens=[];
+ const {controller,storage}=await setup({sessions:async()=>({sessions:[structuredClone(live)]}),session:async id=>{opens.push(id);return {session:structuredClone(live)};},patchSession:async(id,body,key)=>{
+  calls.push({id,body:structuredClone(body),key});if(calls.length===1){live={...live,title:body.title,version:4};originalReceipt=structuredClone(live);throw Error('lost acknowledgement');}return {session:structuredClone(originalReceipt)};
+ }});
+ await controller.open('s');await assert.rejects(controller.patchRow({account:'owner',id:'s',version:3},{title:'Renamed'}));
+ const pending=structuredClone(controller.getState().pending);
+ // Another client changes generation settings, then this tab reads that v5.
+ live={...live,version:5,next_settings:{controls:{duration:10}}};await controller.open('s');
+ saveDraft('owner','s','Newer unsent prompt',{storage,edit:true});const loaded=structuredClone(controller.getState().session),openCount=opens.length;
+ await controller.recover();
+ assert.deepEqual(calls[0],calls[1]);assert.equal(calls.length,2);assert.equal(calls[1].key,pending.key);assert.deepEqual(calls[1].body,pending.body);
+ assert.deepEqual(controller.getState().session,loaded);assert.equal(controller.getState().session.version,5);assert.equal(controller.getState().session.next_settings.controls.duration,10);
+ assert.equal(opens.length,openCount);assert.equal(controller.getState().pending,null);assert.equal(readDraft('owner','s',storage),'Newer unsent prompt');
+});

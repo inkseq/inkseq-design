@@ -84,7 +84,11 @@ export function createQuickChatController({client=createQuickChatClient(),storag
     const ctx=context(),target=operation.metadataTarget,id=target?.id||operation.sessionId;
     if(operation.args?.length!==1||operation.args[0]!==id||!id||target&&(target.account!==ctx.account||target.version!==operation.body.expected_version||Object.keys(operation.body).some(key=>!['expected_version','title','is_test'].includes(key))))throw Error('原标记目标不完整，请核对原操作。');
     const value=await client.patchSession(...operation.args,operation.body,operation.key);guard(ctx,{session:false});const session=checkMetadata(value,id,operation.body);writePending(null);guard(ctx,{session:false});
-    if(state.session?.id===session.id)emit({session});guard(ctx,{session:false});closeArchivedSession([session]);guard(ctx,{session:false});await list();return value;
+    // An idempotent acknowledgement settles the original command. It is not
+    // a fresh project read: another client may have advanced this session.
+    const newerLoaded=state.session?.id===session.id&&Number.isSafeInteger(state.session.version)&&state.session.version>session.version;
+    if(!newerLoaded&&state.session?.id===session.id)emit({session});guard(ctx,{session:false});
+    if(!newerLoaded)closeArchivedSession([session]);guard(ctx,{session:false});await list();return value;
   }
   function resetCardHistory(){cardPageSequence++;textPageSequence++;cardPageRequest=null;return emptyCardHistory();}
   async function readHistoryCard(summary,ctx,bundle){
