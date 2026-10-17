@@ -89,3 +89,33 @@
  .qc-v2 .qc-main{padding-top:52px}
  .qc-v2 .qc-sidebar{top:0}
 }
+
+/* Compact composer: status and profile controls remain available on demand. */
+.qc-v2{font-family:Inter,'Noto Sans SC',-apple-system,BlinkMacSystemFont,sans-serif}
+.qc-v2 .qc-prompt-row{display:flex;align-items:flex-end;gap:8px;min-width:0}
+.qc-v2 .qc-prompt-row .qc-prompt{flex:1;min-width:0;resize:none}
+.qc-v2 .qc-prompt-row .qc-send{flex:none;min-height:44px;margin-bottom:6px;white-space:nowrap}
+.qc-v2 .qc-composer-details{font-size:11px;color:#929c95;border-top:1px solid #ffffff16;margin-top:4px}
+.qc-v2 .qc-composer-details>summary{cursor:pointer;padding:7px 0;min-height:32px}
+.qc-v2 .qc-composer-details[open]{max-height:30dvh;overflow:auto}
+.qc-v2 .qc-availability-mode{background:#222624;color:#bcc3bd}
+.qc-v2 .qc-availability-mode.available{color:#63d69e}
+.qc-v2 .qc-availability-mode.unavailable{color:#f3b65a}
+.qc-v2 .qc-availability-mode[aria-current=true]{outline-color:#ffffff30}
+.qc-v2 .qc-availability-actions a{color:#cdf26e}
+.qc-v2 .qc-header .qc-connection-state{font-size:12px;max-width:none;line-height:1.3;white-space:normal;overflow:visible;text-overflow:clip;padding:6px}
+@media(max-width:760px){
+ .qc-v2 .qc-composer-wrap{max-height:58dvh;flex-shrink:0}
+ .qc-v2 .qc-composer{padding:8px 10px}
+ .qc-v2 .qc-prompt-row .qc-prompt{min-height:48px;max-height:96px;padding:10px 0}
+ .qc-v2 .qc-prompt-row .qc-send{font-size:12px;padding:7px 10px}
+ .qc-v2 .qc-input-head>span{display:none}
+ .qc-v2 .qc-input-head button{font-size:11px;padding:4px 8px;min-height:32px}
+ .qc-v2 .qc-composer-bottom{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding-bottom:2px;scrollbar-width:thin}
+ .qc-v2 .qc-composer-bottom>*{flex-shrink:0}
+ .qc-v2 .qc-composer-bottom .qc-model-label select{max-width:140px;font-size:11px}
+ .qc-v2 .qc-composer-bottom .qc-settings-summary{white-space:nowrap}
+ .qc-v2 .qc-composer-details>summary{min-height:36px;display:flex;align-items:center}
+ .qc-v2 .qc-footnote{font-size:10px;line-height:1.3;margin:5px 0 0}
+ .qc-v2 .qc-header .qc-connection-state{max-width:112px;font-size:11px;min-height:36px}
+}
