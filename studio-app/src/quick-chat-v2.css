@@ -88,6 +88,4 @@
  .qc-v2>.v2-header{height:52px}
  .qc-v2 .qc-main{padding-top:52px}
  .qc-v2 .qc-sidebar{top:0}
- .qc-v2 .v2-global-nav{display:flex;position:fixed;inset:auto 0 0;height:58px;justify-content:space-around;align-items:center;gap:0;padding:4px;background:#131515;border-top:1px solid #ffffff16;z-index:25}
- .qc-v2 .v2-global-nav>a{font-size:11px;min-width:0;min-height:44px;display:flex;align-items:center;justify-content:center;padding:6px 7px;white-space:normal;text-align:center;line-height:1.25}
 }
