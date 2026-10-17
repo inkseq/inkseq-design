@@ -87,6 +87,10 @@
 !studio-app/src/SoundStudio.jsx
 !studio-app/src/StoryCoach.jsx
 !studio-app/src/StoryNavigation.jsx
+!studio-app/src/StoryOpenNotice.jsx
+!studio-app/src/story-open.js
+!studio-app/src/story-open.css
+!studio-app/src/story-open.test.js
 !studio-app/src/SubtitleStudio.jsx
 !studio-app/src/activity-window.js
 !studio-app/src/activity-window.test.js
