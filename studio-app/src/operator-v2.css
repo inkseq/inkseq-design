@@ -3,3 +3,27 @@
 .v2-gpu-shell.v2-gpu-shell .v2-avatar{color:var(--accent-ink)}
 
 .p4-shell.v2-gpu-shell{grid-template-columns:minmax(0,1fr)}.p4-shell.v2-gpu-shell>.p4-side{display:none}.p4-shell.v2-gpu-shell>.p4-main{max-width:1360px;margin:0 auto;padding:28px 24px 60px}.p4-shell.v2-gpu-shell .p4-mobile-admin{display:inline-flex}.p4-account-menu{position:relative}.p4-account-menu summary{list-style:none;cursor:pointer}.p4-account-menu>div{position:absolute;z-index:30;right:0;top:38px;min-width:160px;padding:8px;background:var(--surface-2);border:1px solid var(--line-2);border-radius:10px;display:grid;gap:5px}.p4-account-menu>div a{padding:8px}.p4-shell.v2-gpu-shell .p4-account-menu summary{color:var(--accent-ink)}@media(max-width:760px){.p4-shell.v2-gpu-shell>.p4-main{padding:16px 12px 84px}}
+
+/* Higher specificity than the legacy sheets, including dialogs portaled outside the shell. */
+.p4-dialog.p4-dialog{--p4-bg:var(--bg,#0b0c0c);--p4-paper:var(--surface,#131515);--p4-ink:var(--ink,#f2f4f1);--p4-muted:var(--muted,#808983);--p4-line:var(--line,rgba(255,255,255,.075));--p4-green:var(--accent,#cdf26e);--p4-mint:var(--surface-2,#191c1b);background:var(--p4-paper);color:var(--p4-ink);box-shadow:0 24px 80px #0008;color-scheme:dark}.p4-dialog.p4-dialog::backdrop{background:#0009}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.operator-budget,.budget-account,.p4-group,.p4-config,.p4-preparation,.p4-metrics>div){background:var(--surface,#131515);color:var(--ink,#f2f4f1);border-color:var(--line,rgba(255,255,255,.075))}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-group>header,.p4-machine,.p4-admin-machine,table,tbody,tr,td){background:var(--surface,#131515);color:var(--ink,#f2f4f1);border-color:var(--line,rgba(255,255,255,.075))}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(thead,th,.p4-total,.p4-preview,.p4-preparation-steps li){background:var(--surface-2,#191c1b);color:var(--ink,#f2f4f1);border-color:var(--line,rgba(255,255,255,.075))}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(button,input,select,textarea){background:var(--surface-2,#191c1b);color:var(--ink,#f2f4f1);border-color:var(--line,rgba(255,255,255,.075));color-scheme:dark}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) button:hover{background:var(--surface-3,#222624)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-primary,.op-primary){background:var(--accent,#cdf26e);color:var(--accent-ink,#17200a);border-color:transparent}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(small,em,dt,.budget-account p,.p4-meta,.p4-method,.p4-footer,.p4-progress-diagnostic,label,.p4-dialog>header p){color:var(--muted,#808983)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.budget-account summary,a){color:var(--ink,#f2f4f1)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) .p4-link{color:var(--accent,#cdf26e)!important}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-pill,.p4-note,.p4-preparation-steps li.current){background:#183329;color:#8dd8b3;border-color:#315343}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) .p4-pill.muted{background:var(--surface-3,#222624);color:var(--muted,#808983)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-warning,.p4-pill.warm,.budget-account.warning){background:#332c18;color:#e5c77d;border-color:#66552b}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-error,.budget-account.exhausted){background:#351f20;color:#f1a39e;border-color:#683838}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) .budget-account.exhausted header>span{color:#f1a39e}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) .budget-account header>span{color:#e5c77d}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.p4-policies button[aria-pressed=true],.p4-tabs button[aria-current=page]){background:var(--surface-3,#222624);border-color:var(--accent,#cdf26e);color:var(--ink,#f2f4f1)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) :is(.budget-admin-row,.p4-queue footer,.p4-offer footer,.p4-dialog>footer,.p4-checklist>div,.p4-start-results>div,.p4-model-state){border-color:var(--line,rgba(255,255,255,.075))}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) progress{accent-color:var(--accent,#cdf26e);background:var(--surface-3,#222624)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) progress::-webkit-progress-bar{background:var(--surface-3,#222624)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) progress::-webkit-progress-value{background:var(--accent,#cdf26e)}
+:is(.v2-gpu-shell.v2-gpu-shell,.p4-dialog.p4-dialog) progress::-moz-progress-bar{background:var(--accent,#cdf26e)}
