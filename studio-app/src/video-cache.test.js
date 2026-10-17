@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {byteRange,cacheKey,createVideoCache,videoTarget} from './video-cache-core.js';
 import {playedVideoTarget} from './video-cache-client.js';
+import {createCloudClient} from './cloud-client.js';
 import {evictionPlan,VIDEO_CACHE_LIMIT,VIDEO_FILE_LIMIT} from './video-cache-store.js';
 
 const ORIGIN='https://inkseq.example',A='superdan',B='supervan';
@@ -151,4 +152,44 @@ test('cached downloads retain fresh attachment disposition without persisting be
  const f=fixture();await f.cache.handle(request());const response=await f.cache.handle(new Request(ORIGIN+path()+'&download=1'));
  assert.equal(response.headers.get('X-Inkseq-Video-Cache'),'hit');assert.equal(response.headers.get('Content-Disposition'),'attachment; filename="video.mp4"');assert.equal(await response.text(),'0123456789');
  const preview=await f.cache.handle(request());assert.equal(preview.headers.get('Content-Disposition'),'inline; filename="video.mp4"');assert.equal(f.calls.filter(c=>c.method==='GET').length,1);
+});
+
+test('header-only caller fences are checked on cached GETs and preserved in their authoritative HEAD',async()=>{
+ const f=fixture();await f.cache.handle(request());
+ const allowed=await f.cache.handle(new Request(ORIGIN+'/v1/artifacts/v1/content',{headers:{'X-Expected-Account':A}}));
+ assert.equal(allowed.status,200);assert.equal(allowed.headers.get('X-Inkseq-Video-Cache'),'hit');assert.equal(allowed.headers.get('X-Authenticated-Account'),A);assert.equal(await allowed.text(),'0123456789');
+ assert.equal(f.calls.at(-1).method,'HEAD');assert.equal(f.calls.at(-1).options.headers['X-Expected-Account'],A);
+ const denied=await f.cache.handle(new Request(ORIGIN+'/v1/artifacts/v1/content',{headers:{'X-Expected-Account':B}}));
+ assert.equal(denied.status,409);assert.notEqual(await denied.text(),'0123456789');assert.equal(f.calls.at(-1).options.headers['X-Expected-Account'],B);assert.equal(f.store.entries.size,0);
+});
+
+test('query/header conflicts and merged duplicate headers never bypass the native context guard',async()=>{
+ const f=fixture();await f.cache.handle(request());const count=f.calls.length;
+ for(const value of [B,'',A+', '+A,A+', '+B]){
+  const response=await f.cache.handle(new Request(ORIGIN+path(),{headers:{'X-Expected-Account':value}}));assert.equal(response.status,400);assert.equal(response.headers.get('Cache-Control'),'no-store');assert.equal(response.headers.get('X-Inkseq-Video-Cache'),null);assert.notEqual(await response.text(),'0123456789');
+ }
+ assert.equal(f.calls.length,count);
+ const matching=await f.cache.handle(new Request(ORIGIN+path(),{headers:{'X-Expected-Account':A,Range:'bytes=1-2'}}));assert.equal(matching.status,206);assert.equal(matching.headers.get('X-Authenticated-Account'),A);assert.equal(await matching.text(),'12');
+ for(const value of ['',A+', '+A,'invalid account']){
+  const result=await f.cache.handle(new Request(ORIGIN+'/v1/artifacts/v1/content',{headers:{'X-Expected-Account':value}}));assert.equal(result.status,409);assert.equal(f.calls.at(-1).options.headers['X-Expected-Account'],value);
+ }
+ // Invalid/duplicate query fences are deliberately outside the worker route:
+ // its predicate returns null, leaving the exact original request to the API.
+ for(const suffix of ['?expected_account='+A+'&expected_account='+A,'?expected_account=','?expected_account=invalid%20account']){
+  assert.equal(videoTarget(ORIGIN+'/v1/artifacts/v1/content'+suffix,ORIGIN),null);
+  assert.equal(await f.cache.handle(new Request(ORIGIN+'/v1/artifacts/v1/content'+suffix)),null);
+ }
+});
+
+test('a mismatched header-only Range miss retains its original server fence instead of replaying another owner',async()=>{
+ const f=fixture();await f.cache.handle(request());f.set({full:()=>new Response(null,{status:409,headers:{'X-Authenticated-Account':A}})});
+ const original=new Request(ORIGIN+'/v1/artifacts/v1/content',{headers:{'X-Expected-Account':B,Range:'bytes=0-1'}}),response=await f.cache.handle(original);
+ assert.equal(response.status,409);assert.equal(response.headers.get('X-Inkseq-Video-Cache'),null);assert.equal(f.calls.at(-1).request,original);assert.equal(f.calls.at(-1).request.headers.get('X-Expected-Account'),B);
+});
+
+test('the real cloud download client receives fresh account/disposition headers on a cached response',async()=>{
+ const f=fixture();await f.cache.handle(request());const responses=[];
+ const client=createCloudClient({fetcher:async(url,options)=>{const response=await f.cache.handle(new Request(ORIGIN+url,options));responses.push(response);return response;}});client.setAccount(A);
+ const blob=await client.download('/v1/artifacts/v1/content?download=1');assert.equal(await blob.text(),'0123456789');assert.equal(responses[0].headers.get('X-Authenticated-Account'),A);assert.equal(responses[0].headers.get('Content-Disposition'),'attachment; filename="video.mp4"');assert.equal(responses[0].headers.get('X-Inkseq-Video-Cache'),'hit');assert.equal(f.calls.at(-1).options.headers['X-Expected-Account'],A);
+ client.setAccount(B);await assert.rejects(client.download('/v1/artifacts/v1/content'),error=>error.status===409);assert.equal(responses[1].status,409);
 });

@@ -40,12 +40,13 @@ function responseFor(blob, request, head) {
     return new Response(null, { status: 416, headers });
   }
   headers.set("X-Inkseq-Video-Cache", "hit");
+  headers.set("X-Authenticated-Account", head.headers.get("X-Authenticated-Account"));
   const body = range ? blob.slice(range.start, range.end + 1, "video/mp4") : blob;
   headers.set("Content-Length", String(body.size));
   if (range) headers.set("Content-Range", `bytes ${range.start}-${range.end}/${size}`);
   return new Response(body, { status: range ? 206 : 200, headers });
 }
-const failure = (status) => new Response("Video unavailable. Check your connection and sign-in.", { status: [401, 403, 404, 409].includes(status) ? status : 503, headers: { "Cache-Control": "no-store" } });
+const failure = (status) => new Response("Video unavailable. Check your connection and sign-in.", { status: [400, 401, 403, 404, 409].includes(status) ? status : 503, headers: { "Cache-Control": "no-store" } });
 async function completeBody(response, size) {
   if (response.status !== 200 || ["opaque", "opaqueredirect", "error"].includes(response.type) || response.headers.get("Content-Type")?.split(";")[0].trim() !== "video/mp4" || response.headers.get("Content-Range") || Number(response.headers.get("Content-Length")) !== size) {
     void response.body?.cancel().catch(() => {
@@ -79,7 +80,7 @@ function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args)
   async function authorize(target, epoch) {
     let head;
     try {
-      head = await fetcher(target.url, { method: "HEAD", credentials: "same-origin", cache: "no-store", redirect: "error", headers: target.expected ? { "X-Expected-Account": target.expected } : {} });
+      head = await fetcher(target.url, { method: "HEAD", credentials: "same-origin", cache: "no-store", redirect: "error", headers: target.expected !== null ? { "X-Expected-Account": target.expected } : {} });
     } catch {
       return { error: 503 };
     }
@@ -88,7 +89,7 @@ function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args)
       return { error: head.status };
     }
     const account = head.headers.get("X-Authenticated-Account");
-    if (!ACCOUNT.test(account || "") || target.expected && account !== target.expected) {
+    if (!ACCOUNT.test(account || "") || target.expected !== null && account !== target.expected) {
       await store.clear();
       return { error: 409 };
     }
@@ -138,8 +139,15 @@ function createVideoCache({ store, origin, fetcher = (...args) => fetch(...args)
   }
   async function handle(request, { waitUntil = () => {
   } } = {}) {
-    const target = videoTarget(request.url, origin);
-    if (!target || request.method !== "GET" || request.headers.has("Authorization")) return null;
+    const parsed = videoTarget(request.url, origin);
+    if (!parsed || request.method !== "GET" || request.headers.has("Authorization")) return null;
+    const headerAccount = request.headers.get("X-Expected-Account");
+    // Match the native-content guard: a query fence and the original header
+    // must agree. Header-only values are forwarded unchanged so the server
+    // retains its exact mismatch/invalid-header semantics (including duplicates
+    // combined by Fetch Headers). Never replace this fence with our cache hint.
+    if (parsed.expected !== null && headerAccount !== null && parsed.expected !== headerAccount) return failure(400);
+    const target = { ...parsed, expected: headerAccount ?? parsed.expected };
     try {
       const snapshot = await store.snapshot().catch(() => null);
       // A cold partial/metadata read cannot populate the cache. Its ordinary
