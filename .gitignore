@@ -355,3 +355,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/QuickChatThread.jsx
 !studio-app/src/quick-thread-window.js
 !studio-app/src/quick-thread-window.test.js
+
+# Original-ledger cost presentation (#296).
+!studio-app/src/SpendingBreakdown.jsx
+!studio-app/src/spending-breakdown.js
+!studio-app/src/spending-breakdown.test.js
