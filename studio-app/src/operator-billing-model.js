@@ -2,6 +2,7 @@ const amount=value=>Number.isSafeInteger(value)&&value>=0;
 const text=value=>typeof value==='string'&&value.length>0&&value.length<=200;
 const hash=value=>typeof value==='string'&&/^[a-f0-9]{64}$/.test(value);
 const kind=value=>['job','instance'].includes(value);
+const note=(value,max)=>typeof value==='string'&&value===value.trim()&&value.length>0&&value.length<=max&&!/[\x00-\x1f\x7f]/.test(value);
 export const billingReferenceKey=row=>row?.reference_type+':'+row?.reference_id;
 const same=(left,right)=>JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
 function canonical(value){return Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;}
@@ -35,8 +36,7 @@ export function validBillingPage(value,owner){
 export function validBillingRequest(body){
   if(!body||!text(body.owner_id)||!['settle','waive'].includes(body.action)
       ||Object.keys(body).sort().join(',')!=='action,evidence_note,evidence_sha256,items,owner_id,reason'
-      ||typeof body.reason!=='string'||!body.reason.trim()||body.reason.length>1000
-      ||typeof body.evidence_note!=='string'||!body.evidence_note.trim()||body.evidence_note.length>2000
+      ||!note(body.reason,1000)||!note(body.evidence_note,2000)
       ||!hash(body.evidence_sha256)
       ||!Array.isArray(body.items)||!body.items.length||body.items.length>200)return false;
   if(new Set(body.items.map(billingReferenceKey)).size!==body.items.length)return false;

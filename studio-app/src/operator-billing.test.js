@@ -30,7 +30,7 @@ test('97-reference waiver requires evidence and immutable selection; foreign own
   assert.equal(validBillingRequest(body),true);assert.equal(validBillingPreview(p,body),true);
   assert.equal(validBillingPage({owner_id:owner,items:rows,next_cursor:null},owner),true);
   assert.equal(validBillingPage({owner_id:owner,items:[row('foreign',{owner_id:'superdan'})],next_cursor:null},owner),false);
-  for(const patch of [{reason:''},{evidence_sha256:null},{evidence_note:''},{items:[body.items[0],body.items[0]]},{unexpected:true}])assert.equal(validBillingRequest({...body,...patch}),false);
+  for(const patch of [{reason:''},{reason:'two\nlines'},{evidence_sha256:null},{evidence_note:''},{evidence_note:'two\tparts'},{items:[body.items[0],body.items[0]]},{unexpected:true}])assert.equal(validBillingRequest({...body,...patch}),false);
   assert.equal(validBillingPreview({...p,request:{...body,owner_id:'superdan'}},body),false);
   assert.equal(validBillingPreview({...p,items:[{...p.items[0],owner_id:'superdan'},...p.items.slice(1)]},body),false);
   assert.equal(validBillingPreview({...p,expires_at:0},body),false);
