@@ -47,7 +47,7 @@ export default function SpendingSettings({account}){
       setUser(data);setDraft({daily:dollars(data.value.daily_limit_microusd),ask:dollars(data.value.ask_above_microusd),
         connections:Object.fromEntries(data.connections.map(row=>[row.actor_id,dollars(row.daily_limit_microusd)]))});
       if(data.admin){const next=await api.request('/v1/operator/admin/spending-settings');if(current!==epoch.current)return;setAdmin(next);setAdminDraft({
-        testDaily:dollars(next.value.test_daily_limit_microusd),hourly:dollars(next.value.max_hourly_price_microusd),fleetHourly:dollars(next.value.fleet_hourly_limit_microusd),
+        testTask:dollars(next.value.test_task_limit_microusd??next.value.test_daily_limit_microusd),hourly:dollars(next.value.max_hourly_price_microusd),fleetHourly:dollars(next.value.fleet_hourly_limit_microusd),
         idle:String(next.value.idle_shutdown_seconds/60),runtime:String(next.value.max_runtime_seconds/60)});}
     }catch(failure){if(current===epoch.current)setError(failure.status===401?t('settings.login'):failure.message);}
     finally{if(current===epoch.current)setBusy(false);}
@@ -60,7 +60,7 @@ export default function SpendingSettings({account}){
       let body;
       if(isAdmin){
         const seconds=field=>{const value=Number(adminDraft[field])*60;if(!Number.isSafeInteger(value)||value<1)throw Error('settings.invalid');return value;};
-        body={expected_version:admin.version,value:{test_daily_limit_microusd:micros(adminDraft.testDaily),
+        body={expected_version:admin.version,value:{[Object.hasOwn(admin.value,'test_task_limit_microusd')?'test_task_limit_microusd':'test_daily_limit_microusd']:micros(adminDraft.testTask),
           max_hourly_price_microusd:micros(adminDraft.hourly),fleet_hourly_limit_microusd:micros(adminDraft.fleetHourly),idle_shutdown_seconds:seconds('idle'),max_runtime_seconds:seconds('runtime')}};
       }else body={expected_version:user.version,value:{daily_limit_microusd:micros(draft.daily),ask_above_microusd:micros(draft.ask),
         connection_limits:{...user.value.connection_limits,...Object.fromEntries(Object.entries(draft.connections).map(([key,value])=>[key,micros(value)]))}}};
@@ -83,7 +83,7 @@ export default function SpendingSettings({account}){
         {field('settings.daily',draft.daily,value=>setDraft(previous=>({...previous,daily:value})))}{field('settings.ask',draft.ask,value=>setDraft(previous=>({...previous,ask:value})))}
       </section><p className="muted">{t('settings.zero')} · {t('settings.day')}</p><div className="row tight" style={{justifyContent:'flex-end'}}><button className="primary" disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></div></form>}
       {user&&draft&&section==='budget'&&pageActive&&<OperatorBudgetPanel account={account}/>}
-      {admin&&adminDraft&&<form className="ops-tab-panel" hidden={section!=='admin'} onSubmit={event=>{event.preventDefault();void save(true);}}><section id="my-admin" className="card-box limits" aria-label={t('settings.admin')}>{[['settings.testDaily','testDaily'],['settings.hourly','hourly'],['settings.fleetHourly','fleetHourly'],['settings.idle','idle'],['settings.runtime','runtime']].map(([label,key])=><React.Fragment key={key}>{field(label,adminDraft[key],value=>setAdminDraft(previous=>({...previous,[key]:value})))}</React.Fragment>)}</section><p className="muted">{t('settings.adminHelp')}</p><div className="row tight" style={{justifyContent:'flex-end'}}><button className="primary" disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></div></form>}
+      {admin&&adminDraft&&<form className="ops-tab-panel" hidden={section!=='admin'} onSubmit={event=>{event.preventDefault();void save(true);}}><section id="my-admin" className="card-box limits" aria-label={t('settings.admin')}>{[['settings.testTask','testTask'],['settings.hourly','hourly'],['settings.fleetHourly','fleetHourly'],['settings.idle','idle'],['settings.runtime','runtime']].map(([label,key])=><React.Fragment key={key}>{field(label,adminDraft[key],value=>setAdminDraft(previous=>({...previous,[key]:value})))}</React.Fragment>)}</section><p className="muted">{t('settings.adminHelp')}</p><div className="row tight" style={{justifyContent:'flex-end'}}><button className="primary" disabled={busy}>{t(busy?'settings.saving':'settings.save')}</button></div></form>}
       {admin&&section==='admin'&&pageActive&&<BudgetAdministration account={account}/>}
       <div id="my-assistants" hidden={section!=='assistants'}><AssistantConnections embedded account={account} active={pageActive&&section==='assistants'} onLogin={()=>navigateApp('/quick-chat')}/></div>
     </section></main></div>;

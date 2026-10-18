@@ -1,5 +1,8 @@
 export const settingsCatalogs = {
   en: {
+    'settings.testTask':'Test GPU limit per acceptance task (USD)',
+    'settings.testTaskId':'Acceptance task ID',
+    'settings.testTaskHelp':'Use the same ID for this issue’s machines and retries. Other tasks keep their own spending records.',
     'settings.account':'Account','settings.defaults':'Generation defaults','settings.defaultsHelp':'Edit take limits and folding in Quick Create. Global, story and shot recipe defaults are available in the story editor.','settings.storyDefaults':'Open stories to edit recipe defaults',
     'settings.documentTitle':'Settings · Inkseq',
     'settings.title':'Settings', 'settings.back':'Back to creation', 'settings.budget':'My budget',
@@ -23,6 +26,9 @@ export const settingsCatalogs = {
     'errors.spending_usage_unconfirmed':'Spending is not yet confirmed. Reconcile the existing charge before submitting again.',
   },
   zh: {
+    'settings.testTask':'每次验收任务的测试 GPU 上限（美元）',
+    'settings.testTaskId':'验收任务编号',
+    'settings.testTaskHelp':'同一项改动的机器和重试沿用同一编号；其他任务的费用记录保持独立。',
     'settings.account':'\u8d26\u6237','settings.defaults':'\u751f\u6210\u9ed8\u8ba4\u503c','settings.defaultsHelp':'\u5728\u5feb\u901f\u521b\u4f5c\u4e2d\u8c03\u6574\u7248\u672c\u6570\u4e0a\u9650\u548c\u6298\u53e0\u6570\u3002\u5168\u5c40\u3001\u6545\u4e8b\u53ca\u955c\u5934\u914d\u65b9\u9ed8\u8ba4\u503c\u53ef\u5728\u6545\u4e8b\u7f16\u8f91\u5668\u4e2d\u4fee\u6539\u3002','settings.storyDefaults':'\u6253\u5f00\u6545\u4e8b\u4fee\u6539\u914d\u65b9\u9ed8\u8ba4\u503c',
     'settings.documentTitle':'设置 · 映序',
     'settings.title':'设置', 'settings.back':'返回创作', 'settings.budget':'我的预算',
