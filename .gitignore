@@ -363,3 +363,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/OperatorBillingPanel.jsx
 !studio-app/src/operator-billing-model.js
 !studio-app/src/operator-billing.test.js
+
+# Pinned canonical formatting/lint baseline (#257), source only.
+!studio-app/.prettierrc.json
+!studio-app/.prettierignore
+!studio-app/eslint.config.js
+!studio-app/tools/
+!studio-app/tools/check-changed.mjs

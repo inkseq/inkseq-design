@@ -12,6 +12,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -19,6 +20,10 @@ jobs:
           cache-dependency-path: studio-app/package-lock.json
       - run: npm ci
         working-directory: studio-app
+      - run: npm run check:changed
+        working-directory: studio-app
+        env:
+          FORMAT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
       - run: npm test
         working-directory: studio-app
       - run: npm run build
