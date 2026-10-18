@@ -18,6 +18,22 @@ feature in the canonical frontend (`inkseq/inkseq-design`, `studio-app`) on the 
   `src/layouts.jsx` (story workspace, bulk bar), `src/library.jsx`, `src/gpu.jsx`, `src/agent.jsx`,
   `src/trashPage.jsx`, `src/advanced.jsx` (all H3 controls), `src/inputs.jsx`.
 
+## Launch batch A/B (2026-10-19) — accounts, credits, admin, AI-first onboarding, folders
+
+Backend specs: `inkseq/h3-studio#303` (epic) → #304 roles, #305 sign-in, #306 credits, #307 Stripe, #308 legal,
+#309 "Hand it to AI" import, #310 library folders. Use **Preview as** (bottom-left) to switch User / Admin / Signed out.
+
+- **Users see credits only** (1 credit = US$0.01). Header chip → Settings → Credits: balance, today, packs, price table
+  (credits per second by tier), limits in credits, history. Estimates read "≈ N credits · ≈ M min". Not enough credits →
+  modal, nothing queued. Agent daily caps are in credits. (`src/account.jsx`, `src/model.js` `estimate`).
+- **Admins only**: GPUs nav and Settings → Admin (Users with role/status/credit adjustment with reason, Pricing & margin
+  with live margin per tier, Test machines, Audit log). Regular users never start machines.
+- **Sign in** (`?page=auth`): Google / Apple / GitHub / 6-digit email code, implied consent line, welcome credits.
+  Account → Sign-in methods.
+- **New story is AI-first**: "Hand it to AI" (recommended) imports a whole story into a storyboard and opens it;
+  "Use my own AI" opens the connect sheet; logline / script / blank remain. Works page shows the hint strip.
+- **Library opens on folders**: one per story, Quick Create, Uploaded not used yet, Inbox; derived from usage, stored once.
+
 ## Rules for the implementation
 
 1. **Every feature ships for both the browser and Agents.** Browser and Agent use the same business API.

@@ -2,7 +2,7 @@ import React, {createContext, useCallback, useContext, useEffect, useMemo, useRe
 import {expire, liveView, purge, setTrash} from './trash.js';
 import {getLang, onLang, translateData} from './i18n.js';
 import {BLANK_SHOT, CLIPS, DEFAULT_SETTINGS, mockUploads, parseScript, seedAssets, seedProfiles, seedQuickChats, seedShots, seedStories} from './data.js';
-import {makeDb, modeOf, MODELS, planDrop, RECIPE_KEYS} from './model.js';
+import {creditsFor, DEFAULT_RATES, makeDb, modeOf, MODELS, planDrop, RECIPE_KEYS} from './model.js';
 
 const KEY = 'story-prototype-v8';
 const initial = () => ({
@@ -48,7 +48,30 @@ function seedTags(s) {
 }
 // Older saved demos have no agents yet.
 // Every limit is a setting (with a default) the owner/admin can change in 设置 — nothing is hard-coded.
-export const DEFAULT_LIMITS = {daily: 20, confirmAbove: 1, testDaily: 20, maxHourly: 1.5, idleStopMin: 10, maxRunHours: 2};
+// daily / confirmAbove are in credits (users never see dollars); the test-machine limits stay in US$ (admin only).
+export const DEFAULT_LIMITS = {daily: 2000, confirmAbove: 100, testDaily: 20, maxHourly: 1.5, idleStopMin: 10, maxRunHours: 2};
+// Credit packs sold through Stripe Checkout. Bigger packs get a small bonus; the backend owns this list.
+export const PACKS = [
+  {id: 'starter', name: '入门', usd: 5, credits: 500, bonus: 0},
+  {id: 'creator', name: '创作者', usd: 20, credits: 2100, bonus: 5},
+  {id: 'studio', name: '工作室', usd: 50, credits: 5500, bonus: 10},
+  {id: 'pro', name: '专业', usd: 100, credits: 11500, bonus: 15},
+];
+const DAY = 24 * 3600e3;
+const seedCredits = () => ({balance: 1240, held: 0, entries: [
+  {id: 'ce1', at: Date.now() - 3 * DAY, kind: 'grant', amount: 100, label: '新用户赠送（邮箱已验证）'},
+  {id: 'ce2', at: Date.now() - 2 * DAY, kind: 'purchase', amount: 2100, label: '充值 · 创作者包', usd: 20},
+  {id: 'ce3', at: Date.now() - DAY, kind: 'spend', amount: -960, label: '生成 · 最后一班来信（12 条）'},
+  {id: 'ce4', at: Date.now() - DAY + 3600e3, kind: 'refund', amount: 20, label: '退回 · 生成失败的 1 条'},
+  {id: 'ce5', at: Date.now() - 5 * 3600e3, kind: 'spend', amount: -20, label: '生成 · 快速创作「雨夜站台」'},
+]});
+// Admin view of accounts (prototype sample). Real data comes from GET /v1/admin/users.
+const seedUsers = () => [
+  {id: 'u1', name: 'superdan', email: 'dan@inkseq.com', via: ['密码'], role: 'admin', status: 'active', balance: 1240, spent30: 960, joined: Date.now() - 20 * DAY},
+  {id: 'u2', name: 'supervan', email: 'van@inkseq.com', via: ['密码'], role: 'user', status: 'active', balance: 380, spent30: 2140, joined: Date.now() - 15 * DAY},
+  {id: 'u3', name: 'Mia Chen', email: 'mia.c@gmail.com', via: ['Google'], role: 'user', status: 'active', balance: 100, spent30: 0, joined: Date.now() - 2 * DAY},
+  {id: 'u4', name: 'k.tanaka', email: 'k.tanaka@icloud.com', via: ['Apple', '邮箱'], role: 'user', status: 'suspended', balance: 0, spent30: 40, joined: Date.now() - 6 * DAY},
+];
 // Older saves have portraits with baked-in Chinese text; strip it so thumbnails are language-neutral.
 const plainPortrait = th => {
   if (typeof th !== 'string' || !th.startsWith('data:image/svg+xml')) return th;
@@ -56,7 +79,11 @@ const plainPortrait = th => {
   if (!svg.includes('<text')) return th;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.replace(/<text[^>]*>[^<]*<\/text>/g, '').replace(/<rect x="0" y="134"[^>]*\/>/g, ''));
 };
-const normalize = s => ({...s, assets: (s.assets || []).map(a => ({...a, thumb: plainPortrait(a.thumb)})), agents: s.agents || [], agentInvite: s.agentInvite || null, limits: {...DEFAULT_LIMITS, ...(s.limits || {})}, spentToday: s.spentToday ?? 3.42});
+const creditLimits = l => (l && !l.inCredits ? {...l, daily: (l.daily ?? 20) * 100, confirmAbove: (l.confirmAbove ?? 1) * 100, inCredits: true} : l);
+const normalize = s => ({...s, assets: (s.assets || []).map(a => ({...a, thumb: plainPortrait(a.thumb)})), agents: s.agents || [], agentInvite: s.agentInvite || null,
+  limits: {...DEFAULT_LIMITS, inCredits: true, ...(creditLimits(s.limits) || {})}, creditsToday: s.creditsToday ?? 340,
+  role: s.role || 'user', credits: s.credits || seedCredits(), rates: s.rates || {...DEFAULT_RATES}, ratesRev: s.ratesRev || 3,
+  users: s.users || seedUsers(), adminLog: s.adminLog || [], overhead: s.overhead ?? 3, creditBlock: null});
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return normalize(seedTags(expire(JSON.parse(raw)))); } catch {}
   return normalize(seedTags(initial()));
@@ -84,9 +111,9 @@ function enqueue(state, shot, quality, vary) {
     recipe: Object.fromEntries(RECIPE_KEYS.map(k => [k, k === 'mode' ? modeOf(shot) : shot[k]]))}]};
 }
 
-function reducer(state, a) {
+function core(state, a) {
   switch (a.type) {
-    case 'reset': return initial();
+    case 'reset': return normalize(seedTags(initial()));
     case 'page': return {...state, page: a.page};
     case 'genDefaults': return {...state, genDefaults: a.value};
     // 故事默认：存在故事上，镜头没改过的项自动跟随；不写进每个镜头，所以不会覆盖镜头自己的修改。时长属于镜头内容，不进默认。
@@ -111,15 +138,15 @@ function reducer(state, a) {
       return {...state, agents: [...state.agents, ag]};
     }
     case 'agentPause': return {...state, agents: state.agents.map(x => (x.id === a.id ? {...x, paused: !x.paused, log: [...x.log, {at: Date.now(), text: x.paused ? '你恢复了它' : '你暂停了它'}]} : x))};
-    case 'agentCap': return {...state, agents: state.agents.map(x => (x.id === a.id ? {...x, cap: a.cap, log: [...x.log, {at: Date.now(), text: `你把每日上限改成 $${a.cap}`}]} : x))};
+    case 'agentCap': return {...state, agents: state.agents.map(x => (x.id === a.id ? {...x, cap: a.cap, log: [...x.log, {at: Date.now(), text: `你把每日上限改成 ${a.cap * 100} 积分`}]} : x))};
     case 'limits': return {...state, limits: {...state.limits, ...a.patch}};
     case 'agentRevoke': return {...state, agents: state.agents.filter(x => x.id !== a.id)};
     // 原型：模拟助手在它的范围里做一次事（2 条草稿），并记账；超出每日上限就不提交。
     case 'agentDemo': {
       const ag = state.agents.find(x => x.id === a.id); if (!ag || ag.paused) return state;
-      const cost = 0.06, logIt = (s, text, spent = 0) => ({...s, agents: s.agents.map(x => (x.id === ag.id ? {...x, spent: x.spent + spent, log: [...x.log, {at: Date.now(), text}]} : x))});
+      const cost = 0.4, logIt = (s, text, spent = 0) => ({...s, agents: s.agents.map(x => (x.id === ag.id ? {...x, spent: x.spent + spent, log: [...x.log, {at: Date.now(), text}]} : x))});
       if (ag.perm !== 'generate') return logIt(state, '整理了提示词（只看权限，没有生成）');
-      if (ag.spent + cost > ag.cap) return logIt(state, `想生成 2 条，但会超过每日上限 $${ag.cap}，没有提交`);
+      if (ag.spent + cost > ag.cap) return logIt(state, `想生成 2 条，但会超过每日上限 ${ag.cap * 100} 积分，没有提交`);
       const prompt = ['雨夜站台，女孩回头，霓虹倒影', '清晨车站，老陈擦眼镜，阳光斜照', '林岚拆开信，手微微发抖，近景'][state.agents.indexOf(ag) % 3 + (ag.log.length % 2)] || '雨夜站台，女孩回头';
       if (ag.scope.kind === 'story') {
         const st = state.stories.find(x => x.id === ag.scope.id), ch = st?.chapters[0], sc = ch?.scenes[0];
@@ -443,8 +470,50 @@ function reducer(state, a) {
       return {...state, profiles: [...state.profiles, copy], shots, openProfile: id};
     }
     case 'openProfile': return {...state, openProfile: a.id};
+    // ---- accounts, credits, admin (prototype of the launch batch A) ----
+    case 'role': return {...state, role: a.role, page: a.role === 'guest' ? 'auth' : state.page === 'auth' ? 'home' : (a.role === 'user' && state.page === 'gpu' ? 'home' : state.page)};
+    case 'signIn': return {...state, role: 'user', page: 'home'};
+    case 'settingsTab': return {...state, page: 'settings', settingsTab: a.tab};
+    case 'creditBlockClose': return {...state, creditBlock: null};
+    case 'topUp': {
+      const p = PACKS.find(x => x.id === a.pack); if (!p) return state;
+      const entry = {id: uid('ce'), at: Date.now(), kind: 'purchase', amount: p.credits, label: `充值 · ${p.name}包`, usd: p.usd};
+      return {...state, creditBlock: null, credits: {...state.credits, balance: state.credits.balance + p.credits, entries: [...state.credits.entries, entry]}};
+    }
+    case 'adminCredits': {
+      const u = state.users.find(x => x.id === a.user); if (!u || !a.delta || !a.reason) return state;
+      const log = {at: Date.now(), text: `${a.delta > 0 ? '给' : '扣'} ${u.name} ${Math.abs(a.delta)} 积分 · 原因：${a.reason}`};
+      return {...state, users: state.users.map(x => (x.id === a.user ? {...x, balance: Math.max(0, x.balance + a.delta)} : x)), adminLog: [...state.adminLog, log]};
+    }
+    case 'adminUser': {
+      const u = state.users.find(x => x.id === a.user); if (!u) return state;
+      const what = a.patch.role ? `角色改为${a.patch.role === 'admin' ? '管理员' : '普通用户'}` : a.patch.status === 'suspended' ? '已停用' : '已恢复';
+      return {...state, users: state.users.map(x => (x.id === a.user ? {...x, ...a.patch} : x)), adminLog: [...state.adminLog, {at: Date.now(), text: `${u.name}：${what}`}]};
+    }
+    case 'rates': return {...state, rates: {...state.rates, ...a.patch}};
+    case 'ratesPublish': return {...state, ratesRev: state.ratesRev + 1, adminLog: [...state.adminLog, {at: Date.now(), text: `发布定价 v${state.ratesRev + 1}：快速 ${state.rates.fast} · 标准 ${state.rates.draft} · 精修 ${state.rates.final} 积分/秒`}]};
+    case 'overhead': return {...state, overhead: a.value};
     default: return state;
   }
+}
+
+// ---- credits: every newly queued take is charged when it is submitted (refunded if it fails) ----
+const queuedIds = st => new Set([...st.shots.flatMap(x => x.versions.filter(v => v.status === 'queued').map(v => v.id)),
+  ...st.sessions.flatMap(x => x.messages.filter(m => m.role === 'result' && m.status === 'queued').map(m => m.id))]);
+function newCost(prev, next) {
+  const before = queuedIds(prev);
+  let n = 0, cost = 0;
+  next.shots.forEach(x => x.versions.forEach(v => { if (v.status === 'queued' && !before.has(v.id)) { n++; cost += creditsFor({quality: v.quality, duration: x.duration || 5}, next.rates); } }));
+  next.sessions.forEach(x => x.messages.forEach(m => { if (m.role === 'result' && m.status === 'queued' && !before.has(m.id)) { n++; cost += creditsFor({quality: m.quality, duration: m.duration || 5}, next.rates); } }));
+  return {n, cost};
+}
+function reducer(state, a) {
+  if (!['generate', 'qcPush', 'agentDemo'].includes(a.type)) return core(state, a);
+  const next = core(state, a), {n, cost} = newCost(state, next);
+  if (!cost) return next;
+  if (cost > state.credits.balance) return {...state, creditBlock: {need: cost, have: state.credits.balance, at: Date.now()}};
+  const entry = {id: uid('ce'), at: Date.now(), kind: 'spend', amount: -cost, label: `生成 · ${n} 条`};
+  return {...next, creditsToday: (next.creditsToday || 0) + cost, credits: {...next.credits, balance: next.credits.balance - cost, entries: [...next.credits.entries, entry]}};
 }
 
 const Ctx = createContext(null);

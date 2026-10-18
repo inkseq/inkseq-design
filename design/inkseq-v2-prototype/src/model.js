@@ -173,11 +173,18 @@ export const shotControls = (shot, db) => ({...(db.state.genDefaults || {}), ...
 // 生成前的粗估（原型）：按精度、时长、分辨率估一条要多久、花多少；真实数字以算力页的机器价格为准。
 const RES_FACTOR = {'480P': 1, '576P': 1.4, '768P': 2.2};
 const HOURLY = {draft: 0.69, final: 1.29};
-export function estimate(list) {
-  let min = 0, usd = 0;
+// Users pay in credits (1 credit = US$0.01 retail). Price = seconds of output video × the tier's rate;
+// the operator edits the rates (设置 → 管理员 → 定价) and the backend quotes them — never hard-coded there.
+// usd below is the internal machine-cost estimate, shown to admins only.
+export const CREDIT_USD = 0.01;
+export const DEFAULT_RATES = {fast: 2, draft: 4, final: 12}; // credits per second of video
+export const fmtCredits = n => `${Math.round(n).toLocaleString('en-US')} 积分`;
+export const creditsFor = ({quality = 'draft', duration = 5, count = 1}, rates = DEFAULT_RATES) => Math.ceil((rates[quality] ?? rates.draft) * duration) * count;
+export function estimate(list, rates = DEFAULT_RATES) {
+  let min = 0, usd = 0, credits = 0;
   for (const {quality = 'draft', duration = 5, resolution = quality === 'final' ? '768P' : '480P', count = 1} of list) {
     const m = (quality === 'final' ? 5 : 3) * (duration / 5) * (RES_FACTOR[resolution] || 1.6) * count;
-    min += m; usd += m / 60 * HOURLY[quality];
+    min += m; usd += m / 60 * HOURLY[quality]; credits += creditsFor({quality, duration, count}, rates);
   }
-  return {min, usd, text: `约 ${min < 1 ? '1' : Math.round(min)} 分钟机器时间 · 约 $${usd < 0.01 ? '0.01' : usd.toFixed(2)}`};
+  return {min, usd, credits, text: `约 ${fmtCredits(credits)} · 约 ${min < 1 ? '1' : Math.round(min)} 分钟`};
 }
