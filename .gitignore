@@ -360,3 +360,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/SpendingBreakdown.jsx
 !studio-app/src/spending-breakdown.js
 !studio-app/src/spending-breakdown.test.js
+!studio-app/src/OperatorBillingPanel.jsx
+!studio-app/src/operator-billing-model.js
+!studio-app/src/operator-billing.test.js
