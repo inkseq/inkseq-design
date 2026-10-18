@@ -1,7 +1,7 @@
 import React, {useMemo, useRef, useState} from 'react';
-import {Box, Check, Download, Files, Film, FolderInput, Image as ImageIcon, Inbox, MapPin, Music, Plus, Tag, Trash2, Upload, UserRound, X} from 'lucide-react';
+import {Box, Check, Download, Files, Film, Folder, FolderInput, Image as ImageIcon, Inbox, MapPin, MessageSquare, Music, Plus, Tag, Trash2, Upload, UserRound, X} from 'lucide-react';
 
-const VIEW_ICON = {character: UserRound, location: MapPin, prop: Box, all: Files, image: ImageIcon, video: Film, audio: Music, inbox: Inbox};
+const VIEW_ICON = {folders: Folder, character: UserRound, location: MapPin, prop: Box, all: Files, image: ImageIcon, video: Film, audio: Music, inbox: Inbox};
 import {AppHeader} from './pages.jsx';
 import {AssetThumb, PlayButton, ProfileEditor, readFiles} from './components.jsx';
 import {KIND_LABEL, TYPE_LABEL, VARIANT_LABEL} from './data.js';
@@ -29,26 +29,29 @@ function useUsage() {
     // Works an asset belongs to: used directly by a shot, or through a profile a shot uses.
     const assetStories = id => new Set([...(assetShots[id] || []).map(s => s.storyId), ...(assetProfiles[id] || []).flatMap(p => (profileShots[p.id] || []).map(s => s.storyId))]);
     const profileStories = id => new Set((profileShots[id] || []).map(s => s.storyId));
-    return {story, profileShots, assetShots, assetProfiles, assetStories, profileStories};
-  }, [state.shots, state.profiles, state.stories]);
+    const quick = new Set((state.sessions || []).flatMap(x => x.messages.flatMap(m => (m.attachments || []).filter(a => typeof a === 'string'))));
+    return {story, profileShots, assetShots, assetProfiles, assetStories, profileStories, quick};
+  }, [state.shots, state.profiles, state.stories, state.sessions]);
 }
 
 export function LibraryPage() {
   const {state, dispatch, toast, db} = useStore();
   const use = useUsage();
-  const [view, setView] = useState('image'), [work, setWork] = useState('all'), [tag, setTag] = useState(null), [q, setQ] = useState('');
+  // Opens on folders: one per story, one for 快速创作, uploads not used yet, and 待整理 — never a flat dump of everything.
+  const [view, setView] = useState(state.libraryFolder ? 'all' : 'folders'), [work, setWork] = useState(state.libraryFolder || 'all'), [tag, setTag] = useState(null), [q, setQ] = useState('');
   const [picked, setPicked] = useState([]), [open, setOpen] = useState(null), [tagInput, setTagInput] = useState(''), [drop, setDrop] = useState(false);
   const fileInput = useRef();
   const isProfile = ['character', 'location', 'prop'].includes(view);
   const tags = useMemo(() => { const n = {}; state.assets.forEach(a => (a.tags || []).forEach(t => { n[t] = (n[t] || 0) + 1; })); return Object.entries(n).sort((a, b) => b[1] - a[1]); }, [state.assets]);
-  const inWork = stories => work === 'all' || (work === 'unused' ? !stories.size : stories.has(work));
+  const inWork = (stories, id) => work === 'all' || (work === 'quick' ? use.quick.has(id) : work === 'unused' ? !stories.size && !use.quick.has(id) : stories.has(work));
 
   const assets = state.assets.filter(a => (view === 'all' ? !a.inbox : view === 'inbox' ? a.inbox : a.kind === view && !a.inbox)
-    && inWork(use.assetStories(a.id)) && (!tag || (a.tags || []).includes(tag)) && (!q || (a.name + (a.tags || []).join(' ')).includes(q)));
+    && inWork(use.assetStories(a.id), a.id) && (!tag || (a.tags || []).includes(tag)) && (!q || (a.name + (a.tags || []).join(' ')).includes(q)));
   const profiles = state.profiles.filter(p => p.type === view && inWork(use.profileStories(p.id)) && (!q || (p.name + p.desc).includes(q)));
   const count = k => k === 'inbox' ? state.assets.filter(a => a.inbox).length : k === 'all' ? state.assets.filter(a => !a.inbox).length
     : ['character', 'location', 'prop'].includes(k) ? state.profiles.filter(p => p.type === k).length : state.assets.filter(a => a.kind === k && !a.inbox).length;
-  const go = k => { setView(k); setPicked([]); setOpen(null); };
+  const go = k => { setView(k); setPicked([]); setOpen(null); if (k === 'folders') setWork('all'); };
+  const openFolder = w => { setWork(w === 'inbox' ? 'all' : w); setView(w === 'inbox' ? 'inbox' : 'all'); setPicked([]); setOpen(null); };
   const toggle = id => setPicked(p => (p.includes(id) ? p.filter(x => x !== id) : [...p, id]));
   const upload = async files => { if (!files.length) return; dispatch({type: 'uploadFiles', files: await readFiles(files)}); go('inbox'); toast(`已上传 ${files.length} 个文件，在「待整理」里`); };
   const cur = open && state.assets.find(a => a.id === open);
@@ -60,15 +63,17 @@ export function LibraryPage() {
       <AppHeader />
       <div className="libp">
         <aside className="libp-side">
+          <button className={view === 'folders' ? 'on' : ''} onClick={() => go('folders')}><Folder size={14} /><span>全部文件夹</span></button>
           <div className="libp-group">档案</div>
           {['character', 'location', 'prop'].map(k => { const I = VIEW_ICON[k]; return <button key={k} className={view === k ? 'on' : ''} onClick={() => go(k)}><I size={14} /><span>{TYPE_LABEL[k]}</span><small>{count(k)}</small></button>; })}
           <div className="libp-group">文件</div>
           {[['all', '全部文件'], ['image', '图片'], ['video', '动作视频'], ['audio', '声音'], ['inbox', '待整理']].map(([k, l]) =>
             <button key={k} className={(view === k ? 'on ' : '') + (k === 'inbox' && count(k) ? 'alert' : '')} onClick={() => go(k)}>{(I => <I size={14} />)(VIEW_ICON[k])}<span>{l}</span><small>{count(k)}</small></button>)}
-          <div className="libp-group">作品 <small>自动按用到的地方归类</small></div>
-          <button className={work === 'all' ? 'on' : ''} onClick={() => setWork('all')}>全部作品</button>
-          {state.stories.map(s => <button key={s.id} className={work === s.id ? 'on' : ''} onClick={() => setWork(s.id)}><span className="clip">{s.title}</span></button>)}
-          <button className={work === 'unused' ? 'on' : ''} onClick={() => setWork('unused')}>还没用过的</button>
+          <div className="libp-group">文件夹 <small>按用到的地方自动归类</small></div>
+          <button className={work === 'all' && view !== 'folders' ? 'on' : ''} onClick={() => { setWork('all'); if (view === 'folders') setView('all'); }}>全部作品</button>
+          {state.stories.map(s => <button key={s.id} className={work === s.id ? 'on' : ''} onClick={() => openFolder(s.id)}><span className="clip">{s.title}</span></button>)}
+          <button className={work === 'quick' ? 'on' : ''} onClick={() => openFolder('quick')}>快速创作</button>
+          <button className={work === 'unused' ? 'on' : ''} onClick={() => openFolder('unused')}>上传了还没用</button>
           {!isProfile && tags.length > 0 && <><div className="libp-group">标签</div>
             <div className="libp-tags">{tags.map(([t, n]) => <button key={t} className={'tagchip' + (tag === t ? ' on' : '')} onClick={() => setTag(tag === t ? null : t)}>{t}<small>{n}</small></button>)}</div></>}
         </aside>
@@ -77,9 +82,12 @@ export function LibraryPage() {
           onDragOver={e => { if ([...e.dataTransfer.types].includes('Files')) { e.preventDefault(); setDrop(true); } }} onDragLeave={() => setDrop(false)}
           onDrop={e => { e.preventDefault(); setDrop(false); upload(e.dataTransfer.files); }}>
           <div className="libp-head">
-            <h1 className="page-title">{(I => <I size={20} />)(VIEW_ICON[view])}{isProfile ? TYPE_LABEL[view] : {all: '全部文件', image: '图片', video: '动作视频', audio: '声音', inbox: '待整理'}[view]}
-              <small>{isProfile ? profiles.length : assets.length}</small></h1>
-            {work !== 'all' && <span className="pill">{work === 'unused' ? '还没用过的' : use.story(work)?.title}<button className="x" onClick={() => setWork('all')}><X size={11} /></button></span>}
+            {view !== 'folders' && work !== 'all' && <button className="small ghost" onClick={() => go('folders')}>← 文件夹</button>}
+            <h1 className="page-title">{(I => <I size={20} />)(VIEW_ICON[view])}{view === 'folders' ? '素材库' : isProfile ? TYPE_LABEL[view] : {all: '全部文件', image: '图片', video: '动作视频', audio: '声音', inbox: '待整理'}[view]}
+              {view !== 'folders' && <small>{isProfile ? profiles.length : assets.length}</small>}</h1>
+            {view !== 'folders' && work !== 'all' && <span className="pill">{work === 'unused' ? '上传了还没用' : work === 'quick' ? '快速创作' : use.story(work)?.title}<button className="x" onClick={() => setWork('all')}><X size={11} /></button></span>}
+            {view !== 'folders' && work !== 'all' && !isProfile && <div className="seg lib-kinds">{[['all', '全部'], ['image', '图片'], ['video', '视频'], ['audio', '声音']].map(([k, l]) =>
+              <button key={k} className={view === k ? 'on' : ''} onClick={() => setView(k)}>{l}</button>)}</div>}
             {tag && <span className="pill"><Tag size={11} />{tag}<button className="x" onClick={() => setTag(null)}><X size={11} /></button></span>}
             <div className="spacer" />
             <input className="lib-search" placeholder="搜索名字或标签…" value={q} onChange={e => setQ(e.target.value)} />
@@ -100,7 +108,7 @@ export function LibraryPage() {
           </div>}
           <datalist id="lib-tags">{tags.map(([t]) => <option key={t} value={t} />)}</datalist>
 
-          {isProfile ? <div className="libp-profiles">{profiles.map(p => {
+          {view === 'folders' ? <Folders use={use} open={openFolder} /> : isProfile ? <div className="libp-profiles">{profiles.map(p => {
             const n = (use.profileShots[p.id] || []).length, works = [...use.profileStories(p.id)].map(id => use.story(id)?.title).filter(Boolean);
             return <button key={p.id} className="libp-pcard" onClick={() => dispatch({type: 'openProfile', id: p.id})}>
               <AssetThumb asset={coverOf(db, p, p.def)} size={64} />
@@ -118,7 +126,7 @@ export function LibraryPage() {
                 <span className="libp-meta">{works ? `${works} 个作品在用` : '未使用'}{(a.tags || []).length ? ' · ' + a.tags.join(' · ') : ''}</span>
               </div>;
             })}{!assets.length && <p className="muted">{view === 'inbox' ? '没有待整理的文件。' : '没有符合条件的文件。把文件拖到这里就能上传。'}</p>}</div>}
-          {!isProfile && <p className="muted libp-tip">点一下看详情和用在哪里；按住 Shift / Ctrl 点，或点左上角的圆圈，可以多选后批量加标签、归入档案或删除。把文件拖到这页任何地方即可上传。</p>}
+          {!isProfile && view !== 'folders' && <p className="muted libp-tip">点一下看详情和用在哪里；按住 Shift / Ctrl 点，或点左上角的圆圈，可以多选后批量加标签、归入档案或删除。把文件拖到这页任何地方即可上传。</p>}
         </main>
 
         {cur && <AssetDetail key={cur.id} a={cur} use={use} onClose={() => setOpen(null)} onTag={t => addTag([cur.id], t)} tags={tags} />}
@@ -126,6 +134,25 @@ export function LibraryPage() {
       <ProfileEditor />
     </div>
   );
+}
+
+// 文件夹首页：每个故事一个，加上快速创作、上传了还没用、待整理。一个文件被多个故事用到，就出现在每个文件夹里，只存一份。
+function Folders({use, open}) {
+  const {state} = useStore();
+  const live = state.assets.filter(a => !a.inbox);
+  const pack = (key, title, Icon, list, sub) => ({key, title, Icon, list, sub, covers: list.filter(a => a.kind === 'image').slice(0, 4)});
+  const folders = [
+    ...state.stories.map(s => pack(s.id, s.title, Folder, live.filter(a => use.assetStories(a.id).has(s.id)), '故事')),
+    pack('quick', '快速创作', MessageSquare, live.filter(a => use.quick.has(a.id)), '所有快速创作用到的'),
+    pack('unused', '上传了还没用', Upload, live.filter(a => !use.assetStories(a.id).size && !use.quick.has(a.id)), '还没放进任何作品'),
+    pack('inbox', '待整理', Inbox, state.assets.filter(a => a.inbox), '刚上传，等你归类'),
+  ];
+  const n = (l, k) => l.filter(a => a.kind === k).length;
+  return <div className="folder-grid">{folders.map(f => <button key={f.key} className={'folder-card' + (f.key === 'inbox' && f.list.length ? ' alert' : '')} onClick={() => open(f.key)}>
+    <div className={'folder-cover n' + Math.min(f.covers.length, 4)}>{f.covers.length ? f.covers.map(a => <img key={a.id} src={a.thumb} alt="" />) : <f.Icon size={28} />}</div>
+    <b className="clip">{f.title}</b>
+    <small className="muted">{f.sub} · {f.list.length} 个文件{f.list.length ? ` · ${n(f.list, 'image')} 图 · ${n(f.list, 'video')} 视频 · ${n(f.list, 'audio')} 声音` : ''}</small>
+  </button>)}</div>;
 }
 
 function FileInto({ids, onDone}) {

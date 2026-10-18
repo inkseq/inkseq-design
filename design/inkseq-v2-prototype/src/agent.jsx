@@ -1,14 +1,16 @@
 import React, {useEffect, useState} from 'react';
 import {Bot, Check, Copy, ExternalLink, Pause, Play, X} from 'lucide-react';
 import {useStore} from './store.jsx';
+import {fmtCredits} from './model.js';
 
 // 让 AI 助手来做：范围 → 能做什么 → 复制一段话给它。连上以后它做的东西会带 🤖 标记，花费有每日上限。
 export const SKILL_URL = 'https://inkseq.com/for-agents/SKILL.md';
 const PERMS = {
-  view: {label: '只看和整理', hint: '读作品、写提示词、整理素材和档案；不生成，不花钱'},
-  generate: {label: '创作并生成', hint: '还可以提交生成，花费不超过下面的每日上限'},
+  view: {label: '只看和整理', hint: '读作品、写提示词、整理素材和档案；不生成，不花积分'},
+  generate: {label: '创作并生成', hint: '还可以提交生成，用的积分不超过下面的每日上限'},
 };
-const money = n => `$${n.toFixed(2)}`;
+// Caps are stored as their US$ price; users see credits (1 credit = US$0.01).
+const money = n => fmtCredits(n * 100);
 
 export function scopeOptions(state, here) {
   const opts = [];
@@ -30,7 +32,7 @@ export function AgentSheet({here, onClose}) {
   const text = inv && `请用映序（Inkseq）帮我创作视频。
 1. 先读说明：${SKILL_URL}
 2. 用这个一次性连接码连接我的账号：${inv.code}（${Math.ceil(left / 60)} 分钟内有效）
-3. 范围：${inv.scope.label}；权限：${PERMS[inv.perm].label}${inv.perm === 'generate' ? `，每天最多花 ${money(inv.cap)}` : ''}。
+3. 范围：${inv.scope.label}；权限：${PERMS[inv.perm].label}${inv.perm === 'generate' ? `，每天最多用 ${money(inv.cap)}` : ''}。
 4. 做出来的东西留在映序里，做完把链接发给我，我在网页上看结果、挑版本。`;
   const make = () => { setCopied(false); dispatch({type: 'agentInvite', scope: scopes[scope], perm, cap}); };
   const copy = () => { try { navigator.clipboard?.writeText(text); } catch {} setCopied(true); };
@@ -44,7 +46,7 @@ export function AgentSheet({here, onClose}) {
             {scopes.map((s, i) => <label key={i} className="check"><input type="radio" checked={scope === i} onChange={() => setScope(i)} />{s.label}</label>)}</div>
           <div className="agent-step"><b>2 · 能做什么</b>
             {Object.entries(PERMS).map(([k, p]) => <label key={k} className="check"><input type="radio" checked={perm === k} onChange={() => setPerm(k)} /><span>{p.label}<small className="muted"> · {p.hint}</small></span></label>)}
-            {perm === 'generate' && <label className="agent-cap">每天最多花 <select value={cap} onChange={e => setCap(+e.target.value)}>{[1, 2, 5, 10, 20].map(n => <option key={n} value={n}>${n}</option>)}</select>
+            {perm === 'generate' && <label className="agent-cap">每天最多用 <select value={cap} onChange={e => setCap(+e.target.value)}>{[1, 2, 5, 10, 20].map(n => <option key={n} value={n}>{money(n)}</option>)}</select>
               <small className="muted">到了就停下，不会超；你可以随时改</small></label>}</div>
           {joined && <div className="agent-ok"><Check size={14} />{joined.name} 已连接，可以在「设置 → AI 助手」里查看它做了什么。</div>}
           <button className="primary" onClick={make}>生成给 AI 的说明</button>
@@ -77,7 +79,7 @@ export function AgentSettings() {
         <div className="row tight"><Bot size={18} /><b>{a.name}</b><small className="muted">· {a.device} · 连接于 {ago(a.connectedAt)}</small><div className="spacer" />
           {a.paused ? <span className="pill">已暂停</span> : <span className="pill good">可用</span>}</div>
         <small className="muted">范围：{a.scope.label} · {PERMS[a.perm].label}</small>
-        {a.perm === 'generate' && <div className="agent-spend"><span>今天已花 {money(a.spent)} / <select className="inline-select" value={a.cap} onChange={e => dispatch({type: 'agentCap', id: a.id, cap: +e.target.value})}>
+        {a.perm === 'generate' && <div className="agent-spend"><span>今天已用 {money(a.spent)} / <select className="inline-select" value={a.cap} onChange={e => dispatch({type: 'agentCap', id: a.id, cap: +e.target.value})}>
           {[...new Set([1, 2, 5, 10, 20, 50, a.cap])].sort((x, y) => x - y).map(n => <option key={n} value={n}>{money(n)}</option>)}</select> 每日上限</span><i><b style={{width: `${Math.min(100, a.spent / a.cap * 100)}%`}} /></i></div>}
         <div className="agent-log">{a.log.slice(-4).reverse().map((l, i) => <div key={i}><small className="muted">{ago(l.at)}</small> {l.text}</div>)}
           {!a.log.length && <small className="muted">还没做任何事。</small>}</div>

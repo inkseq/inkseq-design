@@ -11,6 +11,7 @@ import {SettingsPage} from './pages.jsx';
 import {GpuPage} from './gpu.jsx';
 import {TrashPage} from './trashPage.jsx';
 import {LibraryPage} from './library.jsx';
+import {AuthPage, LowCredits, RolePreview} from './account.jsx';
 import {coverOf, planDrop, variantOf} from './model.js';
 import './styles.css';
 import {installHoldHint} from './holdhint.js';
@@ -51,6 +52,8 @@ function App() {
     if (p === 'story') { const id = state.activeStory || state.stories[0]?.id; if (id) dispatch({type: 'openStory', id}); }
     else if (p === 'quick') { const s = state.sessions.find(x => !x.trashedAt); s ? dispatch({type: 'qcOpen', id: s.id}) : dispatch({type: 'qcNew'}); }
     else if (['home', 'library', 'gpu', 'settings', 'trash'].includes(p)) dispatch({type: 'page', page: p});
+    else if (p === 'auth') dispatch({type: 'role', role: 'guest'});
+    else if (p === 'credits' || p === 'admin') { if (p === 'admin') dispatch({type: 'role', role: 'admin'}); dispatch({type: 'settingsTab', tab: p}); }
   }, []); // eslint-disable-line
 
   // item = {asset: id} | {profile: id}
@@ -106,10 +109,12 @@ function App() {
   return (
     <DndContext sensors={sensors} collisionDetection={collision} onDragStart={onDragStart} onDragEnd={onDragEnd} onDragCancel={() => setDragging(null)}>
       <div className="app">
-        {state.page === 'story' && state.activeStory ? <Workspace selected={selected} setSelected={setSelected} pickAsset={pick} onToast={setToast} />
-          : state.page === 'quick' ? <QuickPage onToast={setToast} /> : state.page === 'gpu' ? <GpuPage /> : state.page === 'trash' ? <TrashPage /> : state.page === 'library' ? <LibraryPage /> : state.page === 'settings' ? <SettingsPage onToast={setToast} /> : <Home onToast={setToast} />}
+        {state.role === 'guest' || state.page === 'auth' ? <AuthPage /> : state.page === 'story' && state.activeStory ? <Workspace selected={selected} setSelected={setSelected} pickAsset={pick} onToast={setToast} />
+          : state.page === 'quick' ? <QuickPage onToast={setToast} /> : state.page === 'gpu' && state.role === 'admin' ? <GpuPage /> : state.page === 'trash' ? <TrashPage /> : state.page === 'library' ? <LibraryPage /> : state.page === 'settings' ? <SettingsPage onToast={setToast} /> : <Home onToast={setToast} />}
       </div>
       <DragOverlay dropAnimation={null}>{dragged ? <div className="achip overlay"><AssetThumb asset={draggedThumb} /><b>{dragged.name}</b></div> : null}</DragOverlay>
+      <LowCredits />
+      <RolePreview />
       <div className="proto-note">原型 · 示例数据 · 生成和粗剪是模拟的 · 字幕和镜头清单可真实下载 · 不连服务器，不花钱</div>
     </DndContext>
   );
