@@ -1,12 +1,13 @@
 import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
-import { dirname, resolve } from 'node:path';
+import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ESLint } from 'eslint';
 import * as prettier from 'prettier';
 
 const app = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const repository = resolve(app, '..');
+const sourceFolder = relative(repository, app).replaceAll('\\', '/');
 const git = (...args) =>
   execFileSync('git', args, { cwd: repository, encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 });
 if (process.argv.length !== 2) throw new Error('This check accepts no command arguments');
@@ -21,10 +22,10 @@ const configFiles = new Set([
   'tools/check-changed.mjs',
 ]);
 const runtime = (file) => /^src\/.*\.(?:js|jsx|css)$/.test(file) || file === 'vite.config.js';
-const files = git('diff', '--name-only', '--diff-filter=ACMR', '-z', base, '--', 'studio-app')
+const files = git('diff', '--name-only', '--diff-filter=ACMR', '-z', base, '--', sourceFolder)
   .split('\0')
   .filter(Boolean)
-  .map((file) => file.slice('studio-app/'.length))
+  .map((file) => file.slice(sourceFolder.length + 1))
   .filter((file) => runtime(file) || configFiles.has(file));
 let failed = false;
 for (const file of files) {
