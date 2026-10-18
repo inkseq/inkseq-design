@@ -12,6 +12,7 @@ export default function LibraryView({account,filters={type:'image'},setFilters,p
  const change=patch=>setFilters({...filters,...patch});
  const label=type=>t(['image','video','audio'].includes(type)?'library.view.'+type:type==='file'?'library.allFiles':type==='inbox'?'library.view.inbox':'trash.kind.'+type);
  const count=type=>Number.isSafeInteger(counts?.[type])?String(counts[type]):'';
+ const countTitle=type=>t(counts?(counts[type]===1?'library.view.totalCountOne':'library.view.totalCount'):'library.view.notLoaded',{count:counts?.[type]??0});
  const uses=row=>new Set((row.usage||[]).map(use=>use.project_id).filter(Boolean)).size;
  const toggle=row=>setSelected(old=>old.includes(libraryKey(row.target))?old.filter(k=>k!==libraryKey(row.target)):[...old,libraryKey(row.target)]);
  const Title=ICONS[filters.type]||Files;
@@ -19,10 +20,10 @@ export default function LibraryView({account,filters={type:'image'},setFilters,p
  return <div className="home lib-shell"><StudioHeader account={account} active="library"/>
   <div className="libp"><aside className="libp-side">
    <div className="libp-group">{t('library.view.profiles')}</div>
-   {['character','location','prop'].map(k=>{const I=ICONS[k];return <button key={k} className={filters.type===k?'on':''} onClick={()=>change({type:k})}><I size={14}/><span>{label(k)}</span><small title={t(counts?'library.view.totalCount':'library.view.notLoaded',{count:counts?.[k]??0})}>{count(k)}</small></button>;})}
+   {['character','location','prop'].map(k=>{const I=ICONS[k];return <button key={k} className={filters.type===k?'on':''} onClick={()=>change({type:k})}><I size={14}/><span>{label(k)}</span><small title={countTitle(k)}>{count(k)}</small></button>;})}
    <div className="libp-group">{t('library.view.files')}</div>
-   {['file','image','video','audio'].map(k=>{const I=ICONS[k];return <button key={k} className={filters.type===k?'on':''} onClick={()=>change({type:k})}><I size={14}/><span>{label(k)}</span><small title={t(counts?'library.view.totalCount':'library.view.notLoaded',{count:counts?.[k]??0})}>{count(k)}</small></button>;})}
-   <button className={filters.type==='inbox'?'on':''} onClick={()=>change({type:'inbox'})}><Inbox size={14}/><span>{t('library.view.inbox')}</span><small title={t(counts?'library.view.totalCount':'library.view.notLoaded',{count:counts?.inbox??0})}>{count('inbox')}</small></button>
+   {['file','image','video','audio'].map(k=>{const I=ICONS[k];return <button key={k} className={filters.type===k?'on':''} onClick={()=>change({type:k})}><I size={14}/><span>{label(k)}</span><small title={countTitle(k)}>{count(k)}</small></button>;})}
+   <button className={filters.type==='inbox'?'on':''} onClick={()=>change({type:'inbox'})}><Inbox size={14}/><span>{t('library.view.inbox')}</span><small title={countTitle('inbox')}>{count('inbox')}</small></button>
    <div className="libp-group">{t('library.view.works')} <small>{t('library.view.workHint')}</small></div>
    <button className={!filters.work&&!filters.unused?'on':''} onClick={()=>change({work:'',unused:''})}>{t('library.view.allWorks')}</button>
    {projects.map(p=><button key={p.id} title={p.title} aria-label={p.title} className={filters.work===p.id?'on':''} onClick={()=>change({work:p.id,unused:''})}><span className="clip" title={p.title}>{p.title}</span></button>)}
