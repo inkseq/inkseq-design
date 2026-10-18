@@ -30,5 +30,10 @@ test('eight thumbnails bypass occupied heavy slots without widening original or 
  assert.equal(nativeContentRequest(path+'?rendition=thumb',origin),false);
  assert.equal(nativeContentRequest(path+'?rendition=preview',origin),true);
  assert.equal(nativeContentRequest(path+'?rendition=thumb&rendition=thumb',origin),true);
+ const artifact='/v1/artifacts/result_1/content';
+ assert.equal(nativeContentRequest(artifact+'?rendition=thumb',origin),false);
+ assert.equal(nativeContentRequest(artifact+'?rendition=preview',origin),true);
+ const client=createCloudClient();client.setAccount('superdan');
+ assert.equal(client.nativeContentURL(artifact,{rendition:'thumb'}),artifact+'?expected_account=superdan&rendition=thumb');
  await first.text();assert.equal(await (await preview).text(),'bytes');await second.text();
 });
