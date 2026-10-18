@@ -352,3 +352,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/SettingsGenerationDefaults.jsx
 !studio-app/src/settings-generation-defaults.js
 !studio-app/src/ui285.test.js
+!studio-app/src/QuickChatThread.jsx
+!studio-app/src/quick-thread-window.js
+!studio-app/src/quick-thread-window.test.js
