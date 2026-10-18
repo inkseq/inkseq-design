@@ -6,7 +6,7 @@ import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import {createP4OperatorClient} from './p4-operator-client.js';
 import {createP4OperatorController} from './p4-operator-controller.js';
-import {billingAllocationInputs,billingOperation,billingReceipt,validBillingPage,validBillingPreview,validBillingRequest} from './operator-billing-model.js';
+import {billingAllocationInputs,billingOperation,billingReceipt,billingTimeBounds,validBillingPage,validBillingPreview,validBillingRequest} from './operator-billing-model.js';
 
 const hash='a'.repeat(64),owner='supervan';
 const row=(id='job-1',patch={})=>({owner_id:owner,reference_type:'job',reference_id:id,snapshot:hash,state:'settled',
@@ -48,6 +48,20 @@ test('reviewed allocation import fills only 95 selected jobs and 2 rentals with 
     {...body,items:body.items.map((item,i)=>i===0?{...item,reference_id:'not-selected'}:item)},
     {...body,items:body.items.map((item,i)=>i===0?{...item,expected_snapshot:'e'.repeat(64)}:item)},
     {...body,items:body.items.map((item,i)=>i===0?{...item,actual_cost_microusd:-1}:item)}])assert.equal(billingAllocationInputs(JSON.stringify(changed),rows),null);
+});
+
+test('explicit-offset creation filters preserve the requested Sydney day and reject guessed local dates or invalid calendar bounds',()=>{
+  assert.deepEqual(billingTimeBounds(),{});
+  assert.deepEqual(billingTimeBounds('2026-10-17T00:00:00+11:00','2026-10-18T00:00:00+11:00'),{created_after:Date.parse('2026-10-16T13:00:00Z')/1000,created_before:Date.parse('2026-10-17T13:00:00Z')/1000});
+  for(const value of ['2026-10-17','2026-10-17T00:00','2026-02-30T00:00:00Z','2026-10-17T24:00:00Z'])assert.equal(billingTimeBounds(value),null);
+  assert.equal(billingTimeBounds('2026-10-18T00:00:00Z','2026-10-17T00:00:00Z'),null);
+});
+
+test('billing pagination cannot combine another time window and forwards the original filters to the server',async()=>{
+  const calls=[],controller=createP4OperatorController({client:fake({billingReferences:async value=>{calls.push(value);return {owner_id:owner,items:[row(value.after?'older':'newer')],next_cursor:value.after?null:'next'};}}),storage:memory()});
+  await controller.setAccount('superdan');await controller.readBillingReferences({owner_id:owner,created_after:100,created_before:200});
+  await assert.rejects(controller.readBillingReferences({owner_id:owner,after:'next',created_after:100,created_before:201}));assert.equal(calls.length,1);
+  await controller.readBillingReferences({owner_id:owner,after:'next',created_after:100,created_before:200});assert.equal(controller.getState().billingReferences.items.length,2);assert.equal(calls[1].created_before,200);
 });
 
 test('unknown financial write is persisted before send and recovered by exact original key without another mutation',async()=>{
@@ -95,7 +109,7 @@ test('real admin component renders bulk action, evidence and authoritative confi
   const result=await build({stdin:{contents:source,resolveDir:process.cwd(),loader:'jsx'},bundle:true,write:false,platform:'node',format:'cjs',external:['react','react-dom'],logLevel:'silent'});
   const module=new Module(import.meta.url);module.paths=Module._nodeModulePaths(process.cwd());module._compile(result.outputFiles[0].text,import.meta.url);
   const old=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
-  try{for(const language of ['en','zh']){Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>language}});const state={account:owner,snapshot:{operator:{admin:true}},billingReferences:{owner_id:owner,items:[row()],next_cursor:null}};
+  try{for(const language of ['en','zh']){Object.defineProperty(globalThis,'localStorage',{configurable:true,value:{getItem:()=>language}});const state={account:owner,snapshot:{operator:{admin:true}},billingFilter:{owner_id:owner},billingReferences:{owner_id:owner,items:[row()],next_cursor:null}};
     const html=renderToStaticMarkup(React.createElement(module.exports.I18nProvider,null,React.createElement(module.exports.Panel,{controller:{},state,busy:false})));
     assert.match(html,language==='en'?/Select up to 200 eligible loaded references/:/选择已加载的可处理记录/);assert.match(html,language==='en'?/Evidence SHA-256/:/依据文件 SHA-256/);assert.doesNotMatch(html,/billing\./);
     const ordinary=renderToStaticMarkup(React.createElement(module.exports.I18nProvider,null,React.createElement(module.exports.Panel,{controller:{},state:{...state,snapshot:{operator:{admin:false}}},busy:false})));assert.equal(ordinary,'');

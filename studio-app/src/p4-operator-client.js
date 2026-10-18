@@ -25,7 +25,7 @@ export function createP4OperatorClient(options={}){
     budgets:options=>budgets(false,options),adminBudgets:options=>budgets(true,options),
     budgetAudit:()=>api.request('/v1/operator/admin/budgets/audit'),
     updateBudget:(budgetId,body,key)=>api.request('/v1/operator/admin/budgets/'+id(budgetId),{method:'PUT',body,key}),
-    async billingReferences({owner_id,after,limit=50}){const value=await api.request('/v1/operator/admin/billing/references?owner_id='+id(owner_id)+'&limit='+limit+(after?'&after='+id(after):''));if(!validBillingPage(value,owner_id))throw new CloudError(message('billingIdentity'));return value;},
+    async billingReferences({owner_id,after,limit=50,created_after,created_before}){const query=new URLSearchParams({owner_id,limit,...(after?{after}:{}),...(created_after!==undefined?{created_after}:{}),...(created_before!==undefined?{created_before}:{})});const value=await api.request('/v1/operator/admin/billing/references?'+query);if(!validBillingPage(value,owner_id))throw new CloudError(message('billingIdentity'));return value;},
     previewBilling:body=>api.request('/v1/operator/admin/billing/previews',{method:'POST',body}),
     applyBilling:(body,key)=>api.request('/v1/operator/admin/billing/actions',{method:'POST',body,key}),
     billingActionByKey:key=>api.request('/v1/operator/admin/billing/actions/by-key?key='+id(key)),

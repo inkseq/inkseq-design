@@ -5,6 +5,19 @@ const kind=value=>['job','instance'].includes(value);
 export const billingReferenceKey=row=>row?.reference_type+':'+row?.reference_id;
 const same=(left,right)=>JSON.stringify(canonical(left))===JSON.stringify(canonical(right));
 function canonical(value){return Array.isArray(value)?value.map(canonical):value&&typeof value==='object'?Object.fromEntries(Object.keys(value).sort().map(key=>[key,canonical(value[key])])):value;}
+export function billingTimeBounds(start='',end=''){
+  const parse=value=>{
+    if(value==='')return undefined;
+    const match=/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,3})?)?(Z|[+-]\d{2}:\d{2})$/.exec(value);
+    if(!match)return NaN;
+    const [,year,month,day,hour,minute,second='0']=match.map((value,index)=>index>0&&index<7&&value!==undefined?Number(value):value);
+    if(month<1||month>12||day<1||day>new Date(Date.UTC(year,month,0)).getUTCDate()||hour>23||minute>59||second>59)return NaN;
+    return Date.parse(value)/1000;
+  };
+  const after=parse(start),before=parse(end);
+  if([after,before].some(value=>value!==undefined&&(!Number.isFinite(value)||value<0))||after!==undefined&&before!==undefined&&after>=before)return null;
+  return {...(after!==undefined?{created_after:after}:{}),...(before!==undefined?{created_before:before}:{})};
+}
 export function validBillingReference(row,owner){
   return row?.owner_id===owner&&kind(row.reference_type)&&text(row.reference_id)&&hash(row.snapshot)
     &&typeof row.state==='string'&&typeof row.waived==='boolean'
