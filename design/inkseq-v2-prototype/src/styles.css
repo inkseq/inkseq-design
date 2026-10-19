@@ -1554,3 +1554,5 @@ button.ghost.danger:hover { background: rgba(255,122,107,.1); }
   .snav button { flex: none; padding: 6px 12px; border-radius: 999px; background: var(--surface); border-color: var(--line); font-size: 13px; }
   .snav button.on { background: var(--surface-4); border-color: var(--line-2); }
 }
+/* The header lives in a column flex container; without this it shrinks to its content and the nav loses its top/bottom margin. */
+.hbar { flex-shrink: 0; }
