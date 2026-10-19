@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Bot, Coins, Trash2, Cpu, LayoutGrid, MessageSquare, Images, Settings2, KeyRound, LogOut, Play, Plus, Power, ShieldCheck, SlidersHorizontal, Square, Timer, UserRound, Wallet} from 'lucide-react';
+import {Bot, Coins, Globe, Trash2, Cpu, LayoutGrid, MessageSquare, Images, Settings2, KeyRound, LogOut, Play, Plus, Power, ShieldCheck, SlidersHorizontal, Square, Timer, UserRound, Wallet} from 'lucide-react';
 import {AdminPanel, CreditsChip, CreditsPanel, LinkedLogins} from './account.jsx';
 import {AdvancedSheet, changedSummary} from './advanced.jsx';
 import {MODELS} from './model.js';
@@ -12,7 +12,9 @@ import {getLang, onLang, setLang} from './i18n.js';
 export function LangToggle() {
   const [l, setL] = useState(getLang());
   useEffect(() => onLang(setL), []);
-  return <button className="ghost lang-toggle keep-label" data-no-i18n title={l === 'en' ? '切换到中文' : 'Switch to English'} onClick={() => setLang(l === 'en' ? 'zh' : 'en')}>{l === 'en' ? '中文' : 'EN'}</button>;
+  // Same control as inkseq.tv: globe + the CURRENT language; one click switches.
+  return <button className="lang-toggle keep-label" data-no-i18n title={l === 'en' ? 'Language: English · 切换到中文' : '语言：中文 · Switch to English'} aria-label={l === 'en' ? 'Language: English' : '语言：中文'}
+    onClick={() => setLang(l === 'en' ? 'zh' : 'en')}><Globe size={14} />{l === 'en' ? 'EN' : '中'}</button>;
 }
 
 /* ---------- shared header for 作品 / 算力 / 设置 ---------- */
