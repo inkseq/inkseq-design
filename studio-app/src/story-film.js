@@ -205,7 +205,10 @@ export function createFilmController({ api, storage, getContext, keyFactory }) {
         const code = error?.detail?.code || error?.detail?.detail;
         // A typed preflight rejection never accepts a film or paid jobs. Keep
         // unknown transport/server outcomes bound to their original request.
-        if ([409, 422].includes(error?.status) && /^film_/.test(code || '')) {
+        if (
+          [409, 422].includes(error?.status) &&
+          (/^film_/.test(code || '') || code === 'document_version_conflict')
+        ) {
           commands.clear(op);
           publish({ pending: null });
         }

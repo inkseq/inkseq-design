@@ -123,7 +123,10 @@ test('typed preflight refusals allow correcting options; unknown outcomes retain
     h.api.preflight = async () => filmFixture();
     await h.controller.preflight({ ...options, burn_subtitles: true });
     assert.equal(h.controller.getState().run.id, 'film-original');
-    assert.equal(h.calls.some((call) => call.kind === 'submit'), false);
+    assert.equal(
+      h.calls.some((call) => call.kind === 'submit'),
+      false,
+    );
   }
   for (const status of [0, 408, 429, 503]) {
     const h = harness();
@@ -136,6 +139,15 @@ test('typed preflight refusals allow correcting options; unknown outcomes retain
     await assert.rejects(h.controller.preflight(options));
     assert.equal(h.controller.getState().pending.kind, 'film-preflight');
   }
+  const stale = harness();
+  stale.api.preflight = async () => {
+    throw Object.assign(Error('stale project'), {
+      status: 409,
+      detail: { detail: 'document_version_conflict' },
+    });
+  };
+  await assert.rejects(stale.controller.preflight(options));
+  assert.equal(stale.controller.getState().pending, null);
   const h = harness();
   await h.controller.preflight(options);
   h.api.submit = async () => {
