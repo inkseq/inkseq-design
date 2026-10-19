@@ -215,7 +215,7 @@ export const LEGAL = {
           [
             'Account data and works: while your account is open. After you ask to close your account we wait 30 days, so you can change your mind, and then delete them.',
             'Payment and tax records: as long as the law requires.',
-            'Logs: for a limited period, then deleted or reduced to aggregate numbers.',
+            'Logs: up to 30 days, then deleted or reduced to aggregate numbers.',
           ],
         ],
         ['h', 'Your choices and rights'],
@@ -292,7 +292,7 @@ export const LEGAL = {
           [
             '账号数据和作品：账号存在期间保留。你申请注销后等待 30 天（期间可以撤回），然后删除。',
             '付款和税务记录：按法律要求的期限保留。',
-            '日志：保留一段有限时间，之后删除或只保留汇总数字。',
+            '日志：最多保留 30 天，之后删除或只保留汇总数字。',
           ],
         ],
         ['h', '你的选择和权利'],
