@@ -1530,3 +1530,8 @@ button.ghost.danger:hover { background: rgba(255,122,107,.1); }
   .vlib-head { flex-direction: column; align-items: stretch; }
 }
 .voices-card .folder-cover { color: var(--accent); background: linear-gradient(135deg, var(--accent-soft), var(--surface-2)); }
+
+/* language switch: globe + current language (matches inkseq.tv) */
+.lang-toggle { display: inline-flex; align-items: center; gap: 5px; height: 30px; padding: 0 10px; border-radius: 999px; background: var(--surface); border: 1px solid var(--line); color: var(--ink-2); font-size: 12px; font-weight: 600; }
+.lang-toggle:hover { color: var(--ink); border-color: var(--line-2); background: var(--surface-3); }
+.lang-toggle svg { color: var(--muted); }
