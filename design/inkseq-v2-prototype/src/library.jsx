@@ -150,7 +150,8 @@ function Folders({use, open}) {
     pack('inbox', '待整理', Inbox, state.assets.filter(a => a.inbox), '刚上传，等你归类'),
   ];
   const n = (l, k) => l.filter(a => a.kind === k).length;
-  return <div className="folder-grid">{folders.map(f => <button key={f.key} className={'folder-card' + (f.key === 'inbox' && f.list.length ? ' alert' : '')} onClick={() => open(f.key)}>
+  const full = folders.filter(f => f.list.length), empty = folders.filter(f => !f.list.length);
+  return <><div className="folder-grid">{full.map(f => <button key={f.key} className={'folder-card' + (f.key === 'inbox' && f.list.length ? ' alert' : '')} onClick={() => open(f.key)}>
     <div className={'folder-cover n' + Math.min(f.covers.length, 4)}>{f.covers.length ? f.covers.map(a => <img key={a.id} src={a.thumb} alt="" />) : <f.Icon size={28} />}</div>
     <b className="clip">{f.title}</b>
     <small className="muted">{f.sub} · {f.list.length} 个文件{f.list.length ? ` · ${n(f.list, 'image')} 图 · ${n(f.list, 'video')} 视频 · ${n(f.list, 'audio')} 声音` : ''}</small>
@@ -159,7 +160,9 @@ function Folders({use, open}) {
       <div className="folder-cover"><AudioLines size={30} /></div>
       <b className="clip">音色</b>
       <small className="muted">人物和旁白的声音 · {state.voices.filter(v => !v.trashedAt).length} 个</small>
-    </button></div>;
+    </button></div>
+    {empty.length > 0 && <div className="folder-empty"><span className="muted">还没有文件：</span>
+      {empty.map(f => <button key={f.key} className="small ghost keep-label" onClick={() => open(f.key)}><f.Icon size={13} />{f.title}</button>)}</div>}</>;
 }
 
 function FileInto({ids, onDone}) {

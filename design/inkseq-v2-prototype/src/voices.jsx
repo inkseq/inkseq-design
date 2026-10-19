@@ -151,7 +151,7 @@ export function VoiceLibrary({q}) {
   const list = state.voices.filter(v => !v.trashedAt && (!q || (v.name + v.desc).includes(q)));
   return <>
     <div className="vlib-head"><p className="muted">音色可以给多个人物、多个故事用。人物档案里选好音色以后，台词会自动用它配音。</p>
-      <button className="primary" onClick={() => setCreating(true)}><Plus size={15} />新建音色</button></div>
+      <button className="primary keep-label" onClick={() => setCreating(true)}><Plus size={15} />新建音色</button></div>
     <div className="vlib">{list.map(v => { const u = usedBy(state, v.id); return <div key={v.id} className="vcard">
       <div className="row tight"><AudioLines size={16} />{v.kind === 'preset' ? <b className="vname fixed clip">{v.name}</b>
         : <input className="vname" value={v.name} onChange={e => dispatch({type: 'voiceUpdate', id: v.id, patch: {name: e.target.value}})} />}<KindBadge kind={v.kind} /></div>
@@ -183,7 +183,7 @@ export function DialogueLines({shot, upd, mode}) {
   const spoken = lines.filter(l => l.text && l.who !== 'narrator');
   const sm = shot.soundMode || (spoken.some(voiceOf) ? 'lipsync' : 'model');
   const cost = voiceCredits(lines.filter(l => l.text && voiceOf(l)));
-  return <div className="field dlines"><span className="row tight">台词和旁白 · 每句自动用说话人的声音配音，也会生成字幕<span className="spacer" /><button className="small ghost" onClick={add}><Plus size={13} />加一句</button></span>
+  return <div className="field dlines"><span className="row tight">台词和旁白 · 每句自动用说话人的声音配音，也会生成字幕<span className="spacer" /><button className="small ghost keep-label" onClick={add}><Plus size={13} />加一句</button></span>
     {lines.map(l => { const vid = voiceOf(l), v = state.voices.find(x => x.id === vid); return <div key={l.id} className="dline">
       <div className="dline-head">
         <select className="dwho" value={l.who} onChange={e => patch(l.id, {who: e.target.value, voiceId: null})}>
@@ -200,7 +200,7 @@ export function DialogueLines({shot, upd, mode}) {
     {!lines.length && <div className="slot-empty">没有台词。加一句以后，人物开口说的话会和配音对上。</div>}
     {missing.length > 0 && <div className="dmissing">{missing.map(w => { const p = w === 'narrator' ? null : db.profile(w); return <span key={w}>
       {p ? <>「{p.name}」还没有音色，模型会自己配，每个镜头可能不一样。</> : <>这个故事还没设旁白声音。</>}
-      <button className="small" onClick={() => setCreatingFor(w)}><AudioLines size={13} />{p ? `给${p.name}配一个音色` : '选旁白音色'}</button></span>; })}</div>}
+      <button className="small keep-label" onClick={() => setCreatingFor(w)}><AudioLines size={13} />{p ? `给${p.name}配一个音色` : '选旁白音色'}</button></span>; })}</div>}
     {lines.some(l => l.text) && <div className="dmode">
       <span className="muted">声音怎么用：</span>
       <div className="seg">{[['lipsync', '对口型', '把配音交给模型，人物开口和台词对上'], ['overlay', '后期叠加', '画面先生成，配音在成片时叠上，适合画外音'], ['model', '模型自己配', '不用配音，声音可能每个镜头都不一样']].map(([k, t, h]) =>

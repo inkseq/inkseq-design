@@ -1878,5 +1878,8 @@
 "做好的音色存在素材库「音色」里，可以给多个人物、多个故事用。生成镜头时，台词会用它来配音，同一个人物每个镜头听起来都一样。": "Voices are saved in Library \u2192 Voices and can be reused by any character or story. When a shot is generated, its lines are voiced with it, so a character sounds the same in every shot.",
 "试读一句…": "Try a line…",
 "{} 个故事": "{} stories",
-"人物和旁白的声音 · {} 个": "Character and narrator voices · {}"
+"人物和旁白的声音 · {} 个": "Character and narrator voices · {}",
+"还没有文件：": "No files yet:",
+"同一个邮箱用 Google、GitHub、密码或验证码登录，都是同一个账号。": "Google, GitHub, a password or an email code with the same address all reach the same account.",
+"通过 Stripe 安全支付：银行卡、Apple Pay、Google Pay 等。我们不保存你的卡号。暂时不支持中国大陆的付款。": "Secure payment through Stripe: cards, Apple Pay, Google Pay and more. We never store your card number. Payments from mainland China are not supported yet."
 }
