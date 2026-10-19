@@ -1,5 +1,6 @@
 // Layout audit (h3-studio#328): load the built studio at three viewports and fail on
 // horizontal page scroll, elements pushed off-screen, text clipped without an ellipsis,
+// button content spilling out of a fixed height,
 // text under 10 px and uncaught page errors. Text from 10 to 11 px is a warning only.
 // Usage: npm run build && npm run audit:layout [-- --base http://127.0.0.1:4173]
 import { spawn } from 'node:child_process';
@@ -38,7 +39,7 @@ async function startPreview() {
 
 // Runs inside the page. Only visible elements count; scroll containers may clip on purpose.
 function inspect() {
-  const out = { scrollX: 0, offscreen: [], clipped: [], tiny: [], small: [] };
+  const out = { scrollX: 0, offscreen: [], clipped: [], spill: [], tiny: [], small: [] };
   const doc = document.documentElement;
   out.scrollX = doc.scrollWidth - doc.clientWidth;
   const vw = doc.clientWidth;
@@ -68,6 +69,13 @@ function inspect() {
       style.position !== 'fixed'
     )
       out.offscreen.push(label(el));
+    // A fixed-height button whose content spills out (text over the next row).
+    if (
+      el.tagName === 'BUTTON' &&
+      style.overflowY === 'visible' &&
+      el.scrollHeight > el.clientHeight + 4
+    )
+      out.spill.push(label(el));
     const ownText = [...el.childNodes].some((n) => n.nodeType === 3 && n.textContent.trim());
     if (!ownText) continue;
     // font-size: 0 is the deliberate icon-only pattern (the label stays for screen readers).
@@ -79,7 +87,8 @@ function inspect() {
     if (clipsX && style.textOverflow !== 'ellipsis' && !/(auto|scroll)/.test(style.overflowX))
       out.clipped.push(label(el));
   }
-  for (const key of ['offscreen', 'clipped', 'tiny', 'small']) out[key] = [...new Set(out[key])];
+  for (const key of ['offscreen', 'clipped', 'spill', 'tiny', 'small'])
+    out[key] = [...new Set(out[key])];
   return out;
 }
 
@@ -104,6 +113,7 @@ try {
         ...(found.scrollX > 1 ? [`page scrolls sideways by ${found.scrollX}px`] : []),
         ...found.offscreen.map((x) => `off-screen: ${x}`),
         ...found.clipped.map((x) => `clipped without ellipsis: ${x}`),
+        ...found.spill.map((x) => `content spills out of button: ${x}`),
         ...found.tiny.map((x) => `text under 10px: ${x}`),
         ...errors.map((x) => `page error: ${x}`),
       ];
