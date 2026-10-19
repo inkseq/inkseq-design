@@ -385,3 +385,4 @@ design/inkseq-v2-prototype/dist/
 !studio-app/eslint.config.js
 !studio-app/tools/
 !studio-app/tools/check-changed.mjs
+!studio-app/tools/layout-audit.mjs
