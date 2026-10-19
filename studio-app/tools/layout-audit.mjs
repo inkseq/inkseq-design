@@ -9,7 +9,17 @@ import { chromium } from 'playwright';
 
 const args = process.argv.slice(2);
 const baseArg = args.indexOf('--base');
-const ROUTES = ['/', '/quick-chat', '/library', '/settings', '/trash'];
+const ROUTES = [
+  '/',
+  '/quick-chat',
+  '/library',
+  '/settings',
+  '/trash',
+  '/pricing',
+  '/terms',
+  '/privacy',
+  '/content',
+];
 const VIEWPORTS = [
   ['desktop', 1366, 860],
   ['tablet', 820, 1180],
