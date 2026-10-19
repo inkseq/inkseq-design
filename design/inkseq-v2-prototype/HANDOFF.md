@@ -34,6 +34,20 @@ Backend specs: `inkseq/h3-studio#303` (epic) → #304 roles, #305 sign-in, #306 
   "Use my own AI" opens the connect sheet; logline / script / blank remain. Works page shows the hint strip.
 - **Library opens on folders**: one per story, Quick Create, Uploaded not used yet, Inbox; derived from usage, stored once.
 
+## Voices / 音色 (2026-10-19) — `inkseq/h3-studio#327`
+
+A **Voice** is a reusable library object (called 音色 in Chinese, because 声音 is the audio-file category). Characters,
+per-look overrides, story narrators and dialogue lines reference it, so a character sounds the same in every shot.
+Code: `src/voices.jsx` (picker, creator, library view, dialogue lines) + edits in `components.jsx`, `layouts.jsx`,
+`library.jsx`, `store.jsx`, `trash.js`. Auditions use browser speech synthesis (prototype only; production = VoxCPM2).
+
+- Create a voice four ways: describe it (3 candidates, free audition) · clone from a recording (consent required) ·
+  keep a voice from a generated take (vocal separation) · presets. Library → Voices card (also on phone).
+- Character profile → Voice picker (prefilled design from the description); per look "Voice for this look".
+- Shot editor → **Lines & narration** replaces the single dialogue field: speaker, emotion, resolved voice, play;
+  "Use voice as" Lip-sync (line audio → H3 audio reference) / Overlay (mixed at film time) / Model improvises.
+- Cast list shows each character's voice; take viewer has "Keep this take's voice"; story settings has the narrator.
+
 ## Rules for the implementation
 
 1. **Every feature ships for both the browser and Agents.** Browser and Agent use the same business API.

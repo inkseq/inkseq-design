@@ -29,6 +29,8 @@ export function liveView(state) {
     profiles = profiles.map(p => ({...p, ambient: ok(p.ambient) ? p.ambient : null, voice: ok(p.voice) ? p.voice : null, voices: (p.voices || []).filter(v => ok(v.asset)),
       variants: p.variants.map(v => ({...v, images: v.images.filter(ok), voice: ok(v.voice) ? v.voice : null}))}));
   }
+  const vgone = new Set((state.voices || []).filter(v => v.trashedAt).map(v => v.id));
+  if (vgone.size) profiles = profiles.map(p => ({...p, voiceId: vgone.has(p.voiceId) ? null : p.voiceId, variants: p.variants.map(v => ({...v, voiceId: vgone.has(v.voiceId) ? null : v.voiceId}))}));
   return {...state, stories, shots: out, assets: state.assets.filter(live), profiles};
 }
 
@@ -74,6 +76,7 @@ export function setTrash(state, it, on) {
       return on && s.openProfile === it.id ? {...s, openProfile: null} : s;
     }
     case 'variant': return mapProfile(state, it.pid, p => ({...p, variants: p.variants.map(v => (v.id === it.id ? stamp(v, on) : v))}));
+    case 'voice': return {...state, voices: state.voices.map(v => (v.id === it.id ? stamp(v, on) : v))};
     case 'session': {
       const sessions = state.sessions.map(x => (x.id === it.id ? stamp(x, on) : x));
       if (!on) return {...state, sessions, activeSession: it.id, page: state.page === 'quick' ? 'quick' : state.page};
@@ -106,6 +109,8 @@ export function purge(state, it) {
         place: x.place?.id === it.pid && x.place.variant === it.id ? {...x.place, variant: p.def} : x.place}))};
     }
     case 'session': return {...state, sessions: state.sessions.filter(x => x.id !== it.id)};
+    case 'voice': return {...state, voices: state.voices.filter(v => v.id !== it.id),
+      profiles: state.profiles.map(p => ({...p, voiceId: p.voiceId === it.id ? null : p.voiceId, variants: p.variants.map(v => ({...v, voiceId: v.voiceId === it.id ? null : v.voiceId}))}))};
     default: return state;
   }
 }
@@ -132,6 +137,7 @@ export function trashItems(raw) {
     p.variants.forEach(v => v.trashedAt && push({kind: 'variant', id: v.id, pid: p.id}, v.name, VARIANT_LABEL[p.type], p.name, v.trashedAt));
   });
   raw.sessions.forEach(x => x.trashedAt && push({kind: 'session', id: x.id}, x.title, '快速创作', `${x.messages.filter(m => m.role === 'result').length} 条结果`, x.trashedAt));
+  (raw.voices || []).forEach(v => v.trashedAt && push({kind: 'voice', id: v.id}, v.name, '声音', '素材库', v.trashedAt));
   return out.sort((a, b) => b.at - a.at);
 }
 
