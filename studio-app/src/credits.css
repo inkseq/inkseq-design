@@ -218,3 +218,34 @@
     display: none;
   }
 }
+
+/* Hosted sign-in (#305) above the username form. */
+.hosted-sign-in {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.hosted-sign-in > button {
+  justify-content: center;
+  height: auto;
+  min-height: 40px;
+}
+.hosted-sign-in a {
+  color: var(--accent);
+}
+.hosted-sign-in-or {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.hosted-sign-in-or::before,
+.hosted-sign-in-or::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}

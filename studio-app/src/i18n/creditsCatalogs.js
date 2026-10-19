@@ -1,6 +1,16 @@
+// Credits (#306/#307) and hosted sign-in (#305) strings.
 export const creditsCatalogs = {
   en: {
     'settings.credits': 'Credits',
+    'signIn.hosted': 'Continue with Google, GitHub or email',
+    'signIn.consentBefore': 'By continuing you agree to the ',
+    'signIn.terms': 'Terms',
+    'signIn.comma': ', ',
+    'signIn.privacy': 'Privacy Policy',
+    'signIn.and': ' and ',
+    'signIn.contentPolicy': 'Content Policy',
+    'signIn.consentAfter': '.',
+    'signIn.orUsername': 'or sign in with a username',
     'credits.word': 'credits',
     'credits.chipTitle': 'Credit balance · top up',
     'credits.chipLabel': '{count} credits available. Open credits.',
@@ -57,6 +67,15 @@ export const creditsCatalogs = {
   },
   zh: {
     'settings.credits': '我的积分',
+    'signIn.hosted': '用 Google、GitHub 或邮箱继续',
+    'signIn.consentBefore': '继续即表示你同意',
+    'signIn.terms': '服务条款',
+    'signIn.comma': '、',
+    'signIn.privacy': '隐私政策',
+    'signIn.and': '和',
+    'signIn.contentPolicy': '内容规范',
+    'signIn.consentAfter': '。',
+    'signIn.orUsername': '或用用户名登录',
     'credits.word': '积分',
     'credits.chipTitle': '积分余额 · 点击充值',
     'credits.chipLabel': '可用 {count} 积分，打开积分页',
