@@ -60,6 +60,8 @@
 !studio-app/src/PublicPages.jsx
 !studio-app/src/legal-content.js
 !studio-app/src/public-pages.css
+!studio-app/src/model-visibility.js
+!studio-app/src/model-visibility.test.js
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
