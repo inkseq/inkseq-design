@@ -12,7 +12,6 @@ const num = n => Math.round(n).toLocaleString('en-US');
 /* ---------- 登录 / 注册 ---------- */
 const PROVIDERS = [
   ['google', '用 Google 继续', <svg key="g" viewBox="0 0 24 24" width="16" height="16"><path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.3-1.6 3.8-5.5 3.8-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.2 14.6 2.2 12 2.2 6.6 2.2 2.2 6.6 2.2 12s4.4 9.8 9.8 9.8c5.7 0 9.4-4 9.4-9.6 0-.6-.1-1.1-.2-1.6H12z" /></svg>],
-  ['apple', '用 Apple 继续', <svg key="a" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M16.4 12.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9-1.7 0-3.3 1-4.2 2.6-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6 1.3-.1 1.8-.8 3.3-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.5 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.7-1-2.7-4.1zM13.9 5c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.3 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z" /></svg>],
   ['github', '用 GitHub 继续', <svg key="h" viewBox="0 0 24 24" width="16" height="16"><path fill="currentColor" d="M12 2C6.5 2 2 6.6 2 12.2c0 4.5 2.9 8.3 6.8 9.6.5.1.7-.2.7-.5v-1.9c-2.8.6-3.4-1.2-3.4-1.2-.5-1.2-1.1-1.5-1.1-1.5-.9-.6.1-.6.1-.6 1 .1 1.5 1 1.5 1 .9 1.6 2.4 1.1 2.9.9.1-.7.4-1.1.6-1.4-2.2-.3-4.6-1.1-4.6-5 0-1.1.4-2 1-2.7-.1-.3-.4-1.3.1-2.7 0 0 .8-.3 2.8 1a9.4 9.4 0 0 1 5 0c1.9-1.3 2.8-1 2.8-1 .5 1.4.2 2.4.1 2.7.6.7 1 1.6 1 2.7 0 3.9-2.3 4.7-4.6 5 .4.3.7.9.7 1.9v2.8c0 .3.2.6.7.5 4-1.3 6.8-5.1 6.8-9.6C22 6.6 17.5 2 12 2z" /></svg>],
 ];
 
@@ -39,7 +38,7 @@ export function AuthPage() {
           <button className="primary auth-main keep-label" disabled={code.length !== 6} onClick={go}>登录</button>
         </>}
         <small className="muted auth-agree">继续即表示你同意 <a href="#terms">用户协议</a>、<a href="#privacy">隐私政策</a> 和 <a href="#content">内容规则</a>。</small>
-        <small className="muted">没有密码要记。同一个邮箱用 Google、Apple 或验证码登录，都是同一个账号。</small>
+        <small className="muted">同一个邮箱用 Google、GitHub、密码或验证码登录，都是同一个账号。</small>
       </div>
       <p className="muted auth-foot">原型：任意方式都会直接登录为普通用户。</p>
     </div>
@@ -79,7 +78,7 @@ export function CreditsPanel({LimitField}) {
         <b>{num(p.credits)}<small> 积分</small></b>
         <span className="pack-name">{`${p.name}包`}{p.bonus ? <small className="good"> 多送 {p.bonus}%</small> : null}</span>
         <span className="pack-price">US${p.usd}</span></button>)}</div>
-      <small className="muted"><Lock size={11} /> 通过 Stripe 安全支付：银行卡、Apple Pay、Google Pay、支付宝。我们不保存你的卡号。</small></div>
+      <small className="muted"><Lock size={11} /> 通过 Stripe 安全支付：银行卡、Apple Pay、Google Pay 等。我们不保存你的卡号。暂时不支持中国大陆的付款。</small></div>
 
     <div className="card-box"><h4>生成要多少积分</h4>
       <div className="price-table">{TIERS.map(([k, l, d]) => <div key={k}><b>{l}</b><small className="muted">{d}</small>
@@ -140,7 +139,8 @@ export function LowCredits() {
 export function LinkedLogins() {
   const {state, toast} = useStore();
   const admin = state.role === 'admin';
-  const rows = [['邮箱', admin ? 'dan@inkseq.com' : 'mia.c@gmail.com', true], ['Google', admin ? '' : 'mia.c@gmail.com', !admin], ['Apple', '', false], ['GitHub', '', false]];
+  // Owner decision 2026-10-19: Google + GitHub + email (password or code). More providers are a WorkOS toggle later.
+  const rows = [['邮箱', admin ? 'dan@inkseq.com' : 'mia.c@gmail.com', true], ['Google', admin ? '' : 'mia.c@gmail.com', !admin], ['GitHub', '', false]];
   return <div className="card-box"><h4>登录方式</h4>
     {rows.map(([k, v, on]) => <div key={k} className="row tight login-row"><b>{k}</b><small className="muted">{on ? v || '已连接' : '未连接'}</small><div className="spacer" />
       {on ? <button className="small ghost" disabled={k === '邮箱'} onClick={() => toast('原型：已断开')}>断开</button> : <button className="small" onClick={() => toast(`原型：跳转到 ${k} 授权`)}>连接</button>}</div>)}

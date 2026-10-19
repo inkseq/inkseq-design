@@ -70,7 +70,7 @@ const seedUsers = () => [
   {id: 'u1', name: 'superdan', email: 'dan@inkseq.com', via: ['密码'], role: 'admin', status: 'active', balance: 1240, spent30: 960, joined: Date.now() - 20 * DAY},
   {id: 'u2', name: 'supervan', email: 'van@inkseq.com', via: ['密码'], role: 'user', status: 'active', balance: 380, spent30: 2140, joined: Date.now() - 15 * DAY},
   {id: 'u3', name: 'Mia Chen', email: 'mia.c@gmail.com', via: ['Google'], role: 'user', status: 'active', balance: 100, spent30: 0, joined: Date.now() - 2 * DAY},
-  {id: 'u4', name: 'k.tanaka', email: 'k.tanaka@icloud.com', via: ['Apple', '邮箱'], role: 'user', status: 'suspended', balance: 0, spent30: 40, joined: Date.now() - 6 * DAY},
+  {id: 'u4', name: 'k.tanaka', email: 'k.tanaka@icloud.com', via: ['GitHub', '邮箱'], role: 'user', status: 'suspended', balance: 0, spent30: 40, joined: Date.now() - 6 * DAY},
 ];
 // Older saves have portraits with baked-in Chinese text; strip it so thumbnails are language-neutral.
 const plainPortrait = th => {
@@ -195,12 +195,15 @@ function core(state, a) {
     }
     // Demo data follows the UI language (sample titles, scripts, profiles…); user-written text is kept.
     case 'dataLang': {
-      if (state.dataLang === a.lang && state.dataLangV === 2) return state; // V bumps re-run it after new fields are covered
+      if (state.dataLang === a.lang && state.dataLangV === 3) return state; // V bumps re-run it after new fields are covered
       const T = v => translateData(v, a.lang);
       const m = (o, keys) => { const r = {...o}; keys.forEach(k => { if (typeof r[k] === 'string') r[k] = T(r[k]); }); return r; };
-      return {...state, dataLang: a.lang, dataLangV: 2,
+      // Voice names made from a character name ("林岚的声音" / "Lin Lan's voice") follow that name.
+      const vname = n => { const m = /^(.+?)(的声音|'s voice)$/.exec(n || ''); return m ? (a.lang === 'zh' ? `${translateData(m[1], 'zh')}的声音` : `${translateData(m[1], 'en')}'s voice`) : T(n); };
+      return {...state, dataLang: a.lang, dataLangV: 3,
+        voices: (state.voices || []).map(v => ({...m(v, ['desc']), name: vname(v.name)})),
         stories: state.stories.map(s => ({...m(s, ['title']), settings: m(s.settings, ['logline', 'style']), chapters: s.chapters.map(c => ({...m(c, ['title']), scenes: c.scenes.map(sc => m(sc, ['title']))}))})),
-        shots: state.shots.map(s => m(s, ['title', 'script', 'prompt', 'dialogue'])),
+        shots: state.shots.map(s => ({...m(s, ['title', 'script', 'prompt', 'dialogue']), ...(s.lines ? {lines: s.lines.map(l => m(l, ['text']))} : {})})),
         profiles: state.profiles.map(p => ({...m(p, ['name', 'desc']), variants: p.variants.map(v => m(v, ['name', 'desc']))})),
         assets: state.assets.map(x => m(x, ['name'])),
         agents: (state.agents || []).map(g => ({...g, scope: m(g.scope, ['label']), log: g.log.map(l => m(l, ['text']))})),

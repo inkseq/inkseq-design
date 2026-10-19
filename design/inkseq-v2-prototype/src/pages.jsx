@@ -57,7 +57,7 @@ export function SettingsPage({onToast}) {
     <div className="home">
       <AppHeader />
       <main className="home-main settings-page">
-        <aside className="snav">{tabs.map(([k, l, I]) => <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}><I size={16} />{l}</button>)}</aside>
+        <aside className="snav">{tabs.map(([k, l, I]) => <button key={k} className={'keep-label' + (tab === k ? ' on' : '')} onClick={() => setTab(k)}><I size={16} />{l}</button>)}</aside>
         <section className="spanel">
           {tab === 'account' && <>
             <h2>账号</h2>
