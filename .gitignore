@@ -47,6 +47,8 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/account-access.js
+!studio-app/src/account-access.test.js
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
