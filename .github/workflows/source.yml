@@ -29,3 +29,22 @@ jobs:
       - run: npm run build
         working-directory: studio-app
       - run: node --check quick-chat-mock/app.js && node --check quick-chat-mock/agent.js && node --check quick-chat-mock/limits.js
+  layout:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: studio-app/package-lock.json
+      - run: npm ci
+        working-directory: studio-app
+      - run: npm run build
+        working-directory: studio-app
+      - run: npx playwright install --with-deps chromium
+        working-directory: studio-app
+      - run: npm run audit:layout
+        working-directory: studio-app
