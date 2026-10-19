@@ -12,6 +12,8 @@ import {Chip, checkInputs, SpecPicker} from './inputs.jsx';
 import {KIND_LABEL, TYPE_LABEL, VARIANT_LABEL} from './data.js';
 import {estimate, shotControls, chosenVersion, coverOf, expand, fmt, LIMITS, MODE_LABEL, modeOf, MODELS, planDrop, segments, shotProfiles, shotStatus, startFrame, totalDuration, variantOf} from './model.js';
 import {queuePositions, useStore} from './store.jsx';
+import {DialogueLines, VoiceCreator, VoicePicker} from './voices.jsx';
+import {AudioLines} from 'lucide-react';
 import {assetUsage, profileUsage} from './trash.js';
 
 /* ---------- thumbs & draggable tiles ---------- */
@@ -250,20 +252,22 @@ function VoiceSection({p}) {
   const hot = isOver && db.asset(String(active?.id).slice(6))?.kind === 'audio';
   return (
     <div ref={setNodeRef} className={'voices' + (hot ? ' drop-hot' : '')} {...nativeDrop(files => dispatch({type: 'uploadFiles', files, target: {kind: 'voice', pid: p.id}}))}>
-      <div className="row tight"><b>声音</b><small className="muted">说话样本：全能参考生成时截其中 3 秒，让人物的声音保持一致</small>
-        <button className="small" onClick={() => setChoose(true)}>＋ 添加声音</button></div>
-      <div className="drop-line">把声音从左边素材库「声音」或电脑桌面拖到这里</div>
-      {!voices.length && <div className="slot-empty">还没有声音样本。没有声音时，模型会自己配声音。</div>}
+      <div className="row tight"><b>人物的音色</b><small className="muted">台词会用这个音色配音，{p.name}每个镜头听起来都一样</small></div>
+      <VoicePicker value={p.voiceId} onChange={id => dispatch({type: 'profile', id: p.id, patch: {voiceId: id}})} suggest={{name: `${p.name}的声音`, desc: p.desc}} />
+      {!p.voiceId && <div className="slot-empty">还没有音色：可以按人物描述设计一个、上传录音克隆，或者从生成好的视频里把模型配的声音留下来。</div>}
+      <details className="vsamples"><summary>参考片段 · 全能参考时截 3 秒当声音参考（{voices.length}）</summary>
+      <div className="row tight"><small className="muted">一般不用管：有声音以后，台词配音会自动当参考。想让某个镜头带特定情绪，可以放一段真实录音。</small>
+        <button className="small" onClick={() => setChoose(true)}>＋ 添加片段</button></div>
       {voices.map(v => { const a = db.asset(v.asset); if (!a) return null; const max = Math.max(0, Math.floor((a.seconds || 3) - 3)); return (
         <div key={v.asset} className={'voice' + (p.voice === v.asset ? ' main' : '')}>
           <div className="row tight">
-            <label className="check"><input type="radio" checked={p.voice === v.asset} onChange={() => dispatch({type: 'profile', id: p.id, patch: {voice: v.asset}})} />主声音</label>
+            <label className="check"><input type="radio" checked={p.voice === v.asset} onChange={() => dispatch({type: 'profile', id: p.id, patch: {voice: v.asset}})} />默认片段</label>
             <span className="clip"><b>{a.name}</b> · {a.seconds} 秒{a.source === 'upload' ? ' · 刚上传' : ''}</span>
             <PlayButton asset={a} label="整段" />
             <button className="x" title="移除" onClick={() => dispatch({type: 'removeVoice', pid: p.id, asset: v.asset})}>×</button>
           </div>
           <div className="row tight">
-            <span className="muted">生成用的 3 秒：</span>
+            <span className="muted">用的 3 秒：</span>
             <input type="range" min={0} max={max} step={0.5} value={Math.min(v.start, max)} disabled={!max}
               onChange={e => dispatch({type: 'voice', pid: p.id, asset: v.asset, patch: {start: +e.target.value}})} />
             <span className="muted">第 {v.start}–{v.start + 3} 秒</span>
@@ -271,8 +275,8 @@ function VoiceSection({p}) {
           </div>
           <input className="note-in" placeholder="备注：比如“平时说话”“情绪激动时”" value={v.note || ''}
             onChange={e => dispatch({type: 'voice', pid: p.id, asset: v.asset, patch: {note: e.target.value}})} />
-        </div>); })}
-      {choose && <ChooseFiles kind="audio" title={`给${p.name}添加声音`} exclude={new Set(voices.map(v => v.asset))}
+        </div>); })}</details>
+      {choose && <ChooseFiles kind="audio" title={`给${p.name}添加参考片段`} exclude={new Set(voices.map(v => v.asset))}
         onPick={id => { dispatch({type: 'addVoice', pid: p.id, asset: id}); setChoose(false); }}
         onFiles={files => dispatch({type: 'uploadFiles', files, target: {kind: 'voice', pid: p.id}})} onClose={() => setChoose(false)} />}
     </div>
@@ -336,9 +340,11 @@ export function ProfileEditor() {
             <div className="vimg add" onClick={() => setChoose(true)}>＋ 添加照片<br /><small>点这里选择，或把图片从左边素材库 / 电脑桌面拖进来</small></div>
           </VariantDrop>
           {p.type === 'character' && !v.images.length && <div className="warn">这套造型还没有照片：生成时只能靠文字描述，人物容易不一致</div>}
-          {p.type === 'character' && (p.voices || []).length > 1 && <label className="row tight"><span className="muted">这套造型用的声音：</span>
-            <select value={v.voice || ''} onChange={e => dispatch({type: 'variant', pid: p.id, vid: v.id, patch: {voice: e.target.value || null}})}>
-              <option value="">跟随主声音</option>{p.voices.map(x => <option key={x.asset} value={x.asset}>{db.asset(x.asset)?.name}</option>)}</select></label>}
+          {p.type === 'character' && p.variants.length > 1 && <div className="row tight vvariant"><span className="muted">这套造型的音色：</span>
+            <VoicePicker compact value={v.voiceId} onChange={id => dispatch({type: 'variant', pid: p.id, vid: v.id, patch: {voiceId: id}})}
+              suggest={{name: `${p.name}（${v.name}）`, desc: `「${v.name}」时的${p.name}：${v.desc || ''}。按这个时期改一下年龄和语气`}} noneLabel="跟随人物的音色"
+              emptyLabel={`跟随人物 · ${state.voices.find(x => x.id === p.voiceId)?.name || '还没有音色'}`} />
+            <small className="muted">比如回忆里的童年造型用另一个声音</small></div>}
         </div>
 
         {p.type === 'character' && <VoiceSection p={p} />}
@@ -564,6 +570,7 @@ function AiTag({s, manual, label}) {
 export function ShotEditor({shotId, onClose, inline, wide, onWide}) {
   const {state, dispatch, db, trash} = useStore();
   const shot = state.shots.find(s => s.id === shotId);
+  const [keepVoice, setKeepVoice] = useState(false);
   const [preview, setPreview] = useState(null), [picker, setPicker] = useState(null), [saving, setSaving] = useState(false), [msg, setMsg] = useState('');
   const [count, setCount] = useState(1);
   const [adv, setAdv] = useState(false), [editing, setEditing] = useState(null), [writing, setWriting] = useState(false), [guidePick, setGuidePick] = useState(false), [aiNote, setAiNote] = useState('');
@@ -664,11 +671,14 @@ export function ShotEditor({shotId, onClose, inline, wide, onWide}) {
 
       <div className="ed-media"><Takes shot={shot} wide={wide} onWide={onWide} viewing={viewing} setPreview={setPreview}
         saveFrame={viewing?.status === 'done' && (saving ? <SaveFrame shot={shot} version={viewing} onDone={t => { setSaving(false); setMsg(t); }} />
-        : <div className="row tight"><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>📌 截一帧存为参考</button>{msg && <small className="okmsg">{msg}</small>}</div>)} /></div>
+        : <div className="row tight"><button className="small" onClick={() => { setSaving(true); setMsg(''); }}>📌 截一帧存为参考</button>
+          {shot.cast.length > 0 && <button className="small" title="模型这次配的声音合适？留下来，以后这个人物每个镜头都用它" onClick={() => setKeepVoice(true)}>🔊 留下这条的声音</button>}
+          {msg && <small className="okmsg">{msg}</small>}</div>)} /></div>
+      {keepVoice && viewing && (() => { const p = db.profile(shot.cast[0]?.id); return <VoiceCreator initial={{tab: 'take', take: shot.id + ':' + viewing.id, name: p ? `${p.name}的声音` : '', desc: p?.desc || ''}}
+        onClose={() => setKeepVoice(false)} onDone={id => { if (p && !p.voiceId) dispatch({type: 'profile', id: p.id, patch: {voiceId: id}}); setMsg(p && !p.voiceId ? `已设为${p.name}的声音` : '已存进素材库「音色」'); setKeepVoice(false); }} />; })()}
       <div className="ed-form">
       <label className="field"><span>剧本（这一镜发生什么）</span><textarea rows={2} value={shot.script} onChange={e => upd({script: e.target.value})} /></label>
-      <label className="field"><span>台词 · 导出字幕时按时间线自动生成</span>
-        <input value={shot.dialogue || ''} onChange={e => upd({dialogue: e.target.value})} placeholder="这一镜里谁说了什么，没有可留空" /></label>
+      <DialogueLines shot={shot} upd={upd} mode={info.mode} />
       <div className="field"><span className="row tight">动作描述 · 只写动作，人物和场景的样子来自档案<span className="spacer" />
         <button className="small ghost" disabled={writing || !(shot.script || shot.prompt)} title="按剧本让助手写动作描述" onClick={writeAction}>
           <Sparkles size={13} />{writing ? '写着呢…' : '助手帮写'}</button></span>
@@ -684,8 +694,10 @@ export function ShotEditor({shotId, onClose, inline, wide, onWide}) {
                 <AiTag s={ai[p.id]?.look} manual={picks[p.id]?.manualVariant} label={id => p.variants.find(v => v.id === id)?.name} />
                 {info.mode === 'REF' && <AiTag s={ai[p.id]?.voice} manual={picks[p.id]?.manualVoice} label={id => '声音 ' + (p.voices.find(v => v.asset === id)?.note || '')} />}
                 <PhotoPick pid={p.id} list={variantOf(p, c.variant).images} />
-                {info.mode === 'REF' && (p.voices || []).length > 0 && <select className="voice-pick" value={picks[p.id]?.voice || ''} onChange={e => setPick(p.id, {voice: e.target.value || undefined, manualVoice: true})} title={ai[p.id]?.voice ? `AI ${ai[p.id].voice.applied ? '选的' : '建议'}：${p.voices.find(v => v.asset === ai[p.id].voice.id)?.note || ''} · 把握 ${Math.round(ai[p.id].voice.conf * 100)}%` : '发给模型的声音'}>
-                  <option value="">声音：默认</option>{p.voices.map(vo => <option key={vo.asset} value={vo.asset}>声音：{db.asset(vo.asset)?.name || vo.asset}{vo.note ? ` · ${vo.note}` : ''}</option>)}<option value="none">不用声音</option></select>}</div>
+                {(() => { const cv = p.variants.find(x => x.id === c.variant)?.voiceId || p.voiceId, vo = state.voices.find(x => x.id === cv);
+                  return <span className={'cast-voice' + (vo ? '' : ' none')} title={vo ? '台词用这个声音配音' : '这个人物还没有音色，台词会由模型自己配'}><AudioLines size={11} />{vo ? vo.name : '没有声音'}</span>; })()}
+                {info.mode === 'REF' && (p.voices || []).length > 0 && !(shot.lines || []).some(l => l.who === p.id && l.text) && <select className="voice-pick" value={picks[p.id]?.voice || ''} onChange={e => setPick(p.id, {voice: e.target.value || undefined, manualVoice: true})} title={ai[p.id]?.voice ? `AI ${ai[p.id].voice.applied ? '选的' : '建议'}：${p.voices.find(v => v.asset === ai[p.id].voice.id)?.note || ''} · 把握 ${Math.round(ai[p.id].voice.conf * 100)}%` : '发给模型的声音'}>
+                  <option value="">参考片段：默认</option>{p.voices.map(vo => <option key={vo.asset} value={vo.asset}>参考片段：{db.asset(vo.asset)?.name || vo.asset}{vo.note ? ` · ${vo.note}` : ''}</option>)}<option value="none">不用声音</option></select>}</div>
               <button className="x" onClick={() => dispatch({type: 'uncast', shot: shot.id, id: c.id})}>×</button></div>); })}
           {shot.place && (() => { const p = db.profile(shot.place.id); if (!p) return null; return (
             <div className="castitem location"><AssetThumb asset={coverOf(db, p, shot.place.variant)} size={34} /><div><b className="link" title="打开档案" onClick={() => dispatch({type: 'openProfile', id: p.id})}>{p.name}</b>

@@ -1457,3 +1457,76 @@ button.ghost.danger:hover { background: rgba(255,122,107,.1); }
 }
 .pack b small { display: block; margin-top: 1px; }
 .admin-tabs button { gap: 5px; }
+
+/* ---------- 声音: reusable voices, pickers, creator, dialogue lines ---------- */
+.vkind { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--surface-3); color: var(--ink-2); white-space: nowrap; }
+.vkind.designed { background: var(--accent-soft); color: var(--accent); }
+.vkind.cloned { background: var(--ref-soft); color: var(--ref); }
+.vkind.take { background: var(--fl-soft); color: var(--fl); }
+.play-voice { padding: 3px 7px; }
+.vpicker { position: relative; display: flex; align-items: center; gap: 6px; min-width: 0; }
+.vpick-btn { flex: 1; min-width: 0; justify-content: flex-start; gap: 8px; background: var(--surface-2); padding: 7px 10px; }
+.vpick-btn.empty { color: var(--muted); border-style: dashed; }
+.vpick-btn .clip { flex: 1; text-align: left; }
+.vpicker.compact .vpick-btn { padding: 4px 8px; font-size: 12px; }
+.vpick-menu { position: absolute; z-index: 70; top: calc(100% + 6px); left: 0; width: min(380px, 86vw); max-height: 340px; overflow: auto; background: var(--surface); border: 1px solid var(--line-2); border-radius: var(--r); box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px; }
+.vpick-new { justify-content: flex-start; gap: 8px; background: var(--accent-soft); color: var(--accent); border-color: transparent; padding: 8px 10px; flex-wrap: wrap; }
+.vpick-new small { color: var(--ink-2); font-size: 11px; width: 100%; padding-left: 22px; }
+.vpick-row { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: var(--r-sm); cursor: pointer; min-width: 0; }
+.vpick-row:hover { background: var(--surface-3); }
+.vpick-row.on { background: var(--surface-3); }
+.vpick-row > .clip { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.vpick-row > .clip small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.vpick-row.none { color: var(--muted); font-size: 12px; }
+.vcreator { width: min(640px, 94vw); }
+.vtabs2 { flex-wrap: wrap; }
+.vtabs2 button { gap: 5px; }
+.vcands { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.vcand { flex-direction: column; align-items: flex-start; gap: 3px; padding: 10px; border-radius: var(--r); background: var(--surface-2); position: relative; }
+.vcand svg:last-child:not(:first-child) { position: absolute; top: 8px; right: 8px; color: var(--accent); }
+.vcand.on { border-color: var(--accent); background: var(--accent-soft); }
+.vcand small { color: var(--muted); font-size: 11px; }
+.vclone { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.vdrop, .vrec { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 16px 12px; border: 1px dashed var(--line-2); border-radius: var(--r); background: var(--surface-2); cursor: pointer; text-align: center; min-height: 104px; }
+.vdrop small, .vrec small { color: var(--muted); font-size: 11px; }
+.vrec.on { border-color: var(--bad); color: var(--bad); }
+.vscript { padding: 10px 12px; background: var(--surface-2); border-radius: var(--r-sm); line-height: 1.7; }
+.vconsent { align-items: flex-start; line-height: 1.55; padding: 10px; background: var(--warn-soft); border-radius: var(--r-sm); }
+.vpresets { display: flex; flex-direction: column; gap: 6px; }
+.vpreset { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface-2); border-radius: var(--r-sm); }
+.vpreset > span { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.vlib-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.vlib-head p { margin: 0; flex: 1; }
+.vlib { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.vcard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 12px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.vcard .vname { background: transparent; border-color: transparent; padding: 2px 4px; font-weight: 600; flex: 1; min-width: 0; }
+.vcard .vname:focus { border-color: var(--accent); }
+.vcard .vtry { flex: 1; min-width: 0; padding: 5px 8px; font-size: 12px; }
+.vcard .clip2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.5; min-height: 3em; }
+.vcard > button { align-self: flex-start; }
+.vused { color: var(--ink-2); font-size: 12px; display: flex; flex-direction: column; gap: 2px; }
+.vcard .vname.fixed { padding: 2px 4px; flex: 1; }
+.voices .vpicker { max-width: 460px; }
+.vsamples summary { cursor: pointer; color: var(--ink-2); font-size: 12px; padding: 4px 0; }
+.vsamples[open] { display: flex; flex-direction: column; gap: 8px; }
+.vvariant { flex-wrap: wrap; }
+.vvariant .vpicker { min-width: 200px; max-width: 320px; }
+.dlines { gap: 6px; }
+.dline { display: flex; flex-direction: column; gap: 4px; padding: 8px; background: var(--surface-2); border-radius: var(--r-sm); }
+.dline-head { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.dline-head select { width: auto; min-width: 84px; padding: 3px 22px 3px 6px; font-size: 12px; }
+.dline .dtext { padding: 6px 8px; resize: vertical; min-height: 34px; }
+.dvoice { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); min-width: 0; }
+.cast-voice { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--ink-2); padding: 1px 0; }
+.cast-voice.none { color: var(--warn); }
+.dnovoice { font-size: 11px; color: var(--warn); white-space: nowrap; padding: 0 4px; }
+.dmissing { display: flex; flex-direction: column; gap: 6px; }
+.dmissing > span { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; color: var(--ink-2); padding: 8px 10px; background: var(--warn-soft); border-radius: var(--r-sm); }
+.dmode { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12px; }
+@media (max-width: 760px) {
+  .vcands { grid-template-columns: 1fr; }
+  .vclone { grid-template-columns: 1fr; }
+  .dline-head .dvoice { display: none; }
+  .vlib-head { flex-direction: column; align-items: stretch; }
+}
+.voices-card .folder-cover { color: var(--accent); background: linear-gradient(135deg, var(--accent-soft), var(--surface-2)); }

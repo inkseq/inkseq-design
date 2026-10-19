@@ -4,6 +4,7 @@ import {SortableContext, rectSortingStrategy} from '@dnd-kit/sortable';
 import {AssetLibrary, ProfileEditor, Screen, ShotCard, ShotEditor, Timeline, Transport, usePlayer} from './components.jsx';
 import {chosenVersion, estimate, fmt, segments, shotControls, totalDuration} from './model.js';
 import {queuePositions, useStore} from './store.jsx';
+import {VoicePicker} from './voices.jsx';
 import {Splitter, usePanelSize} from './panels.jsx';
 import {ArrowLeft, Captions, ChevronDown, Clapperboard, Download, FileSpreadsheet, Maximize2, Minimize2, PanelLeftClose, PanelLeftOpen, Plus, Settings2, Sparkles, Trash2} from 'lucide-react';
 import {running} from './trash.js';
@@ -63,6 +64,8 @@ function StorySettings({story, onClose}) {
           <label className="field small"><span>新镜头默认</span>
             <div className="seg">{[['draft', '草稿'], ['final', '精修']].map(([k, l]) => <button key={k} className={st.defaultQuality === k ? 'on' : ''} onClick={() => set({defaultQuality: k})}>{l}</button>)}</div></label>
         </div>
+        <div className="field"><span>旁白的音色 · 台词里选「旁白」的句子用它</span>
+          <VoicePicker value={st.narratorVoice} onChange={id => set({narratorVoice: id})} suggest={{name: `${story.title} · 旁白`, desc: '', tab: 'preset'}} noneLabel="不要旁白配音" /></div>
         <label className="field"><span>全片风格 · 自动加在每个镜头提示词最前面</span>
           <input value={st.style} placeholder="例如：电影感，冷色调，胶片颗粒" onChange={e => set({style: e.target.value})} /></label>
         {st.aspect !== '16:9' && <div className="warn">⚠ 竖屏/方形：全能参考目前只验收了 16:9，用全能参考的镜头会提示</div>}

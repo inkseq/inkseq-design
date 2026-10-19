@@ -79,11 +79,34 @@ const plainPortrait = th => {
   if (!svg.includes('<text')) return th;
   return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg.replace(/<text[^>]*>[^<]*<\/text>/g, '').replace(/<rect x="0" y="134"[^>]*\/>/g, ''));
 };
+// 声音: reusable voices. Presets ship with the product; a character's old sample clips become its cloned voice.
+const seedVoices = () => [
+  {id: 'vp-narr-f', name: '旁白 · 温和女声', kind: 'preset', desc: '30 岁女性，温和、清楚，讲故事的语气', lang: 'zh', pitch: 1.15, rate: 0.95, seed: 1},
+  {id: 'vp-narr-m', name: '旁白 · 低沉男声', kind: 'preset', desc: '40 岁男性，低沉、稳重，纪录片口吻', lang: 'zh', pitch: 0.75, rate: 0.9, seed: 2},
+  {id: 'vp-teen', name: '少年', kind: 'preset', desc: '15 岁男孩，明亮、有点急', lang: 'zh', pitch: 1.45, rate: 1.1, seed: 3},
+  {id: 'vp-elder', name: '老人', kind: 'preset', desc: '70 岁，沙哑、慢', lang: 'zh', pitch: 0.7, rate: 0.8, seed: 4},
+  {id: 'vp-en-narr', name: 'Narrator · warm', kind: 'preset', desc: 'Warm, clear storyteller (English)', lang: 'en', pitch: 1, rate: 0.95, seed: 1},
+];
+const voiceMigrate = s => {
+  if (s.voices) return s;
+  const voices = seedVoices(), profiles = s.profiles.map(p => {
+    if (p.type !== 'character' || !(p.voices || []).length) return p;
+    const id = 'vc-' + p.id;
+    voices.push({id, name: `${p.name}的声音`, kind: 'cloned', desc: p.desc, lang: 'zh', pitch: /女/.test(p.desc) ? 1.2 : 0.8, rate: 1, seed: voices.length,
+      source: {samples: p.voices.map(v => v.asset)}, consent: {at: Date.now(), statement: '内测样本（示例数据）'}});
+    return {...p, voiceId: id};
+  });
+  const chenVoice = {id: 'vd-chen', name: '老陈的声音', kind: 'designed', desc: '60 岁男性，沙哑、慢条斯理，带点北方口音', lang: 'zh', pitch: 0.72, rate: 0.85, seed: 3};
+  voices.push(chenVoice);
+  const shots = s.shots.map(x => (x.lines || !x.dialogue ? x : {...x, lines: [{id: 'l-' + x.id, who: x.dialogue.startsWith('（录音）') ? 'narrator' : (x.cast[0]?.id || 'narrator'), text: x.dialogue.replace(/^（录音）/, ''), emotion: ''}]}));
+  return {...s, voices, profiles: profiles.map(p => (p.id === 'chen' ? {...p, voiceId: chenVoice.id} : p)), shots,
+    stories: s.stories.map(st => ({...st, settings: {...st.settings, narratorVoice: st.settings?.narratorVoice ?? 'vp-narr-f'}}))};
+};
 const creditLimits = l => (l && !l.inCredits ? {...l, daily: (l.daily ?? 20) * 100, confirmAbove: (l.confirmAbove ?? 1) * 100, inCredits: true} : l);
-const normalize = s => ({...s, assets: (s.assets || []).map(a => ({...a, thumb: plainPortrait(a.thumb)})), agents: s.agents || [], agentInvite: s.agentInvite || null,
+const normalize = s0 => { const s = voiceMigrate(s0); return {...s, assets: (s.assets || []).map(a => ({...a, thumb: plainPortrait(a.thumb)})), agents: s.agents || [], agentInvite: s.agentInvite || null,
   limits: {...DEFAULT_LIMITS, inCredits: true, ...(creditLimits(s.limits) || {})}, creditsToday: s.creditsToday ?? 340,
   role: s.role || 'user', credits: s.credits || seedCredits(), rates: s.rates || {...DEFAULT_RATES}, ratesRev: s.ratesRev || 3,
-  users: s.users || seedUsers(), adminLog: s.adminLog || [], overhead: s.overhead ?? 3, creditBlock: null});
+  users: s.users || seedUsers(), adminLog: s.adminLog || [], overhead: s.overhead ?? 3, creditBlock: null}; };
 function load() {
   try { const raw = localStorage.getItem(KEY); if (raw) return normalize(seedTags(expire(JSON.parse(raw)))); } catch {}
   return normalize(seedTags(initial()));
@@ -493,6 +516,9 @@ function core(state, a) {
     case 'rates': return {...state, rates: {...state.rates, ...a.patch}};
     case 'ratesPublish': return {...state, ratesRev: state.ratesRev + 1, adminLog: [...state.adminLog, {at: Date.now(), text: `发布定价 v${state.ratesRev + 1}：快速 ${state.rates.fast} · 标准 ${state.rates.draft} · 精修 ${state.rates.final} 积分/秒`}]};
     case 'overhead': return {...state, overhead: a.value};
+    // ---- 声音 ----
+    case 'voiceCreate': return {...state, voices: [...state.voices, a.voice]};
+    case 'voiceUpdate': return {...state, voices: state.voices.map(v => (v.id === a.id ? {...v, ...a.patch} : v))};
     default: return state;
   }
 }
