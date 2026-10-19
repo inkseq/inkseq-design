@@ -49,6 +49,12 @@
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/account-access.js
 !studio-app/src/account-access.test.js
+!studio-app/src/CreditsUI.jsx
+!studio-app/src/credits.js
+!studio-app/src/credits.test.js
+!studio-app/src/credits-mock.js
+!studio-app/src/credits.css
+!studio-app/src/HostedSignIn.jsx
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
