@@ -55,6 +55,8 @@
 !studio-app/src/credits-mock.js
 !studio-app/src/credits.css
 !studio-app/src/HostedSignIn.jsx
+!studio-app/src/AdminConsole.jsx
+!studio-app/src/admin.css
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
