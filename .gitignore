@@ -240,6 +240,13 @@
 
 # Owner-approved storyboard layout A; no prototype store or sample media.
 !studio-app/src/StoryboardWorkspace.jsx
+!studio-app/src/StoryFilmControl.jsx
+!studio-app/src/StoryFilmView.jsx
+!studio-app/src/story-film.js
+!studio-app/src/story-film.test.js
+!studio-app/src/story-film-view.test.js
+!studio-app/src/v2/story-film.css
+!studio-app/src/i18n/filmCatalogs.js
 !studio-app/src/StoryboardComponents.jsx
 !studio-app/src/StoryboardDialog.jsx
 !studio-app/src/storyboard-dialog.test.js
