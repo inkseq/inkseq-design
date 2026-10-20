@@ -71,6 +71,8 @@
 !studio-app/src/film-edit.test.js
 !studio-app/src/FilmEditor.jsx
 !studio-app/src/film-editor.css
+!studio-app/src/InkLoader.jsx
+!studio-app/src/ink-loader.css
 !studio-app/src/ink-mark-daily.js
 !studio-app/src/ink-mark-daily.test.js
 !studio-app/src/account-menu.css
