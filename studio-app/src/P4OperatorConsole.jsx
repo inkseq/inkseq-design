@@ -1,4 +1,5 @@
-import StudioHeader, { useAccountLabel } from './StudioHeader.jsx';
+import StudioHeader from './StudioHeader.jsx';
+import { MenuItem } from './AccountMenu.jsx';
 import { readBrowserLocale, translate } from './i18n/locale.js';
 import { LanguageSwitcher, useI18n } from './i18n/I18nProvider.jsx';
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -21,6 +22,7 @@ import { cloudController as cloud } from './cloud-controller.js';
 import { createP4OperatorController } from './p4-operator-controller.js';
 import OperatorBudgetPanel, { AdminBudgetPanel, BudgetWorkspace } from './OperatorBudgetPanel.jsx';
 import OperatorJobsPanel from './OperatorJobsPanel.jsx';
+import DemandStartPanel from './DemandStartPanel.jsx';
 import OperatorHostsPanel, { OfferHostHistory } from './OperatorHostsPanel.jsx';
 import { inventoryError, inventoryOutcome, referenceHostOffers } from './operator-host-model.js';
 import {
@@ -1633,7 +1635,6 @@ export default function P4OperatorConsole() {
     if (pageActive) document.title = t('operator.pageTitle');
   }, [locale, pageActive]);
   const c = useCloud(),
-    who = useAccountLabel(c.account),
     controller = useMemo(() => createP4OperatorController({ locale: readBrowserLocale }), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
     [view, setView] = useState('machines'),
@@ -1742,20 +1743,7 @@ export default function P4OperatorConsole() {
       <StudioHeader
         account={c.account}
         active="operator"
-        accountMenu={
-          c.account && (
-            <details className="ops-account-menu">
-              <summary className="avatar" aria-label={who.label} title={who.label}>
-                {who.initial}
-              </summary>
-              <div>
-                <a href="/settings">{t('settings.title')}</a>
-                {admin && <button onClick={showAdmin}>{t('operator.copy130')}</button>}
-                <button onClick={() => quiet(cloud.logout())}>{t('operator.status117')}</button>
-              </div>
-            </details>
-          )
-        }
+        menuItems={admin && <MenuItem onClick={showAdmin}>{t('operator.copy130')}</MenuItem>}
       />
       <main className="home-main ops-gpu-page">
         <div className="home-head p4-page-heading">
@@ -2079,6 +2067,7 @@ export default function P4OperatorConsole() {
                   admin
                   busy={blocked}
                 />
+                <DemandStartPanel controller={controller} state={state} busy={blocked} />
                 <OperatorJobsPanel controller={controller} state={state} busy={blocked} />
                 <AdminBudgetPanel controller={controller} state={state} busy={blocked} />
                 <AdminView

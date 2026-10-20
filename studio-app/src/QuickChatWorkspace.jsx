@@ -31,7 +31,6 @@ import {
   Send,
   Trash2,
   SlidersHorizontal,
-  UserRound,
   Sparkles,
   LayoutGrid,
 } from 'lucide-react';
@@ -139,7 +138,6 @@ function settingsForMode(capabilities, current, mode) {
 function Login({ onClose, onDone }) {
   const { t, locale } = useI18n();
   const c = useCloud(),
-    who = useAccountLabel(c.account),
     [username, setUsername] = useState(''),
     [password, setPassword] = useState(''),
     [error, setError] = useState('');
@@ -235,7 +233,6 @@ export default function QuickChatWorkspace() {
     if (pageActive) document.title = t('workspace.copy117');
   }, [locale, pageActive]);
   const c = useCloud(),
-    who = useAccountLabel(c.account),
     access = useAccess(c.account),
     controller = useMemo(() => createQuickChatController(), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
@@ -266,6 +263,32 @@ export default function QuickChatWorkspace() {
     confirmationRef = useRef(null),
     modeRef = useRef(modeIntent),
     materialOperation = useRef(false);
+  // The prompt box grows with its text up to the CSS max-height, then scrolls.
+  useLayoutEffect(() => {
+    const box = textarea.current;
+    if (!box) return;
+    box.style.height = 'auto';
+    box.style.height = box.scrollHeight + 'px';
+  }, [prompt]);
+  // Like a chat: when the box grows (or the window shrinks) the conversation above stays
+  // pinned to its latest line, unless the person scrolled up to read.
+  useEffect(() => {
+    const thread = textarea.current?.closest('.qc-main')?.querySelector('.qc-scroll');
+    if (!thread || typeof ResizeObserver === 'undefined') return undefined;
+    let pinned = true;
+    const onScroll = () => {
+      pinned = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40;
+    };
+    const observer = new ResizeObserver(() => {
+      if (pinned) thread.scrollTop = thread.scrollHeight;
+    });
+    thread.addEventListener('scroll', onScroll, { passive: true });
+    observer.observe(thread);
+    return () => {
+      thread.removeEventListener('scroll', onScroll);
+      observer.disconnect();
+    };
+  }, []);
   useEffect(() => {
     if (!mobile) return;
     const opener = document.activeElement;
@@ -1487,22 +1510,7 @@ export default function QuickChatWorkspace() {
         })();
   return (
     <div className="home quick-shell quick-live">
-      <StudioHeader
-        account={c.account}
-        active="quick"
-        accountMenu={
-          <button
-            className="avatar"
-            onClick={() =>
-              c.account ? navigateApp('/settings?section=account') : setDialog('login')
-            }
-            aria-label={who.label || t('story.copy14')}
-            title={who.label || t('story.copy14')}
-          >
-            {c.account ? who.initial : <UserRound size={17} aria-hidden="true" />}
-          </button>
-        }
-      />
+      <StudioHeader account={c.account} active="quick" onSignIn={() => setDialog('login')} />
       <a className="skip" href="#quick-chat-main">
         {t('workspace.copy7')}
       </a>
@@ -1550,7 +1558,13 @@ export default function QuickChatWorkspace() {
                   <span className="quick-machine-mode" key={mode}>
                     <i className={status.available ? 'ok' : ''} />
                     {t(mode === 'fl' ? 'v2.firstLast' : 'v2.reference')} ·{' '}
-                    {t(status.available ? 'quickView.machineReady' : 'quickView.machineMissing')}
+                    {t(
+                      status.state === 'cold'
+                        ? 'availability.cold'
+                        : status.available
+                          ? 'quickView.machineReady'
+                          : 'quickView.machineMissing',
+                    )}
                   </span>
                 );
               })}
@@ -1821,6 +1835,25 @@ export default function QuickChatWorkspace() {
                 >
                   <Paperclip size={18} />
                 </button>
+                <span className="opt-icons">
+                  <button
+                    className="ghost round"
+                    title={t('quickView.assistantOptions')}
+                    aria-label={t('quickView.assistantOptions')}
+                    onClick={() => setDialog('assistant')}
+                  >
+                    <Bot size={17} />
+                  </button>
+                  <button
+                    className="ghost round"
+                    disabled={!c.account || busy}
+                    title={t('takes.preferences')}
+                    aria-label={t('takes.preferences')}
+                    onClick={openTakePreferences}
+                  >
+                    <Settings2 size={17} />
+                  </button>
+                </span>
                 <textarea
                   ref={textarea}
                   className="quick-prompt"
@@ -1951,23 +1984,6 @@ export default function QuickChatWorkspace() {
                 <button className="ghost adv-btn" disabled={busy || !recipe} onClick={openControls}>
                   <SlidersHorizontal size={13} />
                   {t('quickView.advanced')}
-                </button>
-                <button
-                  className="ghost small"
-                  title={t('quickView.assistantOptions')}
-                  aria-label={t('quickView.assistantOptions')}
-                  onClick={() => setDialog('assistant')}
-                >
-                  <Bot size={13} />
-                </button>
-                <button
-                  className="ghost small"
-                  disabled={!c.account || busy}
-                  title={t('takes.preferences')}
-                  aria-label={t('takes.preferences')}
-                  onClick={openTakePreferences}
-                >
-                  <Settings2 size={14} />
                 </button>
               </div>
             </div>

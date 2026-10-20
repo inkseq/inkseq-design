@@ -22,6 +22,7 @@ const ROUTES = [
 ];
 const VIEWPORTS = [
   ['desktop', 1366, 860],
+  ['laptop', 1024, 640],
   ['tablet', 820, 1180],
   ['phone', 375, 812],
 ];
