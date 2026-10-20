@@ -5,6 +5,20 @@ import { navigateApp } from './app-navigation.js';
 import { accountLabel, readAccess, resetAccess } from './account-access.js';
 import { CreditsChip } from './CreditsUI.jsx';
 
+// What the signed-in account may see (role, sign-in method, credits); re-read when it changes.
+export function useAccess(account) {
+  const [access, setAccess] = useState(null);
+  useEffect(() => {
+    let live = true;
+    if (account) resetAccess();
+    readAccess().then((value) => live && setAccess(value));
+    return () => {
+      live = false;
+    };
+  }, [account]);
+  return access;
+}
+
 // Name shown for the signed-in account: display name or email, never an internal user id.
 export function useAccountLabel(account) {
   const { t } = useI18n();

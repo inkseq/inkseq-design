@@ -22,6 +22,9 @@ export function accessFrom(me) {
   return {
     signedIn: Boolean(me && (me.username || me.account)),
     displayName: displayName(me),
+    email: typeof me?.email === 'string' ? me.email : null,
+    authentication: typeof me?.authentication === 'string' ? me.authentication : null,
+    creditsEnabled: me?.credits?.enabled === true,
     gpus: !me?.machine && operator.view === true,
     admin: !me?.machine && operator.admin === true,
   };

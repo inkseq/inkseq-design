@@ -2,7 +2,7 @@ import { usePageActive, useAppLocation } from './AppRouteCache.jsx';
 import { assistantLabel, modelsVisible } from './model-visibility.js';
 import HostedSignIn from './HostedSignIn.jsx';
 import { navigateApp } from './app-navigation.js';
-import StudioHeader, { useAccountLabel } from './StudioHeader.jsx';
+import StudioHeader, { useAccess, useAccountLabel } from './StudioHeader.jsx';
 import QuickChatPreferences from './QuickChatPreferences.jsx';
 import { checkedPreferences, createConversationFiles } from './quick-chat-takes.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -236,6 +236,7 @@ export default function QuickChatWorkspace() {
   }, [locale, pageActive]);
   const c = useCloud(),
     who = useAccountLabel(c.account),
+    access = useAccess(c.account),
     controller = useMemo(() => createQuickChatController(), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
     [prompt, setPrompt] = useState(() => readDraft(null, null)),
@@ -1532,26 +1533,29 @@ export default function QuickChatWorkspace() {
             <Bot size={14} />
             {t('quickView.handOff')}
           </button>
-          <a className="ghost small qc-machines" href="/operator">
-            <span>{t('quickView.availableMachines')}</span>
-            {['fl', 'ref'].map((mode) => {
-              const status = modeAvailability(
-                state.availability,
-                state.capabilities,
-                settings,
-                mode,
-                undefined,
-                locale,
-              );
-              return (
-                <span className="quick-machine-mode" key={mode}>
-                  <i className={status.available ? 'ok' : ''} />
-                  {t(mode === 'fl' ? 'v2.firstLast' : 'v2.reference')} ·{' '}
-                  {t(status.available ? 'quickView.machineReady' : 'quickView.machineMissing')}
-                </span>
-              );
-            })}
-          </a>
+          {/* Machines are an admin concern; regular users only see queue and credits. */}
+          {access?.gpus && (
+            <a className="ghost small qc-machines" href="/operator">
+              <span>{t('quickView.availableMachines')}</span>
+              {['fl', 'ref'].map((mode) => {
+                const status = modeAvailability(
+                  state.availability,
+                  state.capabilities,
+                  settings,
+                  mode,
+                  undefined,
+                  locale,
+                );
+                return (
+                  <span className="quick-machine-mode" key={mode}>
+                    <i className={status.available ? 'ok' : ''} />
+                    {t(mode === 'fl' ? 'v2.firstLast' : 'v2.reference')} ·{' '}
+                    {t(status.available ? 'quickView.machineReady' : 'quickView.machineMissing')}
+                  </span>
+                );
+              })}
+            </a>
+          )}
           <a className="ghost small qc-trash-btn" href="/trash?kind=conversation">
             <Trash2 size={13} />
             {t('history.copy29')}

@@ -12,12 +12,18 @@ test('anonymous or failed reads expose nothing privileged', () => {
   assert.deepEqual(accessFrom(null), {
     signedIn: false,
     displayName: null,
+    email: null,
+    authentication: null,
+    creditsEnabled: false,
     gpus: false,
     admin: false,
   });
   assert.deepEqual(accessFrom({}), {
     signedIn: false,
     displayName: null,
+    email: null,
+    authentication: null,
+    creditsEnabled: false,
     gpus: false,
     admin: false,
   });
@@ -29,6 +35,9 @@ test('GPUs follow operator_capacity.view and admin follows operator_capacity.adm
     {
       signedIn: true,
       displayName: 'supervan',
+      email: null,
+      authentication: null,
+      creditsEnabled: false,
       gpus: true,
       admin: false,
     },
@@ -36,6 +45,9 @@ test('GPUs follow operator_capacity.view and admin follows operator_capacity.adm
   assert.deepEqual(accessFrom({ username: 'mia', operator_capacity: { view: false } }), {
     signedIn: true,
     displayName: 'mia',
+    email: null,
+    authentication: null,
+    creditsEnabled: false,
     gpus: false,
     admin: false,
   });
@@ -51,6 +63,9 @@ test('machine principals (agent keys) never get GPU or admin navigation', () => 
     {
       signedIn: true,
       displayName: 'superdan',
+      email: null,
+      authentication: null,
+      creditsEnabled: false,
       gpus: false,
       admin: false,
     },
@@ -67,6 +82,9 @@ test('one cached read per page load; errors fall back to no access', async () =>
   assert.deepEqual(await readAccess(failing), {
     signedIn: false,
     displayName: null,
+    email: null,
+    authentication: null,
+    creditsEnabled: false,
     gpus: false,
     admin: false,
   });
