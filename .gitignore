@@ -338,7 +338,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/storyboard-selection.test.js
 !studio-app/src/storyboard-commands.js
 !studio-app/src/storyboard-commands.test.js
-!studio-app/src/storyboard-workbench.css
 
 !studio-app/src/storyboard-workbench.test.js
 
