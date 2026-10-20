@@ -6734,3 +6734,22 @@ button.ghost.danger:hover {
   flex-wrap: nowrap;
   gap: 0;
 }
+
+/* Quick Create composer laid out like a chat box: the text gets the full width on top, the
+   attach and send buttons sit in a toolbar row inside the box. */
+.quick-live .composer-box {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 10px 10px 8px;
+  border-radius: 22px;
+}
+.quick-live .composer-box > textarea {
+  order: -1;
+  flex: 1 0 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+}
+.quick-live .composer-box > button.primary.round {
+  margin-left: auto;
+}

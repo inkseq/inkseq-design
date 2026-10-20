@@ -263,17 +263,32 @@ export default function QuickChatWorkspace() {
     confirmationRef = useRef(null),
     modeRef = useRef(modeIntent),
     materialOperation = useRef(false);
-  // The prompt box grows with its text up to the CSS max-height, then scrolls. Like a chat,
-  // the conversation above stays pinned to its latest line while the box grows.
+  // The prompt box grows with its text up to the CSS max-height, then scrolls.
   useLayoutEffect(() => {
     const box = textarea.current;
     if (!box) return;
-    const thread = box.closest('.qc-main')?.querySelector('.qc-scroll');
-    const pinned = thread && thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40;
     box.style.height = 'auto';
     box.style.height = box.scrollHeight + 'px';
-    if (pinned) thread.scrollTop = thread.scrollHeight;
   }, [prompt]);
+  // Like a chat: when the box grows (or the window shrinks) the conversation above stays
+  // pinned to its latest line, unless the person scrolled up to read.
+  useEffect(() => {
+    const thread = textarea.current?.closest('.qc-main')?.querySelector('.qc-scroll');
+    if (!thread || typeof ResizeObserver === 'undefined') return undefined;
+    let pinned = true;
+    const onScroll = () => {
+      pinned = thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40;
+    };
+    const observer = new ResizeObserver(() => {
+      if (pinned) thread.scrollTop = thread.scrollHeight;
+    });
+    thread.addEventListener('scroll', onScroll, { passive: true });
+    observer.observe(thread);
+    return () => {
+      thread.removeEventListener('scroll', onScroll);
+      observer.disconnect();
+    };
+  }, []);
   useEffect(() => {
     if (!mobile) return;
     const opener = document.activeElement;
