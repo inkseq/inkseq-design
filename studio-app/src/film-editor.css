@@ -38,9 +38,15 @@
 }
 .film-editor-tracks {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
+  min-width: 0;
+}
+/* Only the clip track scrolls sideways; the voices lane and labels stay in view. */
+.film-editor-tracks > .film-track:first-child {
   overflow-x: auto;
   padding-bottom: 6px;
+  overscroll-behavior-x: contain;
 }
 .film-track {
   display: flex;
@@ -190,4 +196,33 @@
   gap: 6px;
   font-size: 12px;
   color: var(--muted);
+}
+
+.film-editor-head {
+  gap: 10px;
+}
+.film-editor-head > button.primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.film-editor-saved {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+/* Fingers need wider trim handles than a mouse. */
+@media (pointer: coarse) {
+  .film-trim {
+    width: 20px;
+  }
+  .film-clip {
+    min-width: 120px;
+  }
+  .film-clip-grip {
+    padding: 4px 10px;
+  }
 }
