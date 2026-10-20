@@ -4221,6 +4221,9 @@ pre {
 }
 .qc-trash-btn {
   justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
   color: var(--muted);
 }
 .qc-trash-btn.on {
@@ -5694,7 +5697,9 @@ textarea::placeholder {
     border-width: 1px 0 0;
     padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    /* One equal column per tab (4 for users, 5 with the admin GPU tab), so the bar stays centred. */
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
     background: rgba(20, 22, 21, 0.96);
     backdrop-filter: blur(10px);
   }
@@ -6092,8 +6097,14 @@ textarea::placeholder {
 }
 @media (max-width: 760px) {
   .app
-    button:has(> svg):not(.primary):not(.keep-label):not(
+    button:has(> svg):not(.primary):not(.keep-label):not([role='menuitem']):not(
       :where(
+          dialog,
+          [role='menu'],
+          .account-menu,
+          .v2-export-menu,
+          .story-recent-menu,
+          .item-menu-popover,
           .more-menu,
           .qc-side,
           .hbar nav,
@@ -6461,19 +6472,50 @@ button.round {
   letter-spacing: 0.04em;
 }
 
-/* quick composer: one row, grouped */
+/* quick composer: grouped options that wrap to a second row on narrow screens instead of
+   scrolling sideways out of sight (#358). */
 .composer-opts {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-wrap: wrap;
+  overflow: visible;
   gap: 6px;
   padding-bottom: 2px;
+}
+.composer {
+  max-width: 760px;
+}
+.composer-box {
+  align-items: center;
+}
+.composer-box textarea {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.composer-box textarea,
+.composer-box textarea:focus-visible {
+  /* Leave room for the option rows inside the 45dvh composer so the box never clips. */
+  max-height: min(240px, max(64px, calc(45dvh - 110px)));
+  outline: none;
+}
+.composer-box textarea:placeholder-shown {
+  overflow: hidden;
+}
+.composer-box textarea::placeholder {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .composer-opts::-webkit-scrollbar {
   display: none;
 }
 .composer-opts > * {
   flex: none;
+}
+/* Assistant options and take preferences sit beside the paperclip inside the box
+   (ChatGPT layout), so the option row below never strands a lone icon. */
+.opt-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
 }
 .opt-sep {
   width: 1px;
@@ -6706,4 +6748,23 @@ button.ghost.danger:hover {
   width: auto;
   flex-wrap: nowrap;
   gap: 0;
+}
+
+/* Quick Create composer laid out like a chat box: the text gets the full width on top, the
+   attach and send buttons sit in a toolbar row inside the box. */
+.quick-live .composer-box {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 8px;
+  padding: 10px 10px 8px;
+  border-radius: 22px;
+}
+.quick-live .composer-box > textarea {
+  order: -1;
+  flex: 1 0 100%;
+  min-height: 44px;
+  padding: 6px 8px;
+}
+.quick-live .composer-box > button.primary.round {
+  margin-left: auto;
 }

@@ -65,6 +65,18 @@
 !studio-app/src/skins.js
 !studio-app/src/skins.css
 !studio-app/src/SkinPicker.jsx
+!studio-app/src/AccountMenu.jsx
+!studio-app/src/InkMark.jsx
+!studio-app/src/film-edit-model.js
+!studio-app/src/film-edit.test.js
+!studio-app/src/FilmEditor.jsx
+!studio-app/src/film-editor.css
+!studio-app/src/ink-mark-daily.js
+!studio-app/src/ink-mark-daily.test.js
+!studio-app/src/account-menu.css
+!studio-app/src/dialogs.css
+!studio-app/src/popover-dismiss.js
+!studio-app/src/popover-dismiss.test.js
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
@@ -246,6 +258,9 @@
 !studio-app/src/operator-budget.css
 !studio-app/src/operator-budget.test.js
 !studio-app/src/OperatorJobsPanel.jsx
+!studio-app/src/DemandStartPanel.jsx
+!studio-app/src/demand-start-model.js
+!studio-app/src/demand-start.test.js
 !studio-app/src/operator-jobs-model.js
 !studio-app/src/operator-jobs.test.js
 !studio-app/src/OperatorHostsPanel.jsx
@@ -284,6 +299,8 @@
 !design/
 !design/inkseq-v2-prototype/
 !design/inkseq-v2-prototype/**
+!design/brand/
+!design/brand/**
 design/inkseq-v2-prototype/public/
 design/inkseq-v2-prototype/node_modules/
 design/inkseq-v2-prototype/dist/
