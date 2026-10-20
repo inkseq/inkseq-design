@@ -67,6 +67,9 @@
 !studio-app/src/SkinPicker.jsx
 !studio-app/src/AccountMenu.jsx
 !studio-app/src/account-menu.css
+!studio-app/src/dialogs.css
+!studio-app/src/popover-dismiss.js
+!studio-app/src/popover-dismiss.test.js
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
