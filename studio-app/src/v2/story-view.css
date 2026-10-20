@@ -792,3 +792,21 @@ body.sb-resizing-y video {
     padding-left: 32px;
   }
 }
+
+/* Narrow takes panel: each take keeps its own "Use this" under the thumbnail. */
+.ver-wrap {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.ver-wrap > .ver {
+  width: 100%;
+}
+.ver-use {
+  width: 100%;
+  justify-content: center;
+}
+.sb-workspace .storyboard-takes .ver-wrap {
+  flex: 0 0 116px;
+  min-width: 0;
+}
