@@ -6095,8 +6095,14 @@ textarea::placeholder {
 }
 @media (max-width: 760px) {
   .app
-    button:has(> svg):not(.primary):not(.keep-label):not(
+    button:has(> svg):not(.primary):not(.keep-label):not([role='menuitem']):not(
       :where(
+          dialog,
+          [role='menu'],
+          .account-menu,
+          .v2-export-menu,
+          .story-recent-menu,
+          .item-menu-popover,
           .more-menu,
           .qc-side,
           .hbar nav,

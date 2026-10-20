@@ -320,7 +320,12 @@ export default function AssistantConnections({
       {!embedded && <h2>{t('assistants.title')}</h2>}
       <p>{t('assistants.workStays')}</p>
       {!account ? (
-        <button onClick={onLogin}>{t('assistants.login')}</button>
+        <div className="assistant-signin">
+          <p>{t('assistants.login')}</p>
+          <button type="button" className="primary keep-label" onClick={onLogin}>
+            {t('story.copy14')}
+          </button>
+        </div>
       ) : (
         <>
           {operation.pending && (
