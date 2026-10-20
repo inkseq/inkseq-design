@@ -47,6 +47,11 @@ export const takesCatalogs = {
     'takes.preferencesHelp':
       'Defaults: up to 4 takes per proposal; fold after 8. These preferences do not change existing proposals.',
     'takes.preferencesError': 'Preferences could not be loaded. Existing settings are retained.',
+    'takes.stage.queued_no_machine': 'Starting a machine soon',
+    'takes.stage.machine_starting': 'Starting a machine',
+    'takes.stage.downloading': 'Preparing the machine',
+    'takes.stage.loading': 'Loading',
+    'takes.stage.awaiting_worker': 'Almost ready',
     'takes.queue': 'Queued · position {position}',
     'takes.queueUnknown': 'Queue position unavailable',
     'takes.queueAdvisory':
@@ -111,6 +116,11 @@ export const takesCatalogs = {
     'takes.cancel': '取消',
     'takes.preferencesHelp': '默认每个提案最多4份，超过8条后折叠。偏好不会更改已有提案。',
     'takes.preferencesError': '偏好读取失败，原设置保持不变。',
+    'takes.stage.queued_no_machine': '即将启动机器',
+    'takes.stage.machine_starting': '正在启动机器',
+    'takes.stage.downloading': '正在准备机器',
+    'takes.stage.loading': '正在加载',
+    'takes.stage.awaiting_worker': '马上开始',
     'takes.queue': '排队中 · 第 {position} 位',
     'takes.queueUnknown': '暂时无法读取排队位置',
     'takes.queueAdvisory': '共享队列参考位置，可能变化；不承诺完成时间。',
