@@ -263,6 +263,13 @@ export default function QuickChatWorkspace() {
     confirmationRef = useRef(null),
     modeRef = useRef(modeIntent),
     materialOperation = useRef(false);
+  // The prompt box grows with its text up to the CSS max-height, then scrolls.
+  useLayoutEffect(() => {
+    const box = textarea.current;
+    if (!box) return;
+    box.style.height = 'auto';
+    box.style.height = box.scrollHeight + 'px';
+  }, [prompt]);
   useEffect(() => {
     if (!mobile) return;
     const opener = document.activeElement;

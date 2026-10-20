@@ -6482,6 +6482,11 @@ button.round {
   overflow-y: auto;
   scrollbar-width: thin;
 }
+.composer-box textarea,
+.composer-box textarea:focus-visible {
+  max-height: min(220px, 40vh);
+  outline: none;
+}
 .composer-box textarea:placeholder-shown {
   overflow: hidden;
 }
