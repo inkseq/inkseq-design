@@ -66,6 +66,7 @@
 !studio-app/src/skins.css
 !studio-app/src/SkinPicker.jsx
 !studio-app/src/AccountMenu.jsx
+!studio-app/src/InkMark.jsx
 !studio-app/src/account-menu.css
 !studio-app/src/dialogs.css
 !studio-app/src/popover-dismiss.js
