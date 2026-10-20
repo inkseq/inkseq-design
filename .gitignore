@@ -66,6 +66,7 @@
 !studio-app/src/skins.css
 !studio-app/src/SkinPicker.jsx
 !studio-app/src/AccountMenu.jsx
+!studio-app/src/InkMark.jsx
 !studio-app/src/account-menu.css
 !studio-app/src/dialogs.css
 !studio-app/src/popover-dismiss.js
@@ -290,6 +291,8 @@
 !design/
 !design/inkseq-v2-prototype/
 !design/inkseq-v2-prototype/**
+!design/brand/
+!design/brand/**
 design/inkseq-v2-prototype/public/
 design/inkseq-v2-prototype/node_modules/
 design/inkseq-v2-prototype/dist/

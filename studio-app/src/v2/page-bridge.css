@@ -791,3 +791,16 @@ dialog.modal.wide {
 ::-webkit-scrollbar-corner {
   background: transparent;
 }
+
+/* Ink-drop brand mark in the header replaces the old gradient square. */
+.hbar .logo::before {
+  content: none;
+  display: none;
+}
+.hbar .logo {
+  gap: 6px;
+}
+.hbar .logo > .ink-mark {
+  flex: none;
+  margin-left: -4px;
+}
