@@ -5,8 +5,9 @@ import { AbsoluteFill, Html5Video, Sequence } from 'remotion';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, GripVertical, Mic, X } from 'lucide-react';
+import { Check, CloudUpload, Eye, EyeOff, GripVertical, Mic, X } from 'lucide-react';
 import { store } from './store.js';
+import { cloudController as cloud } from './cloud-controller.js';
 import { useStoryboardMediaUrl } from './StoryboardMedia.jsx';
 import { cutFps } from './video-cut-model.js';
 import { captionTrack, orderedCues } from './caption-model.js';
@@ -230,6 +231,14 @@ export default function FilmEditor({ chapterId, onClose }) {
     [error, setError] = useState(''),
     [current, setCurrent] = useState(null);
   const player = useRef(null);
+  // The overlay owns scrolling while open; the storyboard behind it must not move.
+  React.useEffect(() => {
+    const old = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = old;
+    };
+  }, []);
   const [captions, setCaptions] = useState(true);
   const cues = useMemo(
     () =>
@@ -256,6 +265,20 @@ export default function FilmEditor({ chapterId, onClose }) {
   }, [included]);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const busy = !!s.busy;
+  const cloudStory = s.workspace?.mode === 'cloud',
+    dirty = !!s.workspace?.dirty,
+    [saving, setSaving] = useState(false);
+  const saveCloud = async () => {
+    setSaving(true);
+    setError('');
+    try {
+      await cloud.save();
+    } catch (e) {
+      setError(e?.message || t('editor.saveFailed'));
+    } finally {
+      setSaving(false);
+    }
+  };
   const aspect = project.journey?.delivery?.aspect || project.journey?.brief?.aspect || '16:9',
     [width, height] = SIZES[aspect] || SIZES['16:9'];
   const onUrl = useCallback(
@@ -314,6 +337,18 @@ export default function FilmEditor({ chapterId, onClose }) {
             </label>
           )}
         </div>
+        {cloudStory &&
+          (dirty ? (
+            <button className="primary small" disabled={saving || busy} onClick={saveCloud}>
+              <CloudUpload size={14} />
+              {t(saving ? 'editor.saving' : 'editor.save')}
+            </button>
+          ) : (
+            <span className="film-editor-saved muted">
+              <Check size={13} />
+              {t('editor.saved')}
+            </span>
+          ))}
         <button
           className="ghost round"
           aria-label={t('editor.close')}
@@ -397,6 +432,7 @@ export default function FilmEditor({ chapterId, onClose }) {
           </div>
           <footer className="film-editor-foot muted">
             <span>{t('editor.exportHint')}</span>
+            {cloudStory && <span>{t('editor.exportSaveHint')}</span>}
             {clips.some((clip) => !clip.included) && <span>{t('editor.excludedPending')}</span>}
           </footer>
         </>

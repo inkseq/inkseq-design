@@ -539,13 +539,23 @@ function SeriesApp({ sidebarView, onSidebarView }) {
             </div>
           </details>
           <LanguageSwitcher />
-          <button className="ghost" onClick={() => open({ type: 'agent' })}>
+          <button
+            className="ghost"
+            title={t('story.copy31')}
+            aria-label={t('story.copy31')}
+            onClick={() => open({ type: 'agent' })}
+          >
             <Bot size={15} />
-            {t('story.copy31')}
+            <span className="bar-label">{t('story.copy31')}</span>
           </button>
-          <button className="ghost" onClick={() => open({ type: 'project-settings' })}>
+          <button
+            className="ghost"
+            title={t('settings.title')}
+            aria-label={t('settings.title')}
+            onClick={() => open({ type: 'project-settings' })}
+          >
             <Settings2 size={15} />
-            {t('settings.title')}
+            <span className="bar-label">{t('settings.title')}</span>
           </button>
           {accountMenu}
         </header>
