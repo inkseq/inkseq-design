@@ -65,6 +65,8 @@
 !studio-app/src/skins.js
 !studio-app/src/skins.css
 !studio-app/src/SkinPicker.jsx
+!studio-app/src/AccountMenu.jsx
+!studio-app/src/account-menu.css
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
