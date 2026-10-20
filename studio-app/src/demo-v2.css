@@ -6484,7 +6484,8 @@ button.round {
 }
 .composer-box textarea,
 .composer-box textarea:focus-visible {
-  max-height: min(220px, 40vh);
+  /* Leave room for the option rows inside the 45dvh composer so the box never clips. */
+  max-height: min(240px, max(64px, calc(45dvh - 110px)));
   outline: none;
 }
 .composer-box textarea:placeholder-shown {

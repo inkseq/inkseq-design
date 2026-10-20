@@ -263,12 +263,16 @@ export default function QuickChatWorkspace() {
     confirmationRef = useRef(null),
     modeRef = useRef(modeIntent),
     materialOperation = useRef(false);
-  // The prompt box grows with its text up to the CSS max-height, then scrolls.
+  // The prompt box grows with its text up to the CSS max-height, then scrolls. Like a chat,
+  // the conversation above stays pinned to its latest line while the box grows.
   useLayoutEffect(() => {
     const box = textarea.current;
     if (!box) return;
+    const thread = box.closest('.qc-main')?.querySelector('.qc-scroll');
+    const pinned = thread && thread.scrollHeight - thread.scrollTop - thread.clientHeight < 40;
     box.style.height = 'auto';
     box.style.height = box.scrollHeight + 'px';
+    if (pinned) thread.scrollTop = thread.scrollHeight;
   }, [prompt]);
   useEffect(() => {
     if (!mobile) return;

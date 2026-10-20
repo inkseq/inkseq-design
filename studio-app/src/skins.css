@@ -292,6 +292,13 @@ html[data-skin='aegean'] .story-card .cover:not(:has(img, video)) {
 html[data-skin='aegean'] .credits-chip svg {
   color: #c48a12;
 }
+/* Light skins: the phone bottom tab bar uses a hard-coded dark glass; repaint it. */
+@media (max-width: 760px) {
+  html:is([data-skin='nordic'], [data-skin='aegean']) .hbar nav {
+    background: color-mix(in srgb, var(--surface) 96%, transparent);
+    border-top: 1px solid var(--line-2);
+  }
+}
 /* Skin picker (Settings → Appearance). */
 .skin-picker {
   display: grid;
