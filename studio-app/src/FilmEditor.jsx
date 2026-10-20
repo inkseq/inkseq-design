@@ -9,6 +9,7 @@ import { Eye, EyeOff, GripVertical, Mic, X } from 'lucide-react';
 import { store } from './store.js';
 import { useStoryboardMediaUrl } from './StoryboardMedia.jsx';
 import { cutFps } from './video-cut-model.js';
+import { captionTrack, orderedCues } from './caption-model.js';
 import {
   cutFrames,
   editorClips,
@@ -24,7 +25,7 @@ const PX_PER_SECOND = 56;
 
 // The whole cut as one Remotion composition: each included clip is a Sequence that plays
 // its source from the trimmed in-point, so the preview matches the exporter frame for frame.
-function Cut({ clips, sources }) {
+function Cut({ clips, sources, cues = [] }) {
   return (
     <AbsoluteFill style={{ background: '#000' }}>
       {clips.map((clip) => (
@@ -49,6 +50,29 @@ function Cut({ clips, sources }) {
           )}
         </Sequence>
       ))}
+      {cues.map((cue) => (
+        <Sequence key={'cue-' + cue.id} from={cue.from} durationInFrames={cue.frames}>
+          <AbsoluteFill
+            style={{ justifyContent: 'flex-end', alignItems: 'center', paddingBottom: '7%' }}
+          >
+            <span
+              style={{
+                maxWidth: '86%',
+                padding: '0.2em 0.5em',
+                borderRadius: 6,
+                background: 'rgba(0,0,0,.55)',
+                color: '#fff',
+                fontSize: 44,
+                lineHeight: 1.3,
+                textAlign: 'center',
+                whiteSpace: 'pre-line',
+              }}
+            >
+              {cue.text}
+            </span>
+          </AbsoluteFill>
+        </Sequence>
+      ))}
     </AbsoluteFill>
   );
 }
@@ -67,6 +91,17 @@ function ClipSource({ asset, needsDuration, onUrl, onDuration }) {
       src={playbackUrl}
       onLoadedMetadata={(event) => onDuration(asset.id, event.currentTarget.duration)}
     />
+  ) : null;
+}
+
+// Cloud clips show their thumbnail rendition; local files have none, so they keep a plain tile.
+function ClipThumb({ asset }) {
+  const { url, thumbnailImage } = useStoryboardMediaUrl(
+    { entity: asset, fileId: asset.data.fileId },
+    { thumbnail: true },
+  );
+  return url && thumbnailImage ? (
+    <img className="film-clip-thumb" src={url} alt="" loading="lazy" />
   ) : null;
 }
 
@@ -144,6 +179,7 @@ function ClipCard({ clip, duration, active, busy, onSeek, onToggle, onTrim }) {
           if (s !== start) onTrim(clip, s, e, source);
         }}
       />
+      {clip.asset && <ClipThumb asset={clip.asset} />}
       <button type="button" className="film-clip-body" onClick={() => onSeek(clip)}>
         <span className="film-clip-grip" {...sortable.attributes} {...sortable.listeners}>
           <GripVertical size={13} />
@@ -194,6 +230,30 @@ export default function FilmEditor({ chapterId, onClose }) {
     [error, setError] = useState(''),
     [current, setCurrent] = useState(null);
   const player = useRef(null);
+  const [captions, setCaptions] = useState(true);
+  const cues = useMemo(
+    () =>
+      orderedCues(captionTrack(project, chapterId).cues)
+        .map((cue) => {
+          const from = Math.ceil(Number(cue.start) * cutFps - 1e-7),
+            to = Math.floor(Number(cue.end) * cutFps + 1e-7);
+          return { id: cue.id, text: String(cue.text || ''), from, frames: to - from };
+        })
+        .filter((cue) => cue.text && Number.isFinite(cue.from) && cue.frames > 0),
+    [project, chapterId],
+  );
+  // Follow the playhead: highlight the clip that is on screen.
+  React.useEffect(() => {
+    const node = player.current;
+    if (!node) return;
+    const onFrame = (event) => {
+      const frame = event.detail.frame,
+        clip = included.find((c) => frame >= c.from && frame < c.from + c.frames);
+      if (clip) setCurrent((old) => (old === clip.id ? old : clip.id));
+    };
+    node.addEventListener('frameupdate', onFrame);
+    return () => node.removeEventListener('frameupdate', onFrame);
+  }, [included]);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
   const busy = !!s.busy;
   const aspect = project.journey?.delivery?.aspect || project.journey?.brief?.aspect || '16:9',
@@ -243,6 +303,16 @@ export default function FilmEditor({ chapterId, onClose }) {
           <small className="muted">
             {t('editor.total', { seconds: (total / cutFps).toFixed(1), count: included.length })}
           </small>
+          {cues.length > 0 && (
+            <label className="film-editor-captions">
+              <input
+                type="checkbox"
+                checked={captions}
+                onChange={(e) => setCaptions(e.target.checked)}
+              />
+              {t('editor.captions', { count: cues.length })}
+            </label>
+          )}
         </div>
         <button
           className="ghost round"
@@ -270,7 +340,7 @@ export default function FilmEditor({ chapterId, onClose }) {
             <Player
               ref={player}
               component={Cut}
-              inputProps={{ clips: included, sources }}
+              inputProps={{ clips: included, sources, cues: captions ? cues : [] }}
               durationInFrames={Math.max(1, total)}
               fps={cutFps}
               compositionWidth={width}
