@@ -27,7 +27,8 @@ export function editorClips(project, chapterId) {
     const asset = find(project, shot.data.selectedAssetId),
       video = asset?.type === 'video' ? asset : null,
       cut = videoCut(shot, video),
-      frames = Number.isInteger(cut.requestedFrames) && cut.requestedFrames > 0 ? cut.requestedFrames : 0,
+      frames =
+        Number.isInteger(cut.requestedFrames) && cut.requestedFrames > 0 ? cut.requestedFrames : 0,
       startFrame = cut.aligned?.startFrame ?? 0,
       inCut = included.has(shot.id),
       clip = {
@@ -99,7 +100,7 @@ export function setIncluded(project, chapterId, shotId, inCut) {
 export function trimClip(project, shotId, start, end, sourceDuration) {
   const shot = find(project, shotId),
     asset = find(project, shot?.data.selectedAssetId);
-  if (!asset || asset.type !== 'video') throw Error('editor.noVideo');
+  if (!asset || asset.type !== 'video') throw Error('editor.noVideoError');
   const range = { ...videoBinding(asset), start, end };
   return applyVideoRange(project, shotId, range, {
     duration: sourceDuration,
