@@ -350,7 +350,15 @@ const ART = { ...FACES, ...ANIMALS };
 export const INK_MARK_FACES = Object.keys(FACES);
 export const INK_MARK_ANIMALS = Object.keys(ANIMALS);
 
-export default function InkMark({ variant = 'wink', size = 24, title, className = '' }) {
+// lean: 'left' (default, owner preference) or 'right'. The artwork is drawn leaning right; the left
+// version turns it 16 degrees back, which keeps the play-button eye on the inner side.
+export default function InkMark({
+  variant = 'wink',
+  lean = 'left',
+  size = 24,
+  title,
+  className = '',
+}) {
   const art = ART[variant] || FACES.wink;
   return (
     <svg
@@ -363,7 +371,7 @@ export default function InkMark({ variant = 'wink', size = 24, title, className 
       aria-hidden={title ? undefined : 'true'}
       focusable="false"
     >
-      {art}
+      {lean === 'right' ? art : <g transform="rotate(-16 50 60)">{art}</g>}
     </svg>
   );
 }
