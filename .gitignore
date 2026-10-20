@@ -254,7 +254,6 @@
 !studio-app/src/p4-operator-client.js
 !studio-app/src/p4-operator-controller.js
 !studio-app/src/p4-operator.test.js
-!studio-app/src/p4-operator.css
 !studio-app/src/OperatorBudgetPanel.jsx
 !studio-app/src/operator-budget-model.js
 !studio-app/src/operator-budget.css
