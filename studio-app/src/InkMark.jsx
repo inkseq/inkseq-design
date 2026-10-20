@@ -351,7 +351,8 @@ export const INK_MARK_FACES = Object.keys(FACES);
 export const INK_MARK_ANIMALS = Object.keys(ANIMALS);
 
 // lean: 'left' (default, owner preference) or 'right'. The artwork is drawn leaning right; the left
-// version turns it 16 degrees back, which keeps the play-button eye on the inner side.
+// version turns it 16 degrees back, which keeps the play-button eye on the inner side. The ripple
+// stays level because the water surface must not tilt.
 export default function InkMark({
   variant = 'wink',
   lean = 'left',
@@ -371,7 +372,7 @@ export default function InkMark({
       aria-hidden={title ? undefined : 'true'}
       focusable="false"
     >
-      {lean === 'right' ? art : <g transform="rotate(-16 50 60)">{art}</g>}
+      {lean === 'right' || variant === 'ripple' ? art : <g transform="rotate(-16 50 60)">{art}</g>}
     </svg>
   );
 }
