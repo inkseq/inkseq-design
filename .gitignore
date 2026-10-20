@@ -291,6 +291,8 @@
 !design/
 !design/inkseq-v2-prototype/
 !design/inkseq-v2-prototype/**
+!design/brand/
+!design/brand/**
 design/inkseq-v2-prototype/public/
 design/inkseq-v2-prototype/node_modules/
 design/inkseq-v2-prototype/dist/
