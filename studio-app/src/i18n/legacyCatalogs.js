@@ -478,6 +478,9 @@ export const legacyCatalogs = {
       'The machine is generating. You may queue a submission, subject to backend admission.',
     'availability.starting': 'Preparing',
     'availability.startingMessage': 'The machine is preparing. Wait until it is ready.',
+    'availability.cold': 'Ready · starts a machine',
+    'availability.coldMessage':
+      'No machine is running. Submit and one starts automatically; this usually takes a few minutes.',
     'availability.unavailable': 'No machine available',
     'availability.unavailableMessage':
       'No machine is available. Ask an administrator to start this mode.',
@@ -1891,6 +1894,8 @@ export const legacyCatalogs = {
     'availability.busyMessage': '对应机器正在生成，可提交排队；以后台准入结果为准。',
     'availability.starting': '正在准备',
     'availability.startingMessage': '对应机器正在准备，请等待就绪。',
+    'availability.cold': '可提交 · 自动开机',
+    'availability.coldMessage': '现在没有运行中的机器。提交后会自动启动，通常需要几分钟。',
     'availability.unavailable': '暂无机器',
     'availability.unavailableMessage': '暂无可用机器，请联系管理员启动对应模式。',
     'availability.disabled': '暂未开放',

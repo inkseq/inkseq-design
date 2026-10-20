@@ -252,6 +252,9 @@
 !studio-app/src/operator-budget.css
 !studio-app/src/operator-budget.test.js
 !studio-app/src/OperatorJobsPanel.jsx
+!studio-app/src/DemandStartPanel.jsx
+!studio-app/src/demand-start-model.js
+!studio-app/src/demand-start.test.js
 !studio-app/src/operator-jobs-model.js
 !studio-app/src/operator-jobs.test.js
 !studio-app/src/OperatorHostsPanel.jsx
