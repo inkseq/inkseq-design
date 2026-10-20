@@ -31,7 +31,6 @@ import {
   Send,
   Trash2,
   SlidersHorizontal,
-  UserRound,
   Sparkles,
   LayoutGrid,
 } from 'lucide-react';
@@ -139,7 +138,6 @@ function settingsForMode(capabilities, current, mode) {
 function Login({ onClose, onDone }) {
   const { t, locale } = useI18n();
   const c = useCloud(),
-    who = useAccountLabel(c.account),
     [username, setUsername] = useState(''),
     [password, setPassword] = useState(''),
     [error, setError] = useState('');
@@ -235,7 +233,6 @@ export default function QuickChatWorkspace() {
     if (pageActive) document.title = t('workspace.copy117');
   }, [locale, pageActive]);
   const c = useCloud(),
-    who = useAccountLabel(c.account),
     access = useAccess(c.account),
     controller = useMemo(() => createQuickChatController(), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
@@ -1487,22 +1484,7 @@ export default function QuickChatWorkspace() {
         })();
   return (
     <div className="home quick-shell quick-live">
-      <StudioHeader
-        account={c.account}
-        active="quick"
-        accountMenu={
-          <button
-            className="avatar"
-            onClick={() =>
-              c.account ? navigateApp('/settings?section=account') : setDialog('login')
-            }
-            aria-label={who.label || t('story.copy14')}
-            title={who.label || t('story.copy14')}
-          >
-            {c.account ? who.initial : <UserRound size={17} aria-hidden="true" />}
-          </button>
-        }
-      />
+      <StudioHeader account={c.account} active="quick" onSignIn={() => setDialog('login')} />
       <a className="skip" href="#quick-chat-main">
         {t('workspace.copy7')}
       </a>

@@ -4221,6 +4221,9 @@ pre {
 }
 .qc-trash-btn {
   justify-content: flex-start;
+  gap: 6px;
+  padding: 4px 10px;
+  border: 1px solid transparent;
   color: var(--muted);
 }
 .qc-trash-btn.on {
@@ -6461,13 +6464,31 @@ button.round {
   letter-spacing: 0.04em;
 }
 
-/* quick composer: one row, grouped */
+/* quick composer: grouped options that wrap to a second row on narrow screens instead of
+   scrolling sideways out of sight (#358). */
 .composer-opts {
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  scrollbar-width: none;
+  flex-wrap: wrap;
+  overflow: visible;
   gap: 6px;
   padding-bottom: 2px;
+}
+.composer {
+  max-width: 760px;
+}
+.composer-box {
+  align-items: center;
+}
+.composer-box textarea {
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+.composer-box textarea:placeholder-shown {
+  overflow: hidden;
+}
+.composer-box textarea::placeholder {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .composer-opts::-webkit-scrollbar {
   display: none;
