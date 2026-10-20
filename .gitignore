@@ -62,6 +62,9 @@
 !studio-app/src/public-pages.css
 !studio-app/src/model-visibility.js
 !studio-app/src/model-visibility.test.js
+!studio-app/src/skins.js
+!studio-app/src/skins.css
+!studio-app/src/SkinPicker.jsx
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
