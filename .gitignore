@@ -293,7 +293,6 @@
 !studio-app/src/storyboard-actions.test.js
 !studio-app/src/storyboard-cloud.test.js
 !studio-app/src/StoryboardConnected.jsx
-!studio-app/src/storyboard-workspace.css
 !studio-app/src/storyboard-playback.js
 !studio-app/src/storyboard-playback.test.js
 # Owner-approved v2 UX prototype (source + handoff only; sample media stays local)
