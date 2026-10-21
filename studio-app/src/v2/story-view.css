@@ -1071,6 +1071,7 @@ body.sb-resizing-y video {
 }
 .dock.mini .timeline-scrub {
   display: none;
+}
 /* "To sort" items in the asset library: picture on top, text and actions below, so the
    row stays readable in a narrow sidebar (owner, 2026-10-22). */
 .inbox .inrow {
