@@ -69,6 +69,9 @@
 !studio-app/src/InkMark.jsx
 !studio-app/src/TelegramLink.jsx
 !studio-app/src/ConnectTelegramPage.jsx
+!studio-app/src/Landing.jsx
+!studio-app/src/landing.css
+!studio-app/src/i18n/landingCatalogs.js
 !studio-app/src/telegram-link.test.js
 !studio-app/src/film-edit-model.js
 !studio-app/src/film-edit.test.js
