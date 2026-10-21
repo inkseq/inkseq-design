@@ -1,5 +1,6 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import React, { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { createPortal } from 'react-dom';
 import { Player } from '@remotion/player';
 import { AbsoluteFill, Html5Audio, Html5Video, Sequence } from 'remotion';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
@@ -377,7 +378,9 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
   const selectedSource =
     selected?.playable && sources[selected.asset.id] ? sources[selected.asset.id] : null;
   const selectedSound = selected ? clipSound(project, chapterId, selected.id) : null;
-  return (
+  // Portal to <body>: the editor opens from inside the sticky toolbar, whose stacking context
+  // would otherwise let the shot panel draw on top of it.
+  return createPortal(
     <div
       className="film-editor"
       role="dialog"
@@ -616,6 +619,7 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
           </footer>
         </>
       )}
-    </div>
+    </div>,
+    document.body,
   );
 }
