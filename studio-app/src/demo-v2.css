@@ -6815,3 +6815,29 @@ button.ghost.danger:hover {
   overflow-y: auto;
   min-height: 56px;
 }
+/* Shot panel footer: a plain checkbox on the text's first line, and a one-line copies field. */
+.check input[type='checkbox'] {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  min-height: 0;
+  margin: 1px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  accent-color: var(--accent);
+}
+.check {
+  line-height: 18px;
+}
+.copies-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--ink-2);
+}
+.copies-field input {
+  height: 32px;
+}
