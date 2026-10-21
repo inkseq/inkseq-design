@@ -6778,3 +6778,40 @@ button.ghost.danger:hover {
 .quick-live .composer-box > button.primary.round {
   margin-left: auto;
 }
+
+/* Shot panel title: edit in place, with a pencil that focuses it; trash is one button. */
+.ed-title-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+.ed-title-row .ed-title {
+  min-width: 0;
+  max-width: 100%;
+  border-bottom: 1px solid transparent;
+  border-radius: 0;
+}
+.ed-title-row .ed-title:hover {
+  border-bottom-color: var(--line-2);
+}
+.ed-rename {
+  width: 28px;
+  height: 28px;
+  flex: none;
+  color: var(--muted);
+}
+.ed-head .trash-button {
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  color: var(--muted);
+}
+.ed-head .trash-button:hover:not(:disabled) {
+  color: var(--bad);
+}
+.editor textarea {
+  resize: none;
+  overflow-y: auto;
+  min-height: 56px;
+}
