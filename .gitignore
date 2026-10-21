@@ -77,6 +77,9 @@
 !studio-app/src/film-edit.test.js
 !studio-app/src/film-audio-model.js
 !studio-app/src/FilmAudioLane.jsx
+!studio-app/src/TrimBar.jsx
+!studio-app/src/trim-bar.css
+!studio-app/src/CloudAutosave.jsx
 !studio-app/src/film-audio.test.js
 !studio-app/src/FilmEditor.jsx
 !studio-app/src/film-editor.css
