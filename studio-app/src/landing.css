@@ -30,6 +30,10 @@
   flex: 1;
 }
 .landing-link {
+  border: 0;
+  background: none;
+  cursor: pointer;
+  font: inherit;
   color: var(--ink-2);
   font-size: 14px;
   text-decoration: none;
@@ -261,7 +265,7 @@
     gap: 6px;
   }
   .landing-bar .logo span,
-  .landing-link {
+  a.landing-link {
     display: none;
   }
   .landing-lede {
