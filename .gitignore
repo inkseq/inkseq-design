@@ -75,6 +75,9 @@
 !studio-app/src/telegram-link.test.js
 !studio-app/src/film-edit-model.js
 !studio-app/src/film-edit.test.js
+!studio-app/src/film-audio-model.js
+!studio-app/src/FilmAudioLane.jsx
+!studio-app/src/film-audio.test.js
 !studio-app/src/FilmEditor.jsx
 !studio-app/src/film-editor.css
 !studio-app/src/InkLoader.jsx
