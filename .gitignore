@@ -61,6 +61,10 @@
 !studio-app/src/capacity-settings.css
 !studio-app/src/i18n/capacityCatalogs.js
 !studio-app/src/i18n/storyChatCatalogs.js
+!studio-app/src/MaintenanceBanner.jsx
+!studio-app/src/maintenance-notice.js
+!studio-app/src/maintenance-notice.test.js
+!studio-app/src/maintenance.css
 !studio-app/src/film-v5.test.js
 !studio-app/src/account-access.test.js
 !studio-app/src/CreditsUI.jsx
