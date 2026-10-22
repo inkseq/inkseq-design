@@ -54,6 +54,12 @@
 !studio-app/src/story-chat-model.test.js
 !studio-app/src/story-chat-preview.js
 !studio-app/src/story-chat.css
+!studio-app/src/CapacitySettings.jsx
+!studio-app/src/capacity-settings-model.js
+!studio-app/src/capacity-settings-model.test.js
+!studio-app/src/capacity-settings.fixture.json
+!studio-app/src/capacity-settings.css
+!studio-app/src/i18n/capacityCatalogs.js
 !studio-app/src/i18n/storyChatCatalogs.js
 !studio-app/src/film-v5.test.js
 !studio-app/src/account-access.test.js
