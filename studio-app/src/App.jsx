@@ -50,6 +50,7 @@ import {
 } from 'lucide-react';
 const ChapterRoughCut = React.lazy(() => import('./ChapterRoughCut.jsx'));
 const Freestyle = React.lazy(() => import('./Freestyle.jsx'));
+const StoryChat = React.lazy(() => import('./StoryChat.jsx'));
 import OperatorConsole from './P4OperatorConsole.jsx';
 import QuickChatWorkspace from './QuickChatWorkspace.jsx';
 import { navigateWorkspace } from './workspace-navigation.js';
@@ -1335,9 +1336,14 @@ function AppContent() {
         <OperatorConsole active={active} />
       </React.Suspense>
     ),
-    '/quick-chat': ({ active }) => (
+    '/quick-chat': ({ active, location: page }) => (
       <React.Suspense fallback={<InkLoader label={t('loading.quickCreate')} />}>
-        <QuickChatWorkspace active={active} />
+        {/* Chat-first Quick Create preview (#422): sample replies until the server exists. */}
+        {new URLSearchParams(page.search).get('story') === 'preview' ? (
+          <StoryChat account={account} />
+        ) : (
+          <QuickChatWorkspace active={active} />
+        )}
       </React.Suspense>
     ),
     '/freestyle': ({ active }) => (
