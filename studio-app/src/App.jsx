@@ -88,6 +88,7 @@ import { installPersistenceGuard } from './persistence-guard.js';
 import SpendingSettings from './SpendingSettings.jsx';
 import { I18nProvider, LanguageSwitcher, useI18n } from './i18n/I18nProvider.jsx';
 import AppRouteCache, { useAppLocation, usePageActive } from './AppRouteCache.jsx';
+import MaintenanceBanner from './MaintenanceBanner.jsx';
 import { installAppNavigation, navigateApp } from './app-navigation.js';
 import StoryOpenNotice, { PreservedStoryDrafts } from './StoryOpenNotice.jsx';
 import { createStoryRouteLoader, openedStoryHref } from './story-open.js';
@@ -1362,6 +1363,7 @@ function AppContent() {
     <div className="app">
       <TrashProvider account={account}>
         <PersistenceWarning key={'persistence:' + workspaceKey} />
+        <MaintenanceBanner />
         <AppRouteCache location={location} routes={routes} />
         <LowCreditsDialog />
       </TrashProvider>
