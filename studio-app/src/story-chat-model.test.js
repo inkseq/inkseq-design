@@ -106,3 +106,76 @@ test('the preview never charges before a confirm and builds a whole story', asyn
   assert.equal(progress(state).done, true);
   chat.close();
 });
+
+test('the live server view becomes cards, change notes and an advice-only proposal', async () => {
+  const { fromServer } = await import('./story-chat-client.js');
+  const view = {
+    title: 'First Contact',
+    version: 3,
+    messages: [
+      { id: 't1-u', turn_id: 't1', role: 'user', text: 'aliens' },
+      {
+        id: 't1-a',
+        turn_id: 't1',
+        role: 'assistant',
+        text: 'Made the cast.',
+        chips: ['30 seconds'],
+        changes: [
+          { kind: 'character', op: 'create', id: 'zib' },
+          { kind: 'location', op: 'create', id: 'field' },
+          { kind: 'shot', op: 'create', id: 's1' },
+          { kind: 'shot', op: 'update', id: 's0' },
+        ],
+        proposal: { kind: 'generate', shot_ids: ['s1'] },
+      },
+    ],
+    cards: {
+      characters: [{ id: 'zib', name: 'Zib', text: 'alien', version: 1 }],
+      places: [{ id: 'field', name: 'Field', text: 'night', version: 1 }],
+      props: [],
+      shots: [
+        {
+          id: 's1',
+          order: 1,
+          text: 'Light falls',
+          seconds: 5,
+          start: 0,
+          end: 5,
+          cast: ['zib'],
+          place: 'field',
+          props: [],
+          selected_artifact_id: null,
+          version: 1,
+        },
+      ],
+    },
+  };
+  const state = fromServer(view, { generate: (count) => `Make ${count}` });
+  assert.equal(state.version, 3);
+  assert.deepEqual(
+    state.cards.map((card) => [card.id, card.kind]),
+    [
+      ['zib', 'character'],
+      ['field', 'place'],
+      ['s1', 'shot'],
+    ],
+  );
+  assert.deepEqual(state.cards[2].refs, ['zib', 'field']);
+  assert.deepEqual(
+    state.messages.map((message) => message.role + ':' + (message.summary?.kind || '')),
+    [
+      'user:',
+      'change:character',
+      'change:place',
+      'change:shot',
+      'change:edit',
+      'assistant:',
+      'quote:',
+    ],
+  );
+  const quote = Object.values(state.quotes)[0];
+  assert.equal(quote.live, true);
+  assert.equal(quote.label, 'Make 1');
+  assert.equal(quote.credits, undefined);
+  assert.equal(progress({ ...emptyChat(), ...state }).shots, 1);
+});

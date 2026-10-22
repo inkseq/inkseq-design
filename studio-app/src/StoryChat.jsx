@@ -22,6 +22,9 @@ import {
   quoteAffordable,
 } from './story-chat-model.js';
 import { createPreviewChat } from './story-chat-preview.js';
+import { createLiveChat } from './story-chat-client.js';
+import { createCloudClient } from './cloud-client.js';
+import { agentLinkSearch } from './agent-navigation.js';
 import './story-chat.css';
 
 function reducer(state, action) {
@@ -46,6 +49,30 @@ function Thumb({ card, wide = false }) {
 function QuoteCard({ quote, balance, onSettle }) {
   const { t } = useI18n();
   const affordable = quoteAffordable(quote, balance);
+  if (quote.live)
+    return (
+      <div className={'sc-quote ' + quote.status}>
+        <div className="sc-quote-head">
+          <Film size={15} aria-hidden="true" />
+          <strong>{quote.label}</strong>
+        </div>
+        {quote.status === 'open' ? (
+          <div className="sc-quote-actions">
+            <small>{t('storyChat.liveQuoteHelp')}</small>
+            <button className="sc-primary keep-label" onClick={() => onSettle(quote, true)}>
+              {t('storyChat.makeInWorks')}
+            </button>
+            <button className="sc-ghost keep-label" onClick={() => onSettle(quote, false)}>
+              {t('storyChat.notNow')}
+            </button>
+          </div>
+        ) : (
+          <small className="sc-quote-done">
+            {quote.status === 'confirmed' ? t('storyChat.openedWorks') : t('storyChat.declined')}
+          </small>
+        )}
+      </div>
+    );
   return (
     <div className={'sc-quote ' + quote.status}>
       <div className="sc-quote-head">
@@ -89,7 +116,17 @@ function QuoteCard({ quote, balance, onSettle }) {
   );
 }
 
-function CardDetail({ card, profiles, busy, onEdit, onPicture, onShot, onAsk, onClose }) {
+function CardDetail({
+  card,
+  profiles,
+  busy,
+  canDraw = true,
+  onEdit,
+  onPicture,
+  onShot,
+  onAsk,
+  onClose,
+}) {
   const { t } = useI18n();
   const [name, setName] = useState(card.name || '');
   const [text, setText] = useState(card.text || '');
@@ -185,7 +222,7 @@ function CardDetail({ card, profiles, busy, onEdit, onPicture, onShot, onAsk, on
             <Film size={15} aria-hidden="true" />
             {card.status === 'ready' ? t('storyChat.remakeShot') : t('storyChat.makeShot')}
           </button>
-        ) : (
+        ) : canDraw ? (
           <button
             className="sc-primary keep-label"
             disabled={busy}
@@ -197,7 +234,7 @@ function CardDetail({ card, profiles, busy, onEdit, onPicture, onShot, onAsk, on
             <ImagePlus size={15} aria-hidden="true" />
             {card.image ? t('storyChat.redrawPicture') : t('storyChat.makePicture')}
           </button>
-        )}
+        ) : null}
         <button
           className="sc-ghost keep-label"
           onClick={() => {
@@ -316,8 +353,21 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
   );
 }
 
-export default function StoryChat({ account }) {
+const openInWorks = (projectId, entityId) => {
+  const search = agentLinkSearch({ projectId, entityId: entityId || null });
+  if (search) navigateApp('/?' + search);
+};
+
+// mode 'preview' uses sample replies; 'live' talks to /v1/story-chats (#422).
+export default function StoryChat({ account, mode = 'preview', projectId = null }) {
   const { t, locale } = useI18n();
+  const live = mode === 'live';
+  const api = useMemo(() => {
+    const client = createCloudClient();
+    client.setAccount(account);
+    return client;
+  }, [account]);
+  const [unavailable, setUnavailable] = useState('');
   const [state, dispatch] = useReducer(reducer, null, () => emptyChat());
   const [balance, setBalance] = useState(0);
   const [text, setText] = useState('');
@@ -331,19 +381,58 @@ export default function StoryChat({ account }) {
   const input = useRef(null);
   const fileInput = useRef(null);
 
-  // The preview stands in for the story-chat server until it exists (#422).
+  // Preview: sample replies. Live: the story-chat server, once it says it is ready.
   useEffect(() => {
-    const preview = createPreviewChat({ locale });
-    chat.current = preview;
-    setBalance(preview.balance);
     dispatch({ type: 'reset' });
-    return () => preview.close();
-  }, [locale]);
+    setUnavailable('');
+    if (!live) {
+      const preview = createPreviewChat({ locale });
+      chat.current = preview;
+      setBalance(preview.balance);
+      return () => preview.close();
+    }
+    let alive = true;
+    const client = createLiveChat({
+      api,
+      language: locale === 'zh' ? 'zh' : 'en',
+      projectId,
+      labels: {
+        generate: (count) => t('storyChat.liveQuote', { count }),
+        failed: (failure) => t('storyChat.failed', { reason: failure.message }),
+        openWorks: openInWorks,
+      },
+      // Keep the address on this story, so a reload reopens it.
+      onProject: (ident) => {
+        try {
+          window.history.replaceState(window.history.state, '', '/quick-chat?story=' + ident);
+        } catch {
+          // A blocked history update only loses the reload shortcut.
+        }
+      },
+    });
+    chat.current = client;
+    api
+      .request('/v1/story-chats/config')
+      .then((config) => {
+        if (!alive) return;
+        if (!config.enabled || !config.assistant_ready) setUnavailable(t('storyChat.notReady'));
+        else if (projectId) return client.open(emit);
+      })
+      .catch((failure) => alive && setUnavailable(failure.message));
+    return () => {
+      alive = false;
+    };
+  }, [live, projectId, locale, api]);
 
   const emit = useMemo(() => {
     let clear = null;
     return (event) => {
       dispatch({ type: 'event', event });
+      if (event.type === 'chat.loaded' && event.fresh?.length) {
+        setFresh(event.fresh);
+        clearTimeout(clear);
+        clear = setTimeout(() => setFresh([]), 1600);
+      }
       if (event.type === 'project.changed') {
         setFresh((event.changes || []).map((change) => change.card?.id).filter(Boolean));
         clearTimeout(clear);
@@ -359,7 +448,7 @@ export default function StoryChat({ account }) {
 
   const send = (value = text) => {
     const message = value.trim();
-    if ((!message && !files.length) || state.busy) return;
+    if ((!message && !files.length) || state.busy || unavailable) return;
     chat.current.send({ text: message, attachments: files }, emit);
     setText('');
     setFiles([]);
@@ -370,6 +459,10 @@ export default function StoryChat({ account }) {
     chat.current.settle(quote, accepted, state.cards, emit);
   };
   const edit = (id, patch) => {
+    if (live) {
+      void chat.current.edit(id, patch, emit);
+      return;
+    }
     chat.current.edited();
     dispatch({ type: 'edit', id, patch });
   };
@@ -387,6 +480,10 @@ export default function StoryChat({ account }) {
         .map((file) => ({ name: file.name, url: URL.createObjectURL(file) })),
     ]);
 
+  const works = () =>
+    live && chat.current?.projectId
+      ? openInWorks(chat.current.projectId)
+      : setNotice(t('storyChat.previewWorks'));
   const lastAssistant = [...state.messages].reverse().find((item) => item.role === 'assistant');
   const open = state.cards.find((card) => card.id === openId);
   const profiles = state.cards.filter((card) => card.kind !== 'shot');
@@ -396,9 +493,16 @@ export default function StoryChat({ account }) {
   return (
     <div className="home sc-shell">
       <StudioHeader account={account} active="quick" />
-      <p className="sc-preview-bar" role="status">
-        {t('storyChat.preview')}
-      </p>
+      {!live && (
+        <p className="sc-preview-bar" role="status">
+          {t('storyChat.preview')}
+        </p>
+      )}
+      {unavailable && (
+        <p className="sc-preview-bar" role="alert">
+          {unavailable}
+        </p>
+      )}
       <div className="sc-tabs" role="tablist">
         <button role="tab" aria-selected={tab === 'chat'} onClick={() => setTab('chat')}>
           {t('storyChat.tabChat')}
@@ -487,10 +591,7 @@ export default function StoryChat({ account }) {
                   <strong>{t('storyChat.handoffTitle')}</strong>
                   <small>{t('storyChat.handoffHelp')}</small>
                 </span>
-                <button
-                  className="sc-primary keep-label"
-                  onClick={() => setNotice(t('storyChat.previewWorks'))}
-                >
+                <button className="sc-primary keep-label" onClick={works}>
                   {t('storyChat.openWorks')}
                 </button>
               </div>
@@ -528,6 +629,7 @@ export default function StoryChat({ account }) {
               <button
                 type="button"
                 className="sc-icon"
+                hidden={live}
                 aria-label={t('storyChat.attach')}
                 title={t('storyChat.attach')}
                 onClick={() => fileInput.current?.click()}
@@ -581,7 +683,7 @@ export default function StoryChat({ account }) {
               fresh={fresh}
               openId={openId}
               onOpen={setOpenId}
-              onWorks={() => setNotice(t('storyChat.previewWorks'))}
+              onWorks={works}
               notice={notice}
             />
           </div>
@@ -590,6 +692,7 @@ export default function StoryChat({ account }) {
               card={open}
               profiles={profiles}
               busy={state.busy}
+              canDraw={!live}
               onEdit={edit}
               onPicture={(card) => {
                 setOpenId(null);

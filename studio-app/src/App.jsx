@@ -1339,12 +1339,21 @@ function AppContent() {
     ),
     '/quick-chat': ({ active, location: page }) => (
       <React.Suspense fallback={<InkLoader label={t('loading.quickCreate')} />}>
-        {/* Chat-first Quick Create preview (#422): sample replies until the server exists. */}
-        {new URLSearchParams(page.search).get('story') === 'preview' ? (
-          <StoryChat account={account} />
-        ) : (
-          <QuickChatWorkspace active={active} />
-        )}
+        {/* ?story=preview: sample replies. ?story=new or ?story=<project id>: live (#422). */}
+        {(() => {
+          const story = new URLSearchParams(page.search).get('story');
+          if (!story) return null;
+          return story === 'preview' ? (
+            <StoryChat account={account} />
+          ) : (
+            <StoryChat
+              key={story}
+              account={account}
+              mode="live"
+              projectId={story === 'new' ? null : story}
+            />
+          );
+        })() || <QuickChatWorkspace active={active} />}
       </React.Suspense>
     ),
     '/freestyle': ({ active }) => (

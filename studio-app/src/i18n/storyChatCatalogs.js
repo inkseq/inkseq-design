@@ -1,6 +1,13 @@
 export const storyChatCatalogs = {
   en: {
     'storyChat.pageTitle': 'Quick Create',
+    'storyChat.liveQuote': 'Make {count} shot(s) as video',
+    'storyChat.liveQuoteHelp': 'You see the exact credits and confirm in Works.',
+    'storyChat.makeInWorks': 'Open in Works to make',
+    'storyChat.openedWorks': 'Opened in Works',
+    'storyChat.failed':
+      'That did not go through ({reason}). Nothing was changed; you can send it again.',
+    'storyChat.notReady': 'Chat creation is not switched on here yet.',
     'storyChat.preview': 'Preview with sample replies — nothing is saved or charged.',
     'storyChat.untitled': 'New story',
     'storyChat.welcome': 'What story do you want to make?',
@@ -62,6 +69,12 @@ export const storyChatCatalogs = {
   },
   zh: {
     'storyChat.pageTitle': '快速创作',
+    'storyChat.liveQuote': '把 {count} 个镜头生成为视频',
+    'storyChat.liveQuoteHelp': '在作品里会显示准确的积分，确认后才扣。',
+    'storyChat.makeInWorks': '去作品里生成',
+    'storyChat.openedWorks': '已在作品中打开',
+    'storyChat.failed': '没有完成（{reason}）。什么都没改，可以再发一次。',
+    'storyChat.notReady': '这里还没开启聊天创作。',
     'storyChat.preview': '预览：回复是示例，不会保存也不会扣费。',
     'storyChat.untitled': '新故事',
     'storyChat.welcome': '想做一个什么故事？',

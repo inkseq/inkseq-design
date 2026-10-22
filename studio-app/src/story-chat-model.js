@@ -61,6 +61,9 @@ export function applyEvent(state, event) {
         messages: [...next.messages, { id: event.id, role: 'change', summary: event.summary }],
       };
     }
+    case 'chat.loaded':
+      // The live server's whole view replaces local state (#422).
+      return { ...state, ...event.state, quotes: event.state.quotes || {} };
     case 'quote.proposed':
       if (state.quotes[event.id]) return state;
       return {
