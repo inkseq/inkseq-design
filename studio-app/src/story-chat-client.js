@@ -28,6 +28,8 @@ export function fromServer(view, labels = {}) {
     });
   const messages = [],
     quotes = {};
+  // Only the newest reply's proposal is actionable; older ones are superseded by later edits.
+  const latest = [...(view.messages || [])].reverse().find((item) => item.role === 'assistant');
   for (const message of view.messages || []) {
     if (message.role === 'user') {
       messages.push({
@@ -45,7 +47,9 @@ export function fromServer(view, labels = {}) {
       const kind = change.kind === 'location' || change.kind === 'prop' ? 'place' : change.kind;
       counts[kind] = (counts[kind] || 0) + 1;
     }
-    const edits = (message.changes || []).filter((change) => change.op === 'update').length;
+    const edits = (message.changes || []).filter(
+      (change) => change.op === 'update' && change.kind !== 'title',
+    ).length;
     for (const [kind, count] of Object.entries(counts))
       if (['character', 'place', 'shot'].includes(kind))
         messages.push({ id: `${message.id}-${kind}`, role: 'change', summary: { kind, count } });
@@ -62,7 +66,7 @@ export function fromServer(view, labels = {}) {
       attachments: [],
       chips: message.chips || [],
     });
-    if (message.proposal?.shot_ids?.length) {
+    if (message === latest && message.proposal?.shot_ids?.length) {
       const id = `${message.id}-q`;
       quotes[id] = {
         id,
@@ -163,7 +167,15 @@ export function createLiveChat({ api, language = 'zh', projectId = null, labels,
             current.project.entities.map((item) => [item.id, item.type]),
           );
           const places = patch.refs.filter((ref) => kinds[ref] === 'location');
-          data.cast = patch.refs.filter((ref) => kinds[ref] === 'character');
+          // Keep an existing explicit look; new characters use the default look.
+          const looks = Object.fromEntries(
+            (entity?.data?.cast || []).map((c) =>
+              typeof c === 'string' ? [c, ''] : [c.characterId, c.lookId || ''],
+            ),
+          );
+          data.cast = patch.refs
+            .filter((ref) => kinds[ref] === 'character')
+            .map((ref) => ({ characterId: ref, lookId: looks[ref] || '' }));
           data.storyboard = {
             version: 1,
             mode: 'ref',

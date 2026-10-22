@@ -355,7 +355,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
 
 const openInWorks = (projectId, entityId) => {
   const search = agentLinkSearch({ projectId, entityId: entityId || null });
-  if (search) navigateApp('/?' + search);
+  if (search) navigateApp('/' + search);
 };
 
 // mode 'preview' uses sample replies; 'live' talks to /v1/story-chats (#422).
@@ -368,6 +368,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     return client;
   }, [account]);
   const [unavailable, setUnavailable] = useState('');
+  // The story this chat edits: the address's id at first, then whatever the client created.
+  const story = useRef(projectId);
   const [state, dispatch] = useReducer(reducer, null, () => emptyChat());
   const [balance, setBalance] = useState(0);
   const [text, setText] = useState('');
@@ -395,7 +397,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     const client = createLiveChat({
       api,
       language: locale === 'zh' ? 'zh' : 'en',
-      projectId,
+      projectId: story.current,
       labels: {
         generate: (count) => t('storyChat.liveQuote', { count }),
         failed: (failure) => t('storyChat.failed', { reason: failure.message }),
@@ -403,6 +405,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       },
       // Keep the address on this story, so a reload reopens it.
       onProject: (ident) => {
+        story.current = ident;
         try {
           window.history.replaceState(window.history.state, '', '/quick-chat?story=' + ident);
         } catch {
@@ -416,13 +419,13 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       .then((config) => {
         if (!alive) return;
         if (!config.enabled || !config.assistant_ready) setUnavailable(t('storyChat.notReady'));
-        else if (projectId) return client.open(emit);
+        else if (story.current) return client.open(emit);
       })
       .catch((failure) => alive && setUnavailable(failure.message));
     return () => {
       alive = false;
     };
-  }, [live, projectId, locale, api]);
+  }, [live, locale, api]);
 
   const emit = useMemo(() => {
     let clear = null;

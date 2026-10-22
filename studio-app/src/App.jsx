@@ -1347,7 +1347,9 @@ function AppContent() {
             <StoryChat account={account} />
           ) : (
             <StoryChat
-              key={story}
+              // Stable key: the address gains the story id after the first message and
+              // must not remount the chat mid-reply.
+              key="live-story-chat"
               account={account}
               mode="live"
               projectId={story === 'new' ? null : story}
