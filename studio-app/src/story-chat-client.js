@@ -73,6 +73,21 @@ export function fromServer(view, labels = {}) {
       attachments: [],
       chips: message.chips || [],
     });
+    // Suggested card pictures: a confirm card each; the id is stable, so a replay never
+    // draws or charges twice.
+    if (message === latest)
+      for (const card of message.proposal?.picture_card_ids || []) {
+        const id = `pic-${message.id.slice(-14)}-${card.slice(-14)}`.replace(/[^A-Za-z0-9_-]/g, '');
+        const name = cards.find((item) => item.id === card)?.name || '';
+        quotes[id] = {
+          id,
+          status: 'open',
+          action: { kind: 'image', cards: [card] },
+          credits: labels.imageCredits ?? null,
+          label: labels.picture?.(name) || name,
+        };
+        messages.push({ id, role: 'quote', quoteId: id });
+      }
     if (message === latest && message.proposal?.shot_ids?.length) {
       const id = `${message.id}-q`;
       quotes[id] = {
@@ -106,7 +121,7 @@ export function createLiveChat({
   const settled = {};
   const load = (value, emit, fresh = []) => {
     view = value;
-    const state = fromServer(value, labels);
+    const state = fromServer(value, { ...labels, imageCredits });
     for (const [id, status] of Object.entries(settled))
       if (state.quotes[id]) state.quotes[id] = { ...state.quotes[id], status };
     emit({ type: 'chat.loaded', state, fresh });

@@ -402,7 +402,12 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       projectId: story.current,
       labels: {
         generate: (count) => t('storyChat.liveQuote', { count }),
-        failed: (failure) => t('storyChat.failed', { reason: failure.message }),
+        failed: (failure) => {
+          const code = failure.detail?.detail?.code;
+          if (code === 'image_billing_unavailable') return t('storyChat.pictureUnavailable');
+          if (code === 'image_not_returned') return t('storyChat.pictureRefused');
+          return t('storyChat.failed', { reason: failure.message });
+        },
         openWorks: openInWorks,
         picture: (name) => t('storyChat.livePicture', { name }),
       },

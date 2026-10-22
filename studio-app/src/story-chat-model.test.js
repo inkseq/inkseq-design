@@ -179,3 +179,35 @@ test('the live server view becomes cards, change notes and an advice-only propos
   assert.equal(quote.credits, undefined);
   assert.equal(progress({ ...emptyChat(), ...state }).shots, 1);
 });
+
+test('a suggested card picture becomes one stable confirm card', async () => {
+  const { fromServer } = await import('./story-chat-client.js');
+  const view = {
+    version: 4,
+    messages: [
+      { id: 't1-u', role: 'user', text: 'redraw zib' },
+      {
+        id: 'turn-abcdef0123456789-a',
+        role: 'assistant',
+        text: 'You can confirm a new picture.',
+        changes: [],
+        proposal: { kind: 'image', shot_ids: [], picture_card_ids: ['character-0123456789abcdef'] },
+      },
+    ],
+    cards: {
+      characters: [{ id: 'character-0123456789abcdef', name: 'Zib', text: '' }],
+      places: [],
+      props: [],
+      shots: [],
+    },
+  };
+  const labels = { picture: (name) => `Draw ${name}`, imageCredits: 5 };
+  const first = fromServer(view, labels);
+  const quotes = Object.values(first.quotes);
+  assert.equal(quotes.length, 1);
+  assert.deepEqual(quotes[0].action, { kind: 'image', cards: ['character-0123456789abcdef'] });
+  assert.equal(quotes[0].credits, 5);
+  assert.equal(quotes[0].label, 'Draw Zib');
+  assert.match(quotes[0].id, /^[A-Za-z0-9_-]{8,80}$/);
+  assert.equal(Object.keys(fromServer(view, labels).quotes)[0], quotes[0].id);
+});

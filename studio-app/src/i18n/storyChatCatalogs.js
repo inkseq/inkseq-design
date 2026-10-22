@@ -5,6 +5,9 @@ export const storyChatCatalogs = {
     'storyChat.liveQuoteHelp': 'You see the exact credits and confirm in Works.',
     'storyChat.makeInWorks': 'Open in Works to make',
     'storyChat.livePicture': 'Draw a picture of {name}',
+    'storyChat.pictureUnavailable': 'Pictures are not available here yet. Nothing was charged.',
+    'storyChat.pictureRefused':
+      'The picture could not be made from this description. Nothing was charged; try describing it differently.',
     'storyChat.openedWorks': 'Opened in Works',
     'storyChat.failed':
       'That did not go through ({reason}). Nothing was changed; you can send it again.',
@@ -74,6 +77,8 @@ export const storyChatCatalogs = {
     'storyChat.liveQuoteHelp': '在作品里会显示准确的积分，确认后才扣。',
     'storyChat.makeInWorks': '去作品里生成',
     'storyChat.livePicture': '画出{name}',
+    'storyChat.pictureUnavailable': '这里暂时还不能画图，没有扣积分。',
+    'storyChat.pictureRefused': '按这个描述没能画出来，没有扣积分。换个说法再试试。',
     'storyChat.openedWorks': '已在作品中打开',
     'storyChat.failed': '没有完成（{reason}）。什么都没改，可以再发一次。',
     'storyChat.notReady': '这里还没开启聊天创作。',
