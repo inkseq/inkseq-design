@@ -4,6 +4,7 @@ export const storyChatCatalogs = {
     'storyChat.liveQuote': 'Make {count} shot(s) as video',
     'storyChat.liveQuoteHelp': 'You see the exact credits and confirm in Works.',
     'storyChat.makeInWorks': 'Open in Works to make',
+    'storyChat.livePicture': 'Draw a picture of {name}',
     'storyChat.openedWorks': 'Opened in Works',
     'storyChat.failed':
       'That did not go through ({reason}). Nothing was changed; you can send it again.',
@@ -72,6 +73,7 @@ export const storyChatCatalogs = {
     'storyChat.liveQuote': '把 {count} 个镜头生成为视频',
     'storyChat.liveQuoteHelp': '在作品里会显示准确的积分，确认后才扣。',
     'storyChat.makeInWorks': '去作品里生成',
+    'storyChat.livePicture': '画出{name}',
     'storyChat.openedWorks': '已在作品中打开',
     'storyChat.failed': '没有完成（{reason}）。什么都没改，可以再发一次。',
     'storyChat.notReady': '这里还没开启聊天创作。',

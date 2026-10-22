@@ -9,7 +9,14 @@ export function fromServer(view, labels = {}) {
   const cards = [];
   for (const [group, kind] of Object.entries(KIND))
     for (const card of view.cards?.[group] || [])
-      cards.push({ id: card.id, kind, name: card.name, text: card.text, version: card.version });
+      cards.push({
+        id: card.id,
+        kind,
+        name: card.name,
+        text: card.text,
+        image: card.image_url || null,
+        version: card.version,
+      });
   for (const shot of view.cards?.shots || [])
     cards.push({
       id: shot.id,
@@ -86,7 +93,14 @@ const turnId = () =>
   (globalThis.crypto?.randomUUID?.() ||
     Math.random().toString(36).slice(2) + Date.now().toString(36));
 
-export function createLiveChat({ api, language = 'zh', projectId = null, labels, onProject }) {
+export function createLiveChat({
+  api,
+  language = 'zh',
+  projectId = null,
+  labels,
+  onProject,
+  imageCredits = null,
+}) {
   let project = projectId,
     view = null;
   const settled = {};
@@ -110,6 +124,10 @@ export function createLiveChat({ api, language = 'zh', projectId = null, labels,
     balance: Number.NaN,
     get projectId() {
       return project;
+    },
+    // The admin-set picture price, read from /v1/story-chats/config when the server has it.
+    set imageCredits(value) {
+      imageCredits = value;
     },
     async open(emit) {
       if (!project) return;
@@ -137,13 +155,47 @@ export function createLiveChat({ api, language = 'zh', projectId = null, labels,
       }
     },
     // The live proposal opens the story in Works, where generation is confirmed and charged.
-    settle(quote, accepted, _cards, emit) {
+    async settle(quote, accepted, _cards, emit) {
       settled[quote.id] = accepted ? 'confirmed' : 'declined';
       emit({ type: 'quote.settled', id: quote.id, status: settled[quote.id] });
-      if (accepted) labels.openWorks?.(project, quote.action.cards?.[0]);
+      if (!accepted) return;
+      if (quote.action.kind !== 'image') {
+        labels.openWorks?.(project, quote.action.cards?.[0]);
+        return;
+      }
+      // A confirmed picture: the server holds the credits, draws, and charges only when
+      // the picture is on the card (#461).
+      const card = quote.action.cards[0];
+      emit({ type: 'card.status', id: card, status: 'generating' });
+      try {
+        const value = await api.request(`/v1/story-chats/${encodeURIComponent(project)}/images`, {
+          method: 'POST',
+          body: { request_id: quote.id, card_id: card },
+        });
+        load(value, emit, [card]);
+      } catch (failure) {
+        emit({ type: 'card.status', id: card, status: 'draft' });
+        emit({
+          type: 'assistant.message',
+          id: quote.id + '-error',
+          text: labels.failed?.(failure) || failure.message,
+          chips: [],
+        });
+      }
     },
-    propose(action, card) {
-      if (action.kind === 'generate') labels.openWorks?.(project, card.id);
+    propose(action, card, emit) {
+      if (action.kind === 'generate') {
+        labels.openWorks?.(project, card.id);
+        return;
+      }
+      const id = 'pic-' + turnId().slice(5);
+      emit({
+        type: 'quote.proposed',
+        id,
+        action: { kind: 'image', cards: [card.id] },
+        credits: imageCredits,
+        label: labels.picture?.(card.name) || card.name,
+      });
     },
     // A card edit from the drawer goes through the ordinary project actions API.
     async edit(id, patch, emit) {

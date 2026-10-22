@@ -78,13 +78,15 @@ function QuoteCard({ quote, balance, onSettle }) {
       <div className="sc-quote-head">
         <Sparkles size={15} aria-hidden="true" />
         <strong>{quote.label}</strong>
-        <span className="sc-credits">
-          {t('storyChat.quoteCredits', { credits: quote.credits })}
-        </span>
+        {Number.isFinite(quote.credits) && (
+          <span className="sc-credits">
+            {t('storyChat.quoteCredits', { credits: quote.credits })}
+          </span>
+        )}
       </div>
       {quote.status === 'open' ? (
         <div className="sc-quote-actions">
-          <small>{t('storyChat.quoteBalance', { balance })}</small>
+          {Number.isFinite(balance) && <small>{t('storyChat.quoteBalance', { balance })}</small>}
           {affordable ? (
             <button className="sc-primary keep-label" onClick={() => onSettle(quote, true)}>
               {t('storyChat.confirm')}
@@ -402,6 +404,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
         generate: (count) => t('storyChat.liveQuote', { count }),
         failed: (failure) => t('storyChat.failed', { reason: failure.message }),
         openWorks: openInWorks,
+        picture: (name) => t('storyChat.livePicture', { name }),
       },
       // Keep the address on this story, so a reload reopens it.
       onProject: (ident) => {
@@ -418,6 +421,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       .request('/v1/story-chats/config')
       .then((config) => {
         if (!alive) return;
+        if (Number.isSafeInteger(config.image_credits)) client.imageCredits = config.image_credits;
         if (!config.enabled || !config.assistant_ready) setUnavailable(t('storyChat.notReady'));
         else if (story.current) return client.open(emit);
       })
@@ -695,7 +699,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
               card={open}
               profiles={profiles}
               busy={state.busy}
-              canDraw={!live}
+              canDraw
               onEdit={edit}
               onPicture={(card) => {
                 setOpenId(null);
