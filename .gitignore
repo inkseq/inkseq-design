@@ -48,6 +48,8 @@
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/account-access.js
+!studio-app/src/preview-as-user.js
+!studio-app/src/film-v5.test.js
 !studio-app/src/account-access.test.js
 !studio-app/src/CreditsUI.jsx
 !studio-app/src/credits.js
