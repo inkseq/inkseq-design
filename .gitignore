@@ -49,6 +49,12 @@
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/account-access.js
 !studio-app/src/preview-as-user.js
+!studio-app/src/StoryChat.jsx
+!studio-app/src/story-chat-model.js
+!studio-app/src/story-chat-model.test.js
+!studio-app/src/story-chat-preview.js
+!studio-app/src/story-chat.css
+!studio-app/src/i18n/storyChatCatalogs.js
 !studio-app/src/film-v5.test.js
 !studio-app/src/account-access.test.js
 !studio-app/src/CreditsUI.jsx
