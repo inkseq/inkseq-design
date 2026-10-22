@@ -51,6 +51,7 @@ import {
 const ChapterRoughCut = React.lazy(() => import('./ChapterRoughCut.jsx'));
 const Freestyle = React.lazy(() => import('./Freestyle.jsx'));
 const StoryChat = React.lazy(() => import('./StoryChat.jsx'));
+const QuickCreateEntry = React.lazy(() => import('./QuickCreateEntry.jsx'));
 import OperatorConsole from './P4OperatorConsole.jsx';
 import QuickChatWorkspace from './QuickChatWorkspace.jsx';
 import { navigateWorkspace } from './workspace-navigation.js';
@@ -1339,23 +1340,21 @@ function AppContent() {
     ),
     '/quick-chat': ({ active, location: page }) => (
       <React.Suspense fallback={<InkLoader label={t('loading.quickCreate')} />}>
-        {/* ?story=preview: sample replies. ?story=new or ?story=<project id>: live (#422). */}
+        {/* ?story=preview: sample replies. ?mode=direct: the original Quick Create.
+            Otherwise the chat story builder when the server has it on (#422). */}
         {(() => {
-          const story = new URLSearchParams(page.search).get('story');
-          if (!story) return null;
-          return story === 'preview' ? (
-            <StoryChat account={account} />
-          ) : (
-            <StoryChat
-              // Stable key: the address gains the story id after the first message and
-              // must not remount the chat mid-reply.
-              key="live-story-chat"
+          const params = new URLSearchParams(page.search);
+          const story = params.get('story');
+          if (story === 'preview') return <StoryChat account={account} />;
+          if (params.get('mode') === 'direct') return <QuickChatWorkspace active={active} />;
+          return (
+            <QuickCreateEntry
               account={account}
-              mode="live"
-              projectId={story === 'new' ? null : story}
+              story={story}
+              direct={<QuickChatWorkspace active={active} />}
             />
           );
-        })() || <QuickChatWorkspace active={active} />}
+        })()}
       </React.Suspense>
     ),
     '/freestyle': ({ active }) => (

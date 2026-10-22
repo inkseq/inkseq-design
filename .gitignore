@@ -54,6 +54,7 @@
 !studio-app/src/story-chat-model.test.js
 !studio-app/src/story-chat-preview.js
 !studio-app/src/story-chat-client.js
+!studio-app/src/QuickCreateEntry.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
 !studio-app/src/capacity-settings-model.js

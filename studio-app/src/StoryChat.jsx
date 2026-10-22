@@ -6,6 +6,7 @@ import {
   ImagePlus,
   MessageSquare,
   Paperclip,
+  Plus,
   Sparkles,
   X,
 } from 'lucide-react';
@@ -49,6 +50,30 @@ function Thumb({ card, wide = false }) {
 function QuoteCard({ quote, balance, onSettle }) {
   const { t } = useI18n();
   const affordable = quoteAffordable(quote, balance);
+  if (quote.action?.kind === 'new_story')
+    return (
+      <div className={'sc-quote ' + quote.status}>
+        <div className="sc-quote-head">
+          <Plus size={15} aria-hidden="true" />
+          <strong>{quote.label}</strong>
+        </div>
+        {quote.status === 'open' ? (
+          <div className="sc-quote-actions">
+            <small>{t('storyChat.newStoryHelp')}</small>
+            <button className="sc-primary keep-label" onClick={() => onSettle(quote, true)}>
+              {t('storyChat.newStoryStart')}
+            </button>
+            <button className="sc-ghost keep-label" onClick={() => onSettle(quote, false)}>
+              {t('storyChat.newStoryStay')}
+            </button>
+          </div>
+        ) : (
+          <small className="sc-quote-done">
+            {quote.status === 'confirmed' ? t('storyChat.newStoryOpened') : t('storyChat.declined')}
+          </small>
+        )}
+      </div>
+    );
   if (quote.live)
     return (
       <div className={'sc-quote ' + quote.status}>
@@ -355,6 +380,17 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
   );
 }
 
+// "14:05" today, otherwise a short date, in the viewer's language.
+function whenText(seconds, locale) {
+  const value = Number(seconds) * (Number(seconds) < 1e12 ? 1000 : 1);
+  if (!Number.isFinite(value)) return '';
+  const date = new Date(value);
+  const today = date.toDateString() === new Date().toDateString();
+  return new Intl.DateTimeFormat(locale === 'zh' ? 'zh-CN' : 'en', {
+    ...(today ? { hour: 'numeric', minute: '2-digit' } : { month: 'short', day: 'numeric' }),
+  }).format(date);
+}
+
 const openInWorks = (projectId, entityId) => {
   const search = agentLinkSearch({ projectId, entityId: entityId || null });
   if (search) navigateApp('/' + search);
@@ -372,6 +408,39 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
   const [unavailable, setUnavailable] = useState('');
   // The story this chat edits: the address's id at first, then whatever the client created.
   const story = useRef(projectId);
+  const [session, setSession] = useState(0);
+  const pending = useRef(null);
+  const [stories, setStories] = useState(null);
+  const refreshStories = () =>
+    live &&
+    api
+      .request('/v1/story-chats')
+      .then((value) => setStories(value.story_chats || []))
+      .catch(() => setStories(null));
+  // Open another story (or a new one, optionally starting with an idea) without a reload.
+  const openStory = (ident, firstMessage = null) => {
+    story.current = ident;
+    pending.current = firstMessage;
+    setOpenId(null);
+    setTab('chat');
+    try {
+      window.history.pushState(window.history.state, '', '/quick-chat?story=' + (ident || 'new'));
+    } catch {
+      // A blocked history update only loses the back/reload shortcut.
+    }
+    setSession((value) => value + 1);
+  };
+  useEffect(() => {
+    if (!live) return undefined;
+    const back = () => {
+      const ident = new URLSearchParams(window.location.search).get('story');
+      if (window.location.pathname !== '/quick-chat' || !ident || ident === story.current) return;
+      story.current = ident === 'new' ? null : ident;
+      setSession((value) => value + 1);
+    };
+    window.addEventListener('popstate', back);
+    return () => window.removeEventListener('popstate', back);
+  }, [live]);
   const [state, dispatch] = useReducer(reducer, null, () => emptyChat());
   const [balance, setBalance] = useState(0);
   const [text, setText] = useState('');
@@ -410,10 +479,13 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
         },
         openWorks: openInWorks,
         picture: (name) => t('storyChat.livePicture', { name }),
+        newStory: (idea) => t('storyChat.newStoryLabel', { idea }),
+        startStory: (idea) => openStory(null, idea),
       },
       // Keep the address on this story, so a reload reopens it.
       onProject: (ident) => {
         story.current = ident;
+        void refreshStories();
         try {
           window.history.replaceState(window.history.state, '', '/quick-chat?story=' + ident);
         } catch {
@@ -428,13 +500,21 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
         if (!alive) return;
         if (Number.isSafeInteger(config.image_credits)) client.imageCredits = config.image_credits;
         if (!config.enabled || !config.assistant_ready) setUnavailable(t('storyChat.notReady'));
-        else if (story.current) return client.open(emit);
+        else {
+          void refreshStories();
+          if (story.current) return client.open(emit);
+          if (pending.current) {
+            const idea = pending.current;
+            pending.current = null;
+            return client.send({ text: idea }, emit);
+          }
+        }
       })
       .catch((failure) => alive && setUnavailable(failure.message));
     return () => {
       alive = false;
     };
-  }, [live, locale, api]);
+  }, [live, locale, api, session]);
 
   const emit = useMemo(() => {
     let clear = null;
@@ -452,6 +532,20 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       }
     };
   }, []);
+
+  // An in-app link to another story (?story=<id>) switches to it; the chat's own address
+  // update after creating a story names the same story and changes nothing.
+  useEffect(() => {
+    if (live && projectId && projectId !== story.current) {
+      story.current = projectId;
+      setSession((value) => value + 1);
+    }
+  }, [live, projectId]);
+
+  // A new title (the chat names the story) updates the list.
+  useEffect(() => {
+    if (live && state.title) void refreshStories();
+  }, [live, state.title]);
 
   useEffect(() => {
     const node = thread.current;
@@ -496,6 +590,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     live && chat.current?.projectId
       ? openInWorks(chat.current.projectId)
       : setNotice(t('storyChat.previewWorks'));
+  // A confirm card already offers the next step; the model's chips would only repeat it.
+  const proposalShown = state.messages.at(-1)?.role === 'quote';
   const lastAssistant = [...state.messages].reverse().find((item) => item.role === 'assistant');
   const open = state.cards.find((card) => card.id === openId);
   const profiles = state.cards.filter((card) => card.kind !== 'shot');
@@ -516,6 +612,11 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
         </p>
       )}
       <div className="sc-tabs" role="tablist">
+        {stories && (
+          <button role="tab" aria-selected={tab === 'stories'} onClick={() => setTab('stories')}>
+            {t('storyChat.tabStories')}
+          </button>
+        )}
         <button role="tab" aria-selected={tab === 'chat'} onClick={() => setTab('chat')}>
           {t('storyChat.tabChat')}
         </button>
@@ -523,7 +624,40 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
           {t('storyChat.tabCards', { count: state.cards.length })}
         </button>
       </div>
-      <main className={'sc tab-' + tab}>
+      <main className={'sc tab-' + tab + (stories ? ' with-stories' : '')}>
+        {stories && (
+          <nav className="sc-stories" aria-label={t('storyChat.myStories')}>
+            <button className="sc-new-story keep-label" onClick={() => openStory(null)}>
+              <Plus size={15} aria-hidden="true" />
+              {t('storyChat.newStory')}
+            </button>
+            <h3>{t('storyChat.myStories')}</h3>
+            {stories.length === 0 && <p className="sc-stories-empty">{t('storyChat.noStories')}</p>}
+            <ul>
+              {(stories || []).map((item) => (
+                <li key={item.project_id}>
+                  <button
+                    aria-current={item.project_id === story.current ? 'page' : undefined}
+                    onClick={() => item.project_id !== story.current && openStory(item.project_id)}
+                  >
+                    <span>{item.title}</span>
+                    <small>{whenText(item.updated_at, locale)}</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+            <a
+              className="sc-direct-link"
+              href="/quick-chat?mode=direct"
+              onClick={(event) => {
+                event.preventDefault();
+                navigateApp('/quick-chat?mode=direct');
+              }}
+            >
+              {t('storyChat.directMode')}
+            </a>
+          </nav>
+        )}
         <section className="sc-chat" aria-label={t('storyChat.tabChat')}>
           <div className="sc-thread" ref={thread}>
             {!state.messages.length && (
@@ -576,15 +710,18 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
               return (
                 <div key={message.id} className="sc-msg assistant">
                   <p>{message.text}</p>
-                  {message === lastAssistant && !state.busy && message.chips.length > 0 && (
-                    <div className="sc-chips">
-                      {message.chips.map((chip) => (
-                        <button key={chip} onClick={() => send(chip)}>
-                          {chip}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                  {message === lastAssistant &&
+                    !state.busy &&
+                    !proposalShown &&
+                    message.chips.length > 0 && (
+                      <div className="sc-chips">
+                        {message.chips.map((chip) => (
+                          <button key={chip} onClick={() => send(chip)}>
+                            {chip}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                 </div>
               );
             })}
@@ -687,7 +824,22 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
           aria-label={t('storyChat.tabCards', { count: state.cards.length })}
         >
           <header className="sc-board-head">
-            <h2>{state.title || t('storyChat.untitled')}</h2>
+            {live && chat.current?.projectId ? (
+              <input
+                key={state.title}
+                className="sc-title-input"
+                aria-label={t('storyChat.renameStory')}
+                title={t('storyChat.renameStory')}
+                defaultValue={state.title || t('storyChat.untitled')}
+                maxLength={160}
+                onKeyDown={(event) => event.key === 'Enter' && event.currentTarget.blur()}
+                onBlur={(event) => {
+                  void chat.current.rename(event.currentTarget.value, emit).then(refreshStories);
+                }}
+              />
+            ) : (
+              <h2>{state.title || t('storyChat.untitled')}</h2>
+            )}
           </header>
           <div className="sc-board-body">
             <Board

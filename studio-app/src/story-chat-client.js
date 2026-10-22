@@ -88,6 +88,16 @@ export function fromServer(view, labels = {}) {
         };
         messages.push({ id, role: 'quote', quoteId: id });
       }
+    if (message === latest && message.proposal?.new_story) {
+      const id = `new-${message.id.slice(-20)}`.replace(/[^A-Za-z0-9_-]/g, '');
+      quotes[id] = {
+        id,
+        status: 'open',
+        action: { kind: 'new_story', idea: message.proposal.new_story },
+        label: labels.newStory?.(message.proposal.new_story) || message.proposal.new_story,
+      };
+      messages.push({ id, role: 'quote', quoteId: id });
+    }
     if (message === latest && message.proposal?.shot_ids?.length) {
       const id = `${message.id}-q`;
       quotes[id] = {
@@ -174,6 +184,10 @@ export function createLiveChat({
       settled[quote.id] = accepted ? 'confirmed' : 'declined';
       emit({ type: 'quote.settled', id: quote.id, status: settled[quote.id] });
       if (!accepted) return;
+      if (quote.action.kind === 'new_story') {
+        labels.startStory?.(quote.action.idea);
+        return;
+      }
       if (quote.action.kind !== 'image') {
         labels.openWorks?.(project, quote.action.cards?.[0]);
         return;
@@ -213,6 +227,22 @@ export function createLiveChat({
       });
     },
     // A card edit from the drawer goes through the ordinary project actions API.
+    // Rename the story itself through the ordinary project actions.
+    async rename(title, emit) {
+      const value = title.trim();
+      if (!project || !value || value === view?.title) return;
+      try {
+        await api.request(`/v1/projects/${encodeURIComponent(project)}/actions`, {
+          method: 'POST',
+          body: {
+            expected_version: view.version,
+            actions: [{ op: 'project.update', patch: { title: value.slice(0, 160) } }],
+          },
+        });
+      } finally {
+        load(await api.request(`/v1/story-chats/${encodeURIComponent(project)}`), emit);
+      }
+    },
     async edit(id, patch, emit) {
       const card = fromServer(view, labels).cards.find((item) => item.id === id);
       if (!card || !project) return;
