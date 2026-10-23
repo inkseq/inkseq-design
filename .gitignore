@@ -50,6 +50,8 @@
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
 !studio-app/src/monitoring.test.js
+!studio-app/src/analytics.js
+!studio-app/src/analytics.test.js
 !studio-app/src/account-access.js
 !studio-app/src/preview-as-user.js
 !studio-app/src/StoryChat.jsx
