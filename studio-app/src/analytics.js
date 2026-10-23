@@ -1,6 +1,7 @@
 // Product analytics (h3-studio#501): PostHog, only on the deployed sites, to see the
 // signup → first story → generation → purchase funnel. Privacy first: no autocapture
-// (clicked elements can carry story text), no session recording, no cookies, anonymous
+// (clicked elements can carry story text), session replay with all typed text masked,
+// no cookies, anonymous
 // ids, Do Not Track respected, and events never carry prompts, story text or names.
 import posthog from 'posthog-js';
 import { monitoringEnvironment } from './monitoring.js';
@@ -16,7 +17,12 @@ export function installAnalytics(location = globalThis.location) {
     autocapture: false,
     capture_pageview: 'history_change',
     capture_pageleave: true,
-    disable_session_recording: true,
+    // Replay of page interactions for a sample of visits; typed text and inputs masked.
+    disable_session_recording: false,
+    session_recording: {
+      maskAllInputs: true,
+      maskTextSelector: 'textarea, input, .sc-msg, [contenteditable]',
+    },
     persistence: 'localStorage',
     respect_dnt: true,
     person_profiles: 'identified_only',
