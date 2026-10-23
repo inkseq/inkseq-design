@@ -446,3 +446,4 @@ design/inkseq-v2-prototype/dist/
 !studio-app/tools/
 !studio-app/tools/check-changed.mjs
 !studio-app/tools/layout-audit.mjs
+!studio-app/tools/journeys.mjs
