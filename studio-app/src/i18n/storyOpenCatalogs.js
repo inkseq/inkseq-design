@@ -19,7 +19,7 @@ export const storyOpenCatalogs = {
     'storyOpen.preserveFailed':
       'The browser could not preserve your unsynced draft. Download it and free browser storage before opening another version. Your current work is unchanged.',
     'storyOpen.notFound':
-      'This story does not exist or is not available to the signed-in account. Your current work is unchanged.',
+      'This story does not exist or is not available to the signed-in account. If it belongs to another account, sign in to that one and open it again. Your current work is unchanged.',
     'storyOpen.invalid':
       'The cloud story document could not be validated. Your current work is unchanged. Download the original from its account before making changes.',
     'storyOpen.failed':
@@ -53,7 +53,8 @@ export const storyOpenCatalogs = {
       '云端故事已更新。请下载草稿比较，或打开云端版本；尚未覆盖任何内容。',
     'storyOpen.preserveFailed':
       '浏览器无法保留未同步草稿。请先下载草稿并释放浏览器空间，再打开其他版本。当前作品保持不变。',
-    'storyOpen.notFound': '这个故事不存在，或当前账户无权读取。当前作品保持不变。',
+    'storyOpen.notFound':
+      '这个故事不存在，或当前账户无权读取。如果它属于另一个账号，请切换到那个账号再打开。当前作品保持不变。',
     'storyOpen.invalid':
       '云端故事结构无法验证。当前作品保持不变，请先从所属账户下载原始文件后检查。',
     'storyOpen.failed': '暂时无法打开云端故事（{status}）。当前作品保持不变，请重试这个故事。',
