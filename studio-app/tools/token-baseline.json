@@ -1,5 +1,5 @@
 {
-  "total": 148,
+  "total": 146,
   "files": {
     "admin.css": 1,
     "api-keys.css": 9,
@@ -11,8 +11,8 @@
     "landing.css": 8,
     "maintenance.css": 4,
     "persistence-warning.css": 4,
-    "production-queue.css": 9,
-    "project-activity.css": 7,
+    "production-queue.css": 8,
+    "project-activity.css": 6,
     "roughcut.css": 2,
     "story-chat.css": 2,
     "story-open.css": 6,
