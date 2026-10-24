@@ -81,6 +81,9 @@ export const storyboardCatalogs = {
     'storyboard.dockCollapse': 'Collapse preview',
     'storyboard.dockExpand': 'Expand preview',
     'storyboard.copy35': 'Generate the {count} without video',
+    'storyboard.useLatest': 'Use the latest take for {count}',
+    'storyboard.useLatestHelp':
+      'Shots with finished takes but none chosen get their newest video. You can change any shot afterwards.',
     'storyboard.copy36': '{shots} shots · total {duration} · chosen {chosen}/{shots} · {aspect}',
     'storyboard.copy37': 'Captured frame',
     'storyboard.copy38': 'Choose from computer…',
@@ -517,6 +520,9 @@ export const storyboardCatalogs = {
     'storyboard.dockCollapse': '收起预览',
     'storyboard.dockExpand': '展开预览',
     'storyboard.copy35': '生成没视频的 {count} 个',
+    'storyboard.useLatest': '{count} 个镜头用最新版本',
+    'storyboard.useLatestHelp':
+      '有成片但还没选版本的镜头，统一用最新的视频；之后每个镜头都还能改。',
     'storyboard.copy36': '{shots} 个镜头 · 总长 {duration} · 已选定 {chosen}/{shots} · {aspect}',
     'storyboard.copy37': '截帧',
     'storyboard.copy38': '从电脑选择…',

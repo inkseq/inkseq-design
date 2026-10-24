@@ -714,11 +714,18 @@ export function StoryLibraryHome({ state, onOpenCloud, onOpenLocal, onSelect }) 
       return done;
     });
   };
-  const visible = stories.filter((story) =>
-    String(story.project.title || '')
-      .toLocaleLowerCase()
-      .includes(query.trim().toLocaleLowerCase()),
-  );
+  // Newest edit first (owner, 2026-10-24); a story without a known time goes last.
+  const visible = stories
+    .filter((story) =>
+      String(story.project.title || '')
+        .toLocaleLowerCase()
+        .includes(query.trim().toLocaleLowerCase()),
+    )
+    .sort(
+      (a, b) =>
+        (storyEditedTimestamp(b.project.updatedAt ?? b.project.updated_at) || 0) -
+        (storyEditedTimestamp(a.project.updatedAt ?? a.project.updated_at) || 0),
+    );
   return (
     <section
       className={'home-main works-page' + (pending ? ' is-opening' : '')}

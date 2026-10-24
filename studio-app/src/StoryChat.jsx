@@ -12,6 +12,8 @@ import {
   X,
 } from 'lucide-react';
 import StudioHeader from './StudioHeader.jsx';
+import ItemMenu from './ItemMenu.jsx';
+import { RenameDialog } from './UniversalTrash.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { navigateApp } from './app-navigation.js';
 import {
@@ -451,6 +453,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
   const [files, setFiles] = useState([]);
   const [tab, setTab] = useState('chat');
   const [openId, setOpenId] = useState(null);
+  const [renaming, setRenaming] = useState(null);
+  // A chat is one Works story; renaming renames the story, removing only takes the chat
+  // out of this list (the story stays in Works and comes back when continued there).
+  const updateChat = async (ident, body) => {
+    await api.request(`/v1/story-chats/${encodeURIComponent(ident)}`, { method: 'PATCH', body });
+    refreshStories();
+    if (body.hidden && ident === story.current) openStory(null);
+  };
   const [fresh, setFresh] = useState([]);
   const [notice, setNotice] = useState('');
   const chat = useRef(null);
@@ -655,9 +665,41 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                     <span>{item.title}</span>
                     <small>{whenText(item.updated_at, locale)}</small>
                   </button>
+                  <ItemMenu label={t('storyChat.chatMenu')}>
+                    {(close) => (
+                      <>
+                        <button
+                          role="menuitem"
+                          onClick={() => {
+                            close();
+                            setRenaming(item);
+                          }}
+                        >
+                          {t('storyChat.renameChat')}
+                        </button>
+                        <button
+                          role="menuitem"
+                          title={t('storyChat.removeChatHelp')}
+                          onClick={() => {
+                            close();
+                            void updateChat(item.project_id, { hidden: true }).catch(() => {});
+                          }}
+                        >
+                          {t('storyChat.removeChat')}
+                        </button>
+                      </>
+                    )}
+                  </ItemMenu>
                 </li>
               ))}
             </ul>
+            {renaming && (
+              <RenameDialog
+                title={renaming.title}
+                onSave={(title) => updateChat(renaming.project_id, { title: title.trim() })}
+                onClose={() => setRenaming(null)}
+              />
+            )}
             <a
               className="sc-direct-link"
               href="/quick-chat?mode=direct"

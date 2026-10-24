@@ -18,6 +18,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   Sparkles,
+  CheckCheck,
 } from 'lucide-react';
 import { RenameDialog, useTrash } from './UniversalTrash.jsx';
 import ItemMenu from './ItemMenu.jsx';
@@ -474,7 +475,11 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     }
   }
   const count = state.shots.filter((shot) => shot.chosen).length,
-    pending = state.shots.filter((shot) => !shot.versions.length);
+    pending = state.shots.filter((shot) => !shot.versions.length),
+    // Finished takes nobody has chosen yet (e.g. stories moved from old Quick Create).
+    unpicked = state.shots.filter(
+      (shot) => !shot.chosen && shot.versions.some((v) => ['done', 'succeeded'].includes(v.status)),
+    );
   // First shot of each chapter, so the dock timeline can mark chapter boundaries.
   const chapterStarts = new Set();
   if (multi)
@@ -590,6 +595,20 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                 >
                   <Sparkles size={14} />
                   <span className="label">{t('storyboard.copy35', { count: pending.length })}</span>
+                </button>
+              )}
+              {unpicked.length > 0 && (
+                <button
+                  disabled={state.busy || !!state.workbenchPending}
+                  title={t('storyboard.useLatestHelp')}
+                  onClick={() =>
+                    dispatch({ type: 'workbenchUseLatest', ids: unpicked.map((shot) => shot.id) })
+                  }
+                >
+                  <CheckCheck size={14} />
+                  <span className="label">
+                    {t('storyboard.useLatest', { count: unpicked.length })}
+                  </span>
                 </button>
               )}
               <span className="sb-film-primary">{filmControl}</span>
