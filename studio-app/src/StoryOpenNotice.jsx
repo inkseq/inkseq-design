@@ -65,11 +65,15 @@ export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting 
   // A version choice or an open error needs an answer: show it as a centred dialog
   // instead of a banner at the top of the page that is easy to miss.
   const choice = matching && (c.draftOffer || c.legacyOffer?.record || opening?.status === 'error');
+  // Waiting for an opening only holds the dialog while it loads; a failed open must
+  // always have a way out (owner, 2026-10-24: a link to another account's story trapped him).
+  const failed = matching && opening?.status === 'error',
+    holding = waiting && !failed;
   // Server rendering and tests have no document: keep the inline notice there.
   const portal = typeof document !== 'undefined';
   const ownsDialog = useDialogOwner(portal && pageActive && !!choice) || !portal;
   useEffect(() => {
-    if (!choice || !ownsDialog || waiting) return undefined;
+    if (!choice || !ownsDialog || holding) return undefined;
     const onKey = (event) => event.key === 'Escape' && close();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
@@ -167,6 +171,11 @@ export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting 
             {t(opening.key, { status: opening.statusCode || opening.statusLabel || 'read' })}
           </p>
           <div className="story-open-actions">
+            {waiting && (
+              <button type="button" onClick={close}>
+                {t('storyOpen.back')}
+              </button>
+            )}
             {opening.key !== 'storyOpen.removed' && (
               <button type="button" disabled={c.busy} onClick={() => open()}>
                 {t('storyOpen.retry')}
@@ -189,7 +198,7 @@ export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting 
   );
   return choice && portal
     ? createPortal(
-        <div className="story-open-overlay" onClick={waiting ? undefined : close}>
+        <div className="story-open-overlay" onClick={holding ? undefined : close}>
           {notice}
         </div>,
         document.body,

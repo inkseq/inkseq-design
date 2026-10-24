@@ -21,6 +21,7 @@ import { applyStoryboardAction } from './storyboard-actions.js';
 import { uploadLibraryFiles } from './media-operations.js';
 import { uploadFile } from './media.js';
 import { captureWorkspace, assertWorkspace } from './workspace-context.js';
+import { isActiveTrashItem } from './trash-commands.js';
 import { estimateLabel, stableJSON, shotSnapshot } from './cloud-model.js';
 
 function Confirmation({ ids, onClose }) {
@@ -527,6 +528,21 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
       });
       return { ok: true };
     }
+    if (action.type === 'workbenchUseLatest') {
+      // Choose each shot's newest finished video in one story edit; shots without one are left alone.
+      const context = captureWorkspace(store);
+      const picks = await Promise.all(
+        action.ids.map(async (id) => {
+          const value = await adapter.readVersions(id);
+          const row = value.versions.find((v) => v.kind === 'video' && isActiveTrashItem(v));
+          return row ? { op: 'storyboard.select', shot_id: id, artifact_id: row.id } : null;
+        }),
+      );
+      assertWorkspace(store, context);
+      const actions = picks.filter(Boolean);
+      if (actions.length) await cloud.workbenchCommand('actions', { actions });
+      return { ok: true, count: actions.length };
+    }
     if (action.type === 'workbenchGenerate') {
       const context = captureWorkspace(store);
       const result = await cloud.workbenchCommand('preflight', {
@@ -746,7 +762,7 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
           ).size,
         ]),
       ),
-      workbenchPending: cloud.workbenchPending(),
+      workbenchPending: cloud.workbenchRunning() ? null : cloud.workbenchPending(),
     },
     db: {
       state: view,
