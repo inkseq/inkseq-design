@@ -1,4 +1,4 @@
-import test from 'node:test';
+import test, { mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
 import { Module } from 'node:module';
@@ -287,7 +287,7 @@ test('Story player retry leaves an externally owned local Blob source intact and
   }
 });
 
-test('shot poster retries only explicitly and never rebinds a failed source after an account change', async () => {
+test('shot poster retries a busy read quietly, then explicitly, and never rebinds after an account change', async () => {
   const kit = await component;
   let scope = 'owner',
     reads = 0,
@@ -308,39 +308,49 @@ test('shot poster retries only explicitly and never rebinds a failed source afte
       };
     },
   });
+  mock.timers.enable({ apis: ['setTimeout'] });
   const asset = { fileId: 'cloud_artifact_shot', kind: 'video' },
     h = mediaLifecycle(kit.rawImage, { asset, retryable: true });
   try {
     let view = h.render();
     const source = view.image.props.src;
     assert.equal(view.video, undefined);
+    // A busy server (429) gets four quiet retries with backoff: no alert meanwhile.
+    for (let n = 0; n < 4; n++) {
+      view.image.props.onError({});
+      view = h.render();
+      assert.equal(view.image, undefined);
+      assert.equal(view.alert, undefined);
+      assert.equal(view.retry, undefined);
+      mock.timers.tick(1500 * 2 ** n + 600);
+      view = h.render();
+      assert.equal(view.image.props.src, source);
+    }
+    // Still failing: now the person sees it and can retry explicitly.
     view.image.props.onError({});
     view = h.render();
     assert.equal(view.image, undefined);
     assert.ok(view.alert);
     assert.ok(view.retry);
-    assert.equal(resolutions, 1);
-    assert.equal(reads, 0);
-    view = h.render();
-    assert.equal(view.image, undefined);
-    assert.equal(resolutions, 1);
+    mock.timers.tick(60000);
+    assert.equal(h.render().image, undefined);
     view.retry.props.onClick({ stopPropagation() {} });
     view = h.render();
     assert.equal(view.image.props.src, source);
     view.image.props.onLoad({});
     assert.equal(h.render().alert, undefined);
+    // A later failure after the account changed never reloads the old source.
     view.image.props.onError({});
-    const staleRetry = h.render().retry;
     scope = 'other';
+    mock.timers.tick(60000);
     view = h.render();
     assert.equal(view.retry, undefined);
     assert.equal(view.image, undefined);
-    staleRetry.props.onClick({ stopPropagation() {} });
-    assert.equal(h.render().image, undefined);
     assert.equal(resolutions, 1);
     assert.equal(reads, 0);
   } finally {
     h.unmount();
+    mock.timers.reset();
     kit.setMediaHandlers();
   }
 });
@@ -441,4 +451,3 @@ test('Story native source failure stays explicit and cannot fall through to a Bl
     kit.setMediaHandlers();
   }
 });
-
