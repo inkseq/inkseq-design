@@ -1,4 +1,5 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
+import { FloatingMessage } from './floating-notice.js';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCw, Image as ImageIcon, Play, Pause, Download } from 'lucide-react';
 import { getFile, nativeMediaSource } from './media.js';
@@ -135,7 +136,7 @@ export function useStoryboardMediaUrl(asset, { thumbnail = false } = {}) {
   // retry can reload it; never re-resolve it under a later account.
   const source = native || direct || fileId;
   const onError = () => setFailure({ source, message: t('legacy.visible40') });
-  const onReady = () => setFailure((old) => (old?.source === source ? null : old));
+  const onReady = () => setFailure((old) => (old && old.source === source ? null : old));
   const retry = () => {
     native?.target?.assertCurrent();
     setFailure(null);
@@ -154,7 +155,7 @@ export function useStoryboardMediaUrl(asset, { thumbnail = false } = {}) {
       error = t('client.accountChanged');
     }
     const playbackUrl = error ? '' : native.target?.href || '';
-    if (failure?.source === native) error = failure.message;
+    if (failure && failure.source === native) error = failure.message;
     return {
       url: error ? '' : playbackUrl,
       playbackUrl,
@@ -167,7 +168,9 @@ export function useStoryboardMediaUrl(asset, { thumbnail = false } = {}) {
       assertCurrent: () => native.target?.assertCurrent(),
     };
   }
-  const error = failure?.source === source ? failure.message : value.error;
+  // An asset with no file yet (e.g. a previous-shot frame not saved) has no source: an
+  // absent failure must not match it (production crash INKSEQ-DESIGN-2/3, 2026-10-24).
+  const error = failure && failure.source === source ? failure.message : value.error;
   return {
     ...value,
     url: error ? '' : value.url,

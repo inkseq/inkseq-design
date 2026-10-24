@@ -1,4 +1,5 @@
 import { WorkbenchBulk } from './StoryboardWorkbench.jsx';
+import { FloatingMessage } from './floating-notice.js';
 import './v2/story-view.css';
 import { selectShot, emptySelection } from './storyboard-selection.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -1054,22 +1055,16 @@ function StoryboardShell({ onLegacyGuide, onCanvas, onNewScene, filmControl }) {
       onDragCancel={() => setDragging(null)}
     >
       <section ref={container} className="sb-workspace" aria-label={t('storyboard.copy30')}>
-        {state.error && (
-          <div className="sb-error" role="alert">
-            <span>{state.error}</span>
-            <button className="x" aria-label={t('storyboard.copy31')} onClick={clearError}>
-              <X size={14} />
-            </button>
-          </div>
-        )}
-        {state.workbenchPending && (
-          <div className="sb-error">
-            <span>{t('workbench.pending')}</span>
-            <button disabled={state.busy} onClick={() => dispatch({ type: 'workbenchRecover' })}>
-              {t('workbench.recover')}
-            </button>
-          </div>
-        )}
+        <FloatingMessage tone="error" text={state.error || null} onDismiss={clearError} />
+        <FloatingMessage
+          tone="warn"
+          text={state.workbenchPending ? t('workbench.pending') : null}
+          action={{
+            label: t('workbench.recover'),
+            disabled: state.busy,
+            onClick: () => dispatch({ type: 'workbenchRecover' }),
+          }}
+        />
         <StoryboardLayoutA
           filmControl={filmControl}
           onNewScene={onNewScene}

@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { FloatingMessage } from './floating-notice.js';
 import {
   ArrowRight,
   Clapperboard,
@@ -158,11 +159,7 @@ export default function Landing() {
           <div className="landing-hero-copy">
             <h1>{t('landing.title')}</h1>
             <p className="landing-lede">{t('landing.lede')}</p>
-            {signinError && (
-              <p className="landing-error" role="alert">
-                {signinError}
-              </p>
-            )}
+            <FloatingMessage tone="error" text={signinError ? signinError : null} />
             <div className="landing-ctas">
               <button
                 type="button"

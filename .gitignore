@@ -63,6 +63,10 @@
 !studio-app/src/LegacyQuickChatLink.jsx
 !studio-app/src/LoginDialog.jsx
 !studio-app/src/TakePreferencesSettings.jsx
+!studio-app/src/FloatingNotices.jsx
+!studio-app/src/floating-notice.js
+!studio-app/src/floating-notices.css
+!studio-app/src/PageErrorBoundary.jsx
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx

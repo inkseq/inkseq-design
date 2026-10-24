@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import { FloatingMessage } from './floating-notice.js';
 import {
   ArrowUp,
   Check,
@@ -317,11 +318,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
           {t('storyChat.openWorks')}
         </button>
       </div>
-      {notice && (
-        <p className="sc-notice" role="status">
-          {notice}
-        </p>
-      )}
+      <FloatingMessage tone="info" text={notice ? notice : null} />
       {CARD_GROUPS.filter((group) => group.kind !== 'shot').map((group) =>
         groups[group.kind].length ? (
           <section key={group.kind} className="sc-group">

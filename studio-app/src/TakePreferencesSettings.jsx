@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { FloatingMessage } from './floating-notice.js';
 import QuickChatPreferences from './QuickChatPreferences.jsx';
 import { checkedPreferences } from './quick-chat-takes.js';
 import { useI18n } from './i18n/I18nProvider.jsx';

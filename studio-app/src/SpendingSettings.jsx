@@ -1,4 +1,5 @@
 import { previewingAsUser } from './preview-as-user.js';
+import { FloatingMessage } from './floating-notice.js';
 import VideoCacheSettings from './VideoCacheSettings.jsx';
 import SettingsGenerationDefaults from './SettingsGenerationDefaults.jsx';
 import TakePreferencesSettings from './TakePreferencesSettings.jsx';
