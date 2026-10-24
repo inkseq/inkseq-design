@@ -762,7 +762,7 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
           ).size,
         ]),
       ),
-      workbenchPending: cloud.workbenchPending(),
+      workbenchPending: cloud.workbenchRunning() ? null : cloud.workbenchPending(),
     },
     db: {
       state: view,
