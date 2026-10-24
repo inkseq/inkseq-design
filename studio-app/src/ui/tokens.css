@@ -9,6 +9,7 @@
   --surface-4: #2b302d;
   --line: rgba(255, 255, 255, 0.075);
   --line-2: rgba(255, 255, 255, 0.12);
+  --line-3: rgba(255, 255, 255, 0.18);
   --ink: #f2f4f1;
   --ink-2: #bcc3bd;
   --muted: #808983;
@@ -16,11 +17,14 @@
   --accent: #cdf26e;
   --accent-ink: #11160a;
   --accent-soft: rgba(205, 242, 110, 0.12);
+  --accent-glow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, 0 4px 14px rgba(205, 242, 110, 0.16);
   --good: #63d69e;
   --good-soft: rgba(99, 214, 158, 0.14);
   --warn: #f3b65a;
   --warn-soft: rgba(243, 182, 90, 0.14);
   --bad: #ff7a6b;
+  --bad-soft: rgba(255, 122, 107, 0.1);
+  --danger: #e5484d;
   --fl: #74adff;
   --fl-soft: rgba(116, 173, 255, 0.14);
   --ref: #c79bff;
@@ -57,7 +61,7 @@
   --sp-6: 32px;
   /* Controls */
   --h-sm: 28px;
-  --h-md: 34px;
+  --h-md: 32px;
   --h-lg: 40px;
   /* Layers */
   --z-raised: 3;

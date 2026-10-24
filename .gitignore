@@ -450,5 +450,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/tools/journeys.mjs
 !studio-app/src/ui/
 !studio-app/src/ui/tokens.css
+!studio-app/src/ui/controls.css
+!studio-app/src/ui/Button.jsx
 !studio-app/tools/check-tokens.mjs
 !studio-app/tools/token-baseline.json
