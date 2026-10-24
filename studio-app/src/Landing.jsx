@@ -11,7 +11,7 @@ import {
 import InkMark from './InkMark.jsx';
 import { dailyInkMark } from './ink-mark-daily.js';
 import { PublicFooter } from './PublicPages.jsx';
-import { Login } from './QuickChatWorkspace.jsx';
+import { Login } from './LoginDialog.jsx';
 import { navigateApp } from './app-navigation.js';
 import { usePageActive } from './AppRouteCache.jsx';
 import { LanguageSwitcher, useI18n } from './i18n/I18nProvider.jsx';

@@ -1,6 +1,7 @@
 import { previewingAsUser } from './preview-as-user.js';
 import VideoCacheSettings from './VideoCacheSettings.jsx';
 import SettingsGenerationDefaults from './SettingsGenerationDefaults.jsx';
+import TakePreferencesSettings from './TakePreferencesSettings.jsx';
 import SpendingBreakdown from './SpendingBreakdown.jsx';
 import { admissionExposure } from './spending-breakdown.js';
 import { microsToDollars, dollarsToMicros, formatMoneyMicros } from './money.js';
@@ -434,14 +435,8 @@ export default function SpendingSettings({ account }) {
                   <br />
                   <small className="muted">{t('settings.defaults')}</small>
                 </div>
-                <div className="spacer" />
-                <button
-                  className="primary"
-                  onClick={() => navigateApp('/quick-chat?preferences=takes')}
-                >
-                  {t('takes.preferences')}
-                </button>
               </div>
+              <TakePreferencesSettings api={api} active={pageActive && section === 'defaults'} />
             </div>
           </div>
           {(!user || !draft) &&
@@ -571,7 +566,7 @@ export default function SpendingSettings({ account }) {
               embedded
               account={account}
               active={pageActive && section === 'assistants'}
-              onLogin={() => navigateApp('/quick-chat')}
+              onLogin={() => navigateApp('/')}
             />
           </div>
         </section>

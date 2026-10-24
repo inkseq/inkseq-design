@@ -34,6 +34,12 @@ export const storyOpenCatalogs = {
     'storyOpen.retry': 'Retry',
     'storyOpen.close': 'Close',
     'storyOpen.back': 'Back to Works',
+    'legacyChat.opening': 'Opening this conversation…',
+    'legacyChat.title': 'This old conversation is no longer here',
+    'legacyChat.body':
+      'Quick Create conversations became stories in Works. This one was not converted (it was deleted, or belongs to another account).',
+    'legacyChat.works': 'Go to Works',
+    'legacyChat.quickCreate': 'Open Quick Create',
   },
   zh: {
     'storyOpen.loading': '正在打开云端故事…',
@@ -68,5 +74,10 @@ export const storyOpenCatalogs = {
     'storyOpen.retry': '重试',
     'storyOpen.close': '关闭',
     'storyOpen.back': '返回作品',
+    'legacyChat.opening': '正在打开这段对话…',
+    'legacyChat.title': '这段旧对话已经不在这里了',
+    'legacyChat.body': '快速创作的对话都已转成「作品」里的故事。这一段没有转换（已删除，或属于其他账号）。',
+    'legacyChat.works': '去作品',
+    'legacyChat.quickCreate': '打开快速创作',
   },
 };

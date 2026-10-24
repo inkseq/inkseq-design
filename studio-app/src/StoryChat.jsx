@@ -738,16 +738,6 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 onClose={() => setRenaming(null)}
               />
             )}
-            <a
-              className="sc-direct-link"
-              href="/quick-chat?mode=direct"
-              onClick={(event) => {
-                event.preventDefault();
-                navigateApp('/quick-chat?mode=direct');
-              }}
-            >
-              {t('storyChat.directMode')}
-            </a>
           </nav>
         )}
         {stories && sideOpen && (
