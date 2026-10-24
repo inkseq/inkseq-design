@@ -24,7 +24,7 @@ for (const file of files) {
   const text = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   const n = (text.match(/#[0-9a-fA-F]{3,8}\b/g) || []).length;
   if (n) counts[rel] = n;
-  if (rel.startsWith('ui/') || rel === 'style.css') continue;
+  if (rel.startsWith('ui/')) continue;
   // A selector that is only `button` plus shared variant classes or states, e.g. `button.primary:hover`.
   const shared =
     /^button((\.(primary|ghost|danger|small|round))|:(hover|active|disabled|focus-visible))*$/;
