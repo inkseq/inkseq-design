@@ -463,3 +463,15 @@ test('an asset with no file yet renders a placeholder instead of crashing the pa
     assert.match(html, /storyboard-thumbnail-empty/);
   }
 });
+
+test('an asset with no file yet renders a placeholder instead of crashing the page', async () => {
+  const kit = await component;
+  // Production crash INKSEQ-DESIGN-2/3: "continue the previous shot" before its last frame
+  // was saved gave an asset without a file; a missing failure matched a missing source.
+  for (const asset of [{ kind: 'image' }, { kind: 'video' }, {}]) {
+    const html = renderToStaticMarkup(
+      React.createElement(kit.story.StoryboardAssetImage, { asset }),
+    );
+    assert.match(html, /storyboard-thumbnail-empty/);
+  }
+});
