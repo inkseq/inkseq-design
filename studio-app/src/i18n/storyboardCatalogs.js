@@ -57,7 +57,8 @@ export const storyboardCatalogs = {
     'storyboard.copy18': 'Overall style',
     'storyboard.copy19': 'For example: cinematic, cool colors, film grain',
     'storyboard.copy20': 'Player and timeline height',
-    'storyboard.copy21': 'Click a segment to jump to its shot · drag to reorder',
+    'storyboard.copy21':
+      'Click a shot to open it · drag shots to reorder · drag along the time ruler to scrub',
     'storyboard.copy22': 'Shot editor',
     'storyboard.copy23': 'Shot editor width',
     'storyboard.copy24': 'Added to shot',
@@ -496,7 +497,7 @@ export const storyboardCatalogs = {
     'storyboard.copy18': '全片风格',
     'storyboard.copy19': '例如：电影感，冷色调，胶片颗粒',
     'storyboard.copy20': '播放器和时间线高度',
-    'storyboard.copy21': '点一段跳到那个镜头 · 拖动调整顺序',
+    'storyboard.copy21': '点镜头打开 · 拖镜头调整顺序 · 在时间尺上拖动快进',
     'storyboard.copy22': '镜头编辑器',
     'storyboard.copy23': '镜头编辑器宽度',
     'storyboard.copy24': '已加入镜头',
