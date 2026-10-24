@@ -208,37 +208,25 @@ await journey(
   },
 );
 
+const SECTION_INDEX = { overview: 0, jobs: 1, limits: 2, users: 3, pricing: 4, log: 5 };
 await journey(
-  'Admin tabs load with data',
+  'Admin console sections load with data',
   () => QA_ADMIN,
   async (open) => {
     const p = await open(QA_ADMIN);
-    await p.goto(BASE + '/settings');
-    await settle(p);
-    await p
-      .getByRole('button', { name: '管理员' })
-      .or(p.getByRole('link', { name: '管理员' }))
-      .first()
-      .click();
-    await p.waitForSelector('.admin-console .user-row:not(.head)', { timeout: 15000 });
-    for (const [tab, selector] of [
-      [/定价/, '.admin-console .margin-table'],
-      [/机器/, '.admin-console .cap-group'],
-      [/操作记录/, '.admin-console .audit-log > div'],
+    // The old Settings → Admin link now lands on /admin (h3-studio#537).
+    await p.goto(BASE + '/settings?tab=admin');
+    await p.waitForURL(/\/admin\?section=limits/, { timeout: 15000 });
+    await p.waitForSelector('.admin-home .cap-group', { timeout: 15000 });
+    for (const [section, selector] of [
+      ['overview', '.admin-home .ah-kpis'],
+      ['users', '.admin-home .user-row:not(.head)'],
+      ['pricing', '.admin-home .margin-table'],
+      ['log', '.admin-home .audit-log > div'],
     ]) {
-      const button = p.getByRole('tab', { name: tab });
-      await button.scrollIntoViewIfNeeded();
-      await button.click();
-      await p.waitForFunction(
-        (label) =>
-          [...document.querySelectorAll('[role=tab][aria-selected=true]')].some((t) =>
-            new RegExp(label).test(t.textContent),
-          ),
-        tab.source,
-        { timeout: 10000 },
-      );
+      await p.locator('.ah-nav button').nth(SECTION_INDEX[section]).click();
       await p.waitForSelector(selector, { timeout: 15000 }).catch(() => {
-        throw Error(`admin tab ${tab.source}: ${selector} did not appear`);
+        throw Error(`admin section ${section}: ${selector} did not appear`);
       });
     }
     return p;
