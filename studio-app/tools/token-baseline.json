@@ -1,11 +1,11 @@
 {
-  "total": 150,
+  "total": 148,
   "files": {
     "admin.css": 1,
     "api-keys.css": 9,
     "capacity-settings.css": 13,
     "cloud-studio.css": 28,
-    "demo-v2.css": 39,
+    "demo-v2.css": 38,
     "floating-notices.css": 6,
     "i18n/workspace-language.css": 1,
     "landing.css": 8,
@@ -15,7 +15,7 @@
     "project-activity.css": 7,
     "roughcut.css": 2,
     "story-chat.css": 2,
-    "story-open.css": 7,
+    "story-open.css": 6,
     "v2/page-bridge.css": 4,
     "v2/story-view.css": 6
   }
