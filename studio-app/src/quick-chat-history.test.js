@@ -10,7 +10,6 @@ import {
   restoreThreadAnchor,
 } from './quick-chat-history.js';
 
-
 function fixture(count = 66) {
   const calls = [],
     stored = new Map(),
