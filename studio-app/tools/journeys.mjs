@@ -138,7 +138,7 @@ await journey(
 );
 
 await journey(
-  'an old Quick Create link reopens its conversation (#477)',
+  'an old Quick Create link opens its story or explains (#477, #481)',
   () => QA_USER,
   async (open) => {
     const p = await open(QA_USER);
@@ -148,9 +148,14 @@ await journey(
     await p.goto(BASE + '/quick-chat?session=' + encodeURIComponent(session.id));
     await settle(p, 5000);
     const url = new URL(p.url());
-    if (url.searchParams.get('story')) return p; // migrated into a story (#481): fine
-    expect(!(await p.locator('.sc-shell').count()), 'old link opened an empty story chat');
-    expect(await p.locator('.quick-shell').count(), 'original Quick Create did not open');
+    // The original Quick Create was removed (2026-10-24): a converted conversation opens
+    // its story (#481); anything else explains itself with a way on, never a blank page.
+    if (url.searchParams.get('story')) return p;
+    expect(!(await p.locator('.quick-shell').count()), 'the removed Quick Create still renders');
+    expect(
+      await p.locator('.story-open-notice button').count(),
+      'old link showed neither its story nor the explanation with a way on',
+    );
     return p;
   },
 );
@@ -166,7 +171,8 @@ await journey(
     await settle(p, 800);
     const menu = (await p.locator('.hbar .account-menu-panel').innerText()).replace(/\s+/g, ' ');
     expect(!/ZIP/.test(menu), 'Works account menu still shows story actions: ' + menu);
-    const card = p.locator('.story-wrap').first();
+    // Newest first: the browser-only sample can come first and has no multi-select.
+    const card = p.locator('.story-wrap:has(.story-pick)').first();
     if (await card.count()) {
       await p.locator('.hbar details.account-menu > summary').click();
       await card.hover();
