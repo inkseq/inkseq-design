@@ -146,7 +146,17 @@ await journey(
     const session = sessions.body?.sessions?.[0];
     expect(session, 'qa-user has no Quick Create conversation to reopen');
     await p.goto(BASE + '/quick-chat?session=' + encodeURIComponent(session.id));
-    await settle(p, 5000);
+    // Opening resolves through the server; under a fresh deploy that can take longer than a
+    // fixed pause, so wait for either outcome instead of checking once.
+    await p
+      .waitForFunction(
+        () =>
+          new URL(location.href).searchParams.get('story') ||
+          document.querySelector('.story-open-notice button'),
+        null,
+        { timeout: 20000 },
+      )
+      .catch(() => {});
     const url = new URL(p.url());
     // The original Quick Create was removed (2026-10-24): a converted conversation opens
     // its story (#481); anything else explains itself with a way on, never a blank page.
