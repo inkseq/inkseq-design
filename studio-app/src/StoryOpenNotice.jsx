@@ -38,7 +38,13 @@ const jsonDownload = (value, name) =>
 
 // Mounted once in the active story view. Open failures never fan out through
 // every hidden route, status panel and shot editor sharing the cloud controller.
-export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting = false }) {
+export default function StoryOpenNotice({
+  onOpened,
+  onClose,
+  projectId,
+  waiting = false,
+  quietLoading = false,
+}) {
   const { t } = useI18n(),
     c = useCloud(),
     opening = c.projectOpen,
@@ -80,6 +86,17 @@ export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting 
   });
   if (!matching && !waiting) return null;
   if (choice && !ownsDialog) return null;
+  const floating = (label) => {
+    if (quietLoading) return null;
+    const pill = (
+      <div className="story-open-toast" role="status">
+        <span className="story-open-spinner" aria-hidden="true" />
+        {label}
+      </div>
+    );
+    return portal ? createPortal(pill, document.body) : pill;
+  };
+  if (!c.account && !c.sessionReady) return floating(t('storyOpen.checkingAccount'));
   if (!c.account)
     return (
       <section className="story-open-notice" role="status">
@@ -87,6 +104,10 @@ export default function StoryOpenNotice({ onOpened, onClose, projectId, waiting 
         {c.sessionReady && <a href="/settings">{t('storyOpen.signInLink')}</a>}
       </section>
     );
+  // Plain loading never moves the page (owner, 2026-10-24): a one-line floating pill, or
+  // nothing where the page already shows its own opening indicator.
+  if (!choice && (!opening || opening.status === 'loading'))
+    return floating(t('storyOpen.loading'));
   const notice = (
     <section
       className={'story-open-notice' + (choice && portal ? ' story-open-dialog' : '')}

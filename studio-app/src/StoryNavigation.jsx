@@ -849,7 +849,7 @@ export function StoryLibraryHome({ state, onOpenCloud, onOpenLocal, onSelect }) 
           </button>
         </p>
       )}
-      <StoryOpenNotice onOpened={onSelect} />
+      <StoryOpenNotice onOpened={onSelect} quietLoading />
       {selecting && (
         <div className="works-select-bar" role="toolbar" aria-label={t('trash.selectStory')}>
           <b>{t('trash.selectedCount', { count: picked.size })}</b>
