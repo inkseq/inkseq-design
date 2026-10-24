@@ -417,3 +417,5 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/admin-overview.test.js
 !studio-app/src/version-check.js
 !studio-app/src/version-check.test.js
+!studio-app/src/support-view.js
+!studio-app/src/support-view.test.js
