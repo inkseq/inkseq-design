@@ -40,67 +40,6 @@ small {
 }
 
 /* ---------- primitives ---------- */
-button {
-  font: inherit;
-  color: var(--ink);
-  background: var(--surface-3);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-sm);
-  padding: 6px 12px;
-  cursor: pointer;
-  transition:
-    background var(--ease),
-    border-color var(--ease),
-    color var(--ease),
-    transform var(--ease);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-button:hover {
-  background: var(--surface-4);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-button:active {
-  transform: translateY(1px);
-}
-button:disabled {
-  opacity: 0.4;
-  cursor: default;
-  transform: none;
-}
-button.primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-color: transparent;
-  font-weight: 600;
-}
-button.primary:hover {
-  background: #dbf78f;
-}
-button.ghost {
-  background: transparent;
-  border-color: transparent;
-  color: var(--ink-2);
-}
-button.ghost:hover {
-  background: var(--surface-3);
-  color: var(--ink);
-}
-button.danger {
-  color: var(--bad);
-}
-button.small {
-  padding: 3px 9px;
-  font-size: 12px;
-}
-button.round {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  padding: 0;
-  justify-content: center;
-}
 input,
 textarea,
 select {
@@ -4226,11 +4165,6 @@ pre {
   color: var(--muted);
   font-size: 11px;
 }
-button.danger {
-  background: #e5484d;
-  border-color: #e5484d;
-  color: var(--white);
-}
 .undo-toast {
   display: flex;
   align-items: center;
@@ -5351,46 +5285,6 @@ h4,
   font-variant-numeric: tabular-nums;
 }
 
-/* Controls: one height scale (32 / 28), hairline borders, soft press */
-button {
-  min-height: 32px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  gap: 6px;
-  font-weight: 500;
-}
-button:hover {
-  border-color: rgba(255, 255, 255, 0.18);
-}
-button:active {
-  transform: scale(0.98);
-}
-button:focus-visible,
-select:focus-visible,
-input:focus-visible,
-textarea:focus-visible,
-a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-button.small {
-  min-height: 28px;
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 7px;
-}
-button.primary {
-  box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.35) inset,
-    0 4px 14px rgba(205, 242, 110, 0.16);
-}
-button.primary:hover {
-  filter: brightness(1.05);
-  background: var(--accent);
-}
-button > svg {
-  stroke-width: 1.9;
-}
 input,
 select {
   min-height: 32px;
@@ -6334,28 +6228,11 @@ textarea::placeholder {
 }
 
 /* ================= polish pass ================= */
-button {
-  min-height: 32px;
-  line-height: 1.2;
-}
 .seg button,
 .hbar nav button,
-button.small,
-button.primary,
-button.ghost,
 .lib-tabs button,
 .snav button {
   white-space: nowrap;
-}
-button.small {
-  min-height: 28px;
-  padding: 4px 10px;
-}
-button > svg {
-  flex: none;
-}
-button.round {
-  min-height: 0;
 }
 .x {
   min-height: 0;
@@ -6688,18 +6565,6 @@ button.round {
 
 .mrow-main b {
   gap: 8px;
-}
-
-button.ghost.danger {
-  background: transparent;
-  color: var(--bad);
-  border-color: transparent;
-  box-shadow: none;
-  width: auto;
-  align-self: flex-start;
-}
-button.ghost.danger:hover {
-  background: rgba(255, 122, 107, 0.1);
 }
 
 .trash-filter {
