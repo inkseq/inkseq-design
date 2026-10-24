@@ -175,7 +175,6 @@
 !studio-app/src/agent-candidate-merge.test.js
 !studio-app/src/agent-connect-model.js
 !studio-app/src/agent-connect-model.test.js
-!studio-app/src/agent-connect.css
 !studio-app/src/agent-integration.test.js
 !studio-app/src/agent-navigation.js
 !studio-app/src/agent-navigation.test.js
@@ -208,7 +207,6 @@
 !studio-app/src/delivery-model.test.js
 !studio-app/src/entity-references.js
 !studio-app/src/entity-references.test.js
-!studio-app/src/freestyle.css
 !studio-app/src/generated-sound-model.js
 !studio-app/src/generated-sound-model.test.js
 !studio-app/src/handover-model.js
@@ -235,7 +233,6 @@
 !studio-app/src/quick-chat-client.js
 !studio-app/src/quick-chat-controller.js
 !studio-app/src/quick-chat-model.js
-!studio-app/src/quick-chat.css
 !studio-app/src/quick-chat.test.js
 !studio-app/src/recipe-execution-model.js
 !studio-app/src/recipe-execution-model.test.js
@@ -253,8 +250,6 @@
 !studio-app/src/sound-studio.css
 !studio-app/src/store.js
 !studio-app/src/store.test.js
-!studio-app/src/story-navigation.css
-!studio-app/src/story-shell.css
 !studio-app/src/story-navigation.js
 !studio-app/src/story-navigation.test.js
 !studio-app/src/storyboard.js
@@ -276,7 +271,6 @@
 !studio-app/src/operator-client.js
 !studio-app/src/operator-controller.js
 !studio-app/src/operator-model.js
-!studio-app/src/operator.css
 !studio-app/src/operator.test.js
 !studio-app/src/operator-market.test.js
 
@@ -311,7 +305,6 @@
 !studio-app/src/creation-history-model.js
 !studio-app/src/creation-history.test.js
 !studio-app/src/operator-host-model.js
-!studio-app/src/operator-host.css
 !studio-app/src/operator-host.test.js
 
 # Owner-approved storyboard layout A; no prototype store or sample media.
@@ -352,7 +345,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/i18n/
 !studio-app/src/i18n/**
 !studio-app/src/SpendingSettings.jsx
-!studio-app/src/spending-settings.css
 !studio-app/src/i18n.test.js
 !studio-app/src/spending-client.test.js
 
@@ -360,13 +352,11 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/QuickChatPreferences.jsx
 !studio-app/src/QuickChatTakeRecipe.jsx
 !studio-app/src/quick-chat-takes.js
-!studio-app/src/quick-chat-takes.css
 !studio-app/src/quick-chat-takes.test.js
 
 # Canonical assistant connections v2
 !studio-app/src/AssistantConnections.jsx
 !studio-app/src/assistant-connections-model.js
-!studio-app/src/assistant-connections.css
 !studio-app/src/assistant-connections.test.js
 !studio-app/src/i18n/assistantCatalogs.js
 
@@ -384,14 +374,12 @@ design/inkseq-v2-prototype/dist/
 
 # Universal trash236
 !studio-app/src/ItemMenu.jsx
-!studio-app/src/trash.css
 !studio-app/src/UniversalTrash.jsx
 !studio-app/src/trash-commands.js
 !studio-app/src/trash-commands.test.js
 
 # Project-scoped library238
 !studio-app/src/Library.jsx
-!studio-app/src/library.css
 !studio-app/src/library-commands.js
 !studio-app/src/library-commands.test.js
 !studio-app/src/library-ui.test.js
@@ -399,10 +387,7 @@ design/inkseq-v2-prototype/dist/
 
 # Shared approved v2 presentation
 !studio-app/src/StudioHeader.jsx
-!studio-app/src/v2-studio.css
 !studio-app/src/demo-v2.css
-!studio-app/src/quick-chat-v2.css
-!studio-app/src/operator-v2.css
 
 !studio-app/src/library-thumbnails.js
 !studio-app/src/library-thumbnails.test.js
@@ -452,5 +437,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/ui/tokens.css
 !studio-app/src/ui/controls.css
 !studio-app/src/ui/Button.jsx
+!studio-app/src/ui/Dialog.jsx
 !studio-app/tools/check-tokens.mjs
 !studio-app/tools/token-baseline.json
