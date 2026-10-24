@@ -67,6 +67,9 @@
 !studio-app/src/floating-notice.js
 !studio-app/src/floating-notices.css
 !studio-app/src/PageErrorBoundary.jsx
+!studio-app/src/ui/tokens.css
+!studio-app/tools/check-tokens.mjs
+!studio-app/tools/token-baseline.json
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx

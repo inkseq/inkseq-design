@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
 import videoCacheWorkerURL from './video-cache-worker.js?worker&url';
 import { installVideoCache } from './video-cache-client.js';
+import './ui/tokens.css';
 import './demo-v2.css';
 import './v2/page-bridge.css';
 import './dialogs.css';
