@@ -60,6 +60,13 @@
 !studio-app/src/story-chat-preview.js
 !studio-app/src/story-chat-client.js
 !studio-app/src/QuickCreateEntry.jsx
+!studio-app/src/LegacyQuickChatLink.jsx
+!studio-app/src/LoginDialog.jsx
+!studio-app/src/TakePreferencesSettings.jsx
+!studio-app/src/FloatingNotices.jsx
+!studio-app/src/floating-notice.js
+!studio-app/src/floating-notices.css
+!studio-app/src/PageErrorBoundary.jsx
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
@@ -142,14 +149,9 @@
 !studio-app/src/PersistenceWarning.jsx
 !studio-app/src/ProductionQueue.jsx
 !studio-app/src/ProjectActivity.jsx
-!studio-app/src/QuickChatAgent.jsx
-!studio-app/src/QuickChatCard.jsx
-!studio-app/src/QuickChatHistory.jsx
 !studio-app/src/quick-chat-history.js
 !studio-app/src/quick-chat-history.test.js
 !studio-app/src/QuickChatControls.jsx
-!studio-app/src/QuickChatMaterials.jsx
-!studio-app/src/QuickChatWorkspace.jsx
 !studio-app/src/RecipeExecutionNotice.jsx
 !studio-app/src/ReferenceEditor.jsx
 !studio-app/src/ScriptBreakdown.jsx
@@ -267,7 +269,6 @@
 # Operator control console source only.
 !OPERATOR-CONSOLE-INTEGRATION.md
 !studio-app/src/OperatorConsole.jsx
-!studio-app/src/OperatorEntry.jsx
 !studio-app/src/DeploymentProfile.jsx
 !studio-app/src/operator-client.js
 !studio-app/src/operator-controller.js
@@ -353,9 +354,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/spending-client.test.js
 
 # Quick Chat take groups; source only.
-!studio-app/src/QuickChatTakes.jsx
 !studio-app/src/QuickChatPreferences.jsx
-!studio-app/src/QuickChatTakeCount.jsx
 !studio-app/src/QuickChatTakeRecipe.jsx
 !studio-app/src/quick-chat-takes.js
 !studio-app/src/quick-chat-takes.css
@@ -410,10 +409,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/v2/**
 
 # Quick Create row-bound sidebar actions273
-!studio-app/src/QuickChatSidebar.jsx
 !studio-app/src/quick-chat-sidebar.js
 !studio-app/src/quick-chat-sidebar.test.js
-!studio-app/src/QuickPrompt.jsx
 !studio-app/src/ui-audit.js
 !studio-app/src/v2/works-adapter.css
 
@@ -431,9 +428,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/SettingsGenerationDefaults.jsx
 !studio-app/src/settings-generation-defaults.js
 !studio-app/src/ui285.test.js
-!studio-app/src/QuickChatThread.jsx
-!studio-app/src/quick-thread-window.js
-!studio-app/src/quick-thread-window.test.js
 
 # Original-ledger cost presentation (#296).
 !studio-app/src/SpendingBreakdown.jsx

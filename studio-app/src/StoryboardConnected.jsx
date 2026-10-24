@@ -1,4 +1,5 @@
 import TakeRecipe from './QuickChatTakeRecipe.jsx';
+import { FloatingMessage } from './floating-notice.js';
 import StoryFilmControl from './StoryFilmControl.jsx';
 import { formatMoneyMicros } from './money.js';
 import { createQuickChatClient } from './quick-chat-client.js';
