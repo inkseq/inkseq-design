@@ -64,6 +64,8 @@ import {
   DOCK_MIN,
 } from './storyboard-ui-model.js';
 
+const EMPTY_SET = new Set();
+
 function collision(args) {
   const id = String(args.active.id);
   if (id.startsWith('asset:') || id.startsWith('profile:')) {
@@ -316,14 +318,24 @@ function FilmEditorButton({ chapterId }) {
 function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmControl }) {
   const { t, locale } = useI18n();
   const { state, dispatch } = useStoryboardUI(),
-    player = usePlayer(state.shots),
+    trash = useTrash();
+  const gone = trash?.hidden || EMPTY_SET,
+    goneScenes = new Set(
+      (state.scenes || [])
+        .filter((scene) => gone.has(scene.id) || gone.has(scene.parentId))
+        .map((scene) => scene.id),
+    ),
+    shots = state.shots.filter(
+      (shot) =>
+        !gone.has(shot.id) && !gone.has(shot.entity?.id) && !goneScenes.has(shot.entity?.parentId),
+    );
+  const player = usePlayer(shots),
     [selection, setSelection] = useState(emptySelection),
     [expanded, setExpanded] = useState(false),
     [libraryCollapsed, setLibraryCollapsed] = useState(
       () => globalThis.matchMedia?.('(max-width:760px)').matches ?? false,
     );
-  const trash = useTrash(),
-    pageActive = usePageActive(),
+  const pageActive = usePageActive(),
     column = useRef(null),
     main = useRef(null),
     [room, setRoom] = useState({ height: 0, content: 0 }),
@@ -451,11 +463,11 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
         : dockLayout.large,
     );
   // One continuous storyboard: every chapter's scenes in reading order (owner, 2026-10-21).
-  const chapters = state.project.chapters || [],
+  const chapters = (state.project.chapters || []).filter((chapter) => !gone.has(chapter.id)),
     multi = chapters.length > 1,
     chapterIndex = new Map(chapters.map((chapter, index) => [chapter.id, index]));
   const groups = (state.scenes || [])
-    .filter((scene) => chapterIndex.has(scene.parentId))
+    .filter((scene) => chapterIndex.has(scene.parentId) && !gone.has(scene.id))
     .sort(
       (a, b) => chapterIndex.get(a.parentId) - chapterIndex.get(b.parentId) || a.order - b.order,
     )
@@ -463,9 +475,9 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       id: scene.id,
       title: scene.title,
       chapterId: scene.parentId,
-      shots: state.shots.filter((shot) => shot.entity?.parentId === scene.id),
+      shots: shots.filter((shot) => shot.entity?.parentId === scene.id),
     }));
-  for (const shot of state.shots) {
+  for (const shot of shots) {
     if (!groups.some((group) => group.id === shot.entity?.parentId)) {
       const id = shot.entity?.parentId || null;
       let group = groups.find((row) => row.id === id);
