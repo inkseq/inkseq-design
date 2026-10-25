@@ -865,3 +865,8 @@ dialog.modal.wide {
   background: color-mix(in srgb, var(--ink) 9%, transparent);
   color: var(--ink);
 }
+/* Single actions in a settings card size to their words, not the card width. */
+.account-link-button {
+  align-self: flex-start;
+  width: auto;
+}
