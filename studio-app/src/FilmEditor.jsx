@@ -219,7 +219,8 @@ function Ruler({ seconds, pps, onSeek }) {
 function TimelineClip({ clip, pps, selected, playing, busy, sound, onSelect }) {
   const { t } = useI18n();
   const sortable = useSortable({ id: clip.id, disabled: busy });
-  const width = Math.max(14, (clip.frames / cutFps) * pps);
+  // True length on the ruler (#232 #13): a minimum width would push every later clip off time.
+  const width = (clip.frames / cutFps) * pps;
   return (
     <div
       ref={sortable.setNodeRef}
@@ -677,8 +678,7 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
               {error}
             </p>
           )}
-          <div className="film-zoom">
-            <small className="muted">{t('editor.dragHint')}</small>
+          <div className="film-zoom" title={t('editor.dragHint')}>
             <span className="film-zoom-spacer" />
             {crossfades && (
               <label title={t('editor.crossfadeHint')}>
@@ -700,22 +700,25 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
                 </select>
               </label>
             )}
-            <label>
-              {t('editor.zoom')}
-              <input
-                type="range"
-                min={MIN_PPS}
-                max={MAX_PPS}
-                step="1"
-                value={Math.round(pps)}
-                onChange={(e) => setZoom(Number(e.target.value))}
-              />
-            </label>
             <button type="button" className="small ghost" onClick={() => setZoom(null)}>
               {t('editor.fit')}
             </button>
           </div>
-          <div className="film-timeline" ref={scroller}>
+          <div
+            className="film-timeline"
+            ref={scroller}
+            // #232 (#16): the wheel scrolls a long timeline sideways; Ctrl/⌘ + wheel zooms.
+            onWheel={(event) => {
+              if (event.ctrlKey || event.metaKey) {
+                setZoom(
+                  Math.max(MIN_PPS, Math.min(MAX_PPS, pps * (event.deltaY < 0 ? 1.15 : 0.87))),
+                );
+                return;
+              }
+              if (Math.abs(event.deltaY) > Math.abs(event.deltaX))
+                event.currentTarget.scrollLeft += event.deltaY;
+            }}
+          >
             <div className="film-timeline-inner" style={{ width: laneWidth + 24 }}>
               <Ruler seconds={seconds} pps={pps} onSeek={seekTime} />
               <DndContext
@@ -795,7 +798,6 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
             </div>
           )}
           <footer className="film-editor-foot muted">
-            <span>{t('editor.exportHint')}</span>
             {/* Once the server exports in editor order without left-out shots (#347), say nothing. */}
             {excluded.length > 0 &&
               !cloudController.getState().capabilities?.story_film?.film_cuts && (

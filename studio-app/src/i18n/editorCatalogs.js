@@ -49,7 +49,8 @@ export const editorCatalogs = {
     'editor.apply': 'Apply',
     'editor.cancel': 'Cancel',
     'editor.trimTimes': 'In {in}s · out {out}s · keeps {len}s of {total}s',
-    'editor.trimKeys': 'Keys: Space play/pause · I start · O end · ←/→ one frame',
+    'editor.trimKeys':
+      'Drag the ends to trim · Space play/pause · I start · O end · ←/→ one frame · double-click: whole clip',
     'editor.trimNeedsVideo': 'This shot has no video yet. Generate or choose one, then trim it.',
     'editor.trimHandleIn': 'Start point',
     'editor.trimHandleOut': 'End point',
@@ -157,7 +158,7 @@ export const editorCatalogs = {
     'editor.apply': '应用',
     'editor.cancel': '取消',
     'editor.trimTimes': '入点 {in} 秒 · 出点 {out} 秒 · 留下 {len} 秒（素材共 {total} 秒）',
-    'editor.trimKeys': '快捷键：空格 播放/暂停 · I 设入点 · O 设出点 · ←/→ 逐帧',
+    'editor.trimKeys': '拖动两端裁剪 · 空格 播放/暂停 · I 设入点 · O 设出点 · ←/→ 逐帧 · 双击：用整段',
     'editor.trimNeedsVideo': '这个镜头还没有视频，生成或选好视频后才能精剪。',
     'editor.trimHandleIn': '入点',
     'editor.trimHandleOut': '出点',

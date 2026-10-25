@@ -473,3 +473,11 @@ button.autosave-status {
   opacity: 0.7;
   pointer-events: none;
 }
+/* #232 (#13): clips touch, with a hairline between them, so their edges match the ruler. */
+.film-tclip {
+  border-radius: 0;
+  box-shadow: inset -1px 0 0 var(--surface);
+}
+.film-tclip.selected {
+  border-radius: 4px;
+}
