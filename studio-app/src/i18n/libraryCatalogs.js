@@ -63,20 +63,15 @@ export const libraryCatalogs = {
     'library.destination': 'Destination story',
     'library.choose': 'Choose a story',
     'library.copy': 'Copy',
-    'library.pending':
-      'The last action isn\'t confirmed yet. Check or continue it.',
+    'library.pending': "The last action isn't confirmed yet. Check or continue it.",
     'library.check': 'Check result',
     'library.resume': 'Continue',
-    'library.changed':
-      'The story or account changed. Refresh and choose again.',
-    'library.failed':
-      'Couldn\'t confirm this. Nothing was lost.',
-    'library.invalid':
-      'Couldn\'t confirm the result. The original action is kept.',
+    'library.changed': 'The story or account changed. Refresh and choose again.',
+    'library.failed': "Couldn't confirm this. Nothing was lost.",
+    'library.invalid': "Couldn't confirm the result. The original action is kept.",
     'library.saved': 'Saved.',
     'library.copied': 'Copied. Nothing was generated.',
-    'library.blocked':
-      'The destination changed. Copied files are kept; choose again.',
+    'library.blocked': 'The destination changed. Copied files are kept; choose again.',
     'library.oneStory': 'Choose one story before editing or uploading.',
     'library.upload': 'Upload into this story',
     'library.uploadHelp':
@@ -258,8 +253,7 @@ Object.assign(libraryCatalogs.en, {
   'library.working': 'Saving…',
   'library.managedHint':
     'This file is from Quick Create. Copy it into a story to rename, tag or use it.',
-  'library.managed':
-    'Copy Quick Create files into a story to organise them.',
+  'library.managed': 'Copy Quick Create files into a story to organise them.',
 });
 Object.assign(libraryCatalogs.zh, {
   'library.view.files': '文件',

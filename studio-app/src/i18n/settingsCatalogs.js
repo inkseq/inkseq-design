@@ -1,6 +1,6 @@
 export const settingsCatalogs = {
   en: {
-    'menu.supportView': 'Viewing {name}\'s account (read-only) · ends in {minutes} min',
+    'menu.supportView': "Viewing {name}'s account (read-only) · ends in {minutes} min",
     'menu.supportViewEnd': 'End',
     'settings.testTask': 'Test GPU limit per acceptance task (USD)',
     'settings.testTaskId': 'Acceptance task ID',
@@ -19,11 +19,9 @@ export const settingsCatalogs = {
     'menu.signedOut': 'Not signed in. Your work stays on this device.',
     'menu.previewAsUser': 'View as a regular user',
     'menu.previewExit': 'Back to admin view',
-    'menu.previewing':
-      'You\'re seeing the site as a regular user. Your account is still an admin.',
-    'cloud.unreachable':
-      'Can\'t reach the cloud right now. Your work on this device is safe.',
-    'cloud.sessionUnchecked': 'Couldn\'t confirm your sign-in: {reason}',
+    'menu.previewing': "You're seeing the site as a regular user. Your account is still an admin.",
+    'cloud.unreachable': "Can't reach the cloud right now. Your work on this device is safe.",
+    'cloud.sessionUnchecked': "Couldn't confirm your sign-in: {reason}",
     'skin.title': 'Appearance',
     'skin.default': 'Inkseq',
     'skin.defaultHelp': 'Dark studio with a lime accent.',
@@ -51,10 +49,8 @@ export const settingsCatalogs = {
     'settings.saved': 'Saved. Takes effect now.',
     'settings.daily': 'Daily limit (USD)',
     'settings.ask': 'Ask me first above (USD)',
-    'settings.zero':
-      '0 means no extra limit.',
-    'settings.day':
-      'Days follow Sydney time.',
+    'settings.zero': '0 means no extra limit.',
+    'settings.day': 'Days follow Sydney time.',
     'settings.usage': 'Limit in use: {amount}',
     'settings.noAssistants': 'No AI assistants connected yet.',
     'settings.cap': 'Daily cap (USD)',
@@ -87,8 +83,7 @@ export const settingsCatalogs = {
     'settings.testTaskHelp': '同一项改动的机器和重试沿用同一编号；其他任务的费用记录保持独立。',
     'settings.account': '\u8d26\u6237',
     'settings.defaults': '生成默认值',
-    'settings.defaultsHelp':
-      '在下面设置最多生成几条、超过几条折叠。故事和镜头的默认值在故事里改。',
+    'settings.defaultsHelp': '在下面设置最多生成几条、超过几条折叠。故事和镜头的默认值在故事里改。',
     'settings.storyDefaults': '\u6253\u5f00\u6545\u4e8b\u4fee\u6539\u914d\u65b9\u9ed8\u8ba4\u503c',
     'settings.documentTitle': '设置 · 映序',
     'settings.title': '设置',
@@ -129,8 +124,7 @@ export const settingsCatalogs = {
     'settings.daily': '每天最多花（美元）',
     'settings.ask': '一次超过多少先问我（美元）',
     'settings.zero': '0 表示不额外限制。',
-    'settings.day':
-      '每天按悉尼时间计算。',
+    'settings.day': '每天按悉尼时间计算。',
     'settings.usage': '已占用额度：{amount}',
     'settings.noAssistants': '尚未连接 AI 助手。',
     'settings.cap': '每日上限（美元）',
@@ -161,12 +155,12 @@ settingsCatalogs.zh['settings.costDetails'] = '费用详情';
 Object.assign(settingsCatalogs.en, {
   'settings.videoCache': 'Local cache',
   'settings.videoCacheClear': 'Clear',
-  'settings.videoCacheUnavailable': 'Local cache isn\'t available in this browser.',
+  'settings.videoCacheUnavailable': "Local cache isn't available in this browser.",
   'settings.videoCacheChecking': 'Checking…',
   'settings.videoCacheUsage': '{amount} MB used · {count} files · up to 4 GB',
   'settings.videoCacheUsageOne': '{amount} MB used · 1 file · up to 4 GB',
   'settings.videoCacheHelp':
-    'Videos, images and sound you\'ve opened are kept here so they don\'t download again. Signing out clears it; the originals stay in the cloud.',
+    "Videos, images and sound you've opened are kept here so they don't download again. Signing out clears it; the originals stay in the cloud.",
 });
 Object.assign(settingsCatalogs.zh, {
   'settings.videoCache': '本地缓存',
@@ -189,16 +183,14 @@ Object.assign(settingsCatalogs.en, {
   'settings.allDefaultParameters': 'All settings',
   'settings.editStoryDefaults': 'Edit in this story',
   'settings.chooseStoryDefaults': 'Choose a story to edit',
-  'settings.defaultsFailed':
-    'Couldn\'t load the defaults. Nothing changed.',
+  'settings.defaultsFailed': "Couldn't load the defaults. Nothing changed.",
   'settings.recommended': 'Recommended',
   'settings.enabled': 'On',
   'settings.disabled': 'Off',
 });
 Object.assign(settingsCatalogs.zh, {
   'settings.h3Defaults': '视频生成默认值',
-  'settings.storyDefaultsScope':
-    '故事里的镜头默认用这些设置；快速创作有自己的设置。',
+  'settings.storyDefaultsScope': '故事里的镜头默认用这些设置；快速创作有自己的设置。',
   'settings.defaultsRecommended': '都是推荐值',
   'settings.defaultsChangedOne': '改了 1 项',
   'settings.defaultsChanged': '改了 {count} 项',
@@ -218,18 +210,14 @@ Object.assign(settingsCatalogs.en, {
   'settings.costConfirmed': 'Confirmed today',
   'settings.costAwaiting': 'Pending',
   'settings.costReserved': 'Reserved',
-  'settings.costUnavailable':
-    'Cost details aren\'t available right now.',
+  'settings.costUnavailable': "Cost details aren't available right now.",
   'settings.costAwaitingCountOne': '1 record awaits cost reconciliation.',
   'settings.costAwaitingCount': '{count} pending.',
-  'settings.costPriorPending':
-    '{amount} of that is from earlier days, not today.',
-  'settings.costUnknownDate':
-    'Confirmed without a date: {amount} (not counted for today).',
+  'settings.costPriorPending': '{amount} of that is from earlier days, not today.',
+  'settings.costUnknownDate': 'Confirmed without a date: {amount} (not counted for today).',
   'settings.costUnconfirmedOne': '1 record has unconfirmed amounts. The breakdown needs review.',
-  'settings.costUnconfirmed':
-    '{count} amounts not confirmed yet.',
-  'settings.costUnconfirmedUnknown': 'Some amounts aren\'t confirmed yet.',
+  'settings.costUnconfirmed': '{count} amounts not confirmed yet.',
+  'settings.costUnconfirmedUnknown': "Some amounts aren't confirmed yet.",
   'settings.costUnconfirmedEstimate': 'Estimate: {amount}.',
   'settings.costMachinesAwaiting': 'Machines · waiting for invoice',
   'settings.costJobsAwaiting': 'Generation · being allocated',
@@ -248,11 +236,10 @@ Object.assign(settingsCatalogs.en, {
     'The provider cost check is overdue. Pending costs remain unconfirmed.',
   'settings.invoiceCheck.unavailable':
     'The provider cost check is unavailable. Existing pending records are retained.',
-  'settings.invoiceCheck.unknown': 'Invoice status isn\'t available.',
+  'settings.invoiceCheck.unknown': "Invoice status isn't available.",
   'settings.invoiceCheckedAt': 'Last checked: {date} (Sydney)',
   'settings.invoiceCheckedCount': 'Checked {checked} of {pending}',
-  'settings.invoiceReported':
-    'Provider estimate: {amount} (not a final bill)',
+  'settings.invoiceReported': 'Provider estimate: {amount} (not a final bill)',
 });
 Object.assign(settingsCatalogs.zh, {
   'settings.accountCosts': '账户费用',
@@ -276,8 +263,7 @@ Object.assign(settingsCatalogs.zh, {
   'settings.costUnattributedShared': '还没分到账户的共享费用（单独列出）',
   'settings.costUnattributedActor': '已算在上面 · 来源没记录',
   'settings.costAllocationHelp': '生成费用是估算，要等机器的实际账单出来再分摊。',
-  'settings.admissionHelp':
-    '包括之前几天还没结算的部分，用来守住上限，不代表今天已付。',
+  'settings.admissionHelp': '包括之前几天还没结算的部分，用来守住上限，不代表今天已付。',
   'settings.invoiceCheck.not_needed': '没有待核对的机器记录需要查询供应商。',
   'settings.invoiceCheck.not_checked': '尚未查询供应商费用。',
   'settings.invoiceCheck.current': '已记录近期供应商查询，最终费用仍待核对。',
@@ -294,8 +280,7 @@ Object.assign(settingsCatalogs.en, {
   'settings.chargeConfirmed': 'Confirmed today',
   'settings.chargeAwaiting': 'Pending',
   'settings.chargeReserved': 'Reserved',
-  'settings.chargeRetainedCosts':
-    'Charges reflect waivers; original records are kept.',
+  'settings.chargeRetainedCosts': 'Charges reflect waivers; original records are kept.',
   'settings.grossConfirmed': 'Confirmed cost today',
   'settings.grossAwaiting': 'Pending cost',
   'settings.grossExposure': 'Original cost in use',
@@ -307,8 +292,7 @@ Object.assign(settingsCatalogs.zh, {
   'settings.chargeConfirmed': '今天已确认',
   'settings.chargeAwaiting': '待结算',
   'settings.chargeReserved': '已预留',
-  'settings.chargeRetainedCosts':
-    '费用已扣除免单部分，原始记录都保留。',
+  'settings.chargeRetainedCosts': '费用已扣除免单部分，原始记录都保留。',
   'settings.grossConfirmed': '今天已确认的成本',
   'settings.grossAwaiting': '待结算的成本',
   'settings.grossExposure': '原始成本占用',

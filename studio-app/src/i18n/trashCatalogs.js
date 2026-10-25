@@ -16,7 +16,7 @@ export const trashCatalogs = {
     'trash.undo': 'Undo',
     'trash.moved': 'Deleted. You can restore it from Trash',
     'trash.confirm': 'Delete the selected items forever?',
-    'trash.irreversible': 'This can\'t be undone. Generation and cost records are kept.',
+    'trash.irreversible': "This can't be undone. Generation and cost records are kept.",
     'trash.cancel': 'Cancel',
     'trash.all': 'All kinds',
     'trash.selectAll': 'Select all',
@@ -28,7 +28,7 @@ export const trashCatalogs = {
     'trash.pending': 'The last action is still being checked.',
     'trash.check': 'Check last action',
     'trash.resume': 'Continue last action',
-    'trash.failed': 'Couldn\'t confirm. Your selection is kept.',
+    'trash.failed': "Couldn't confirm. Your selection is kept.",
     'trash.running': 'Something is still running.',
     'trash.minimum': 'Keep at least one chapter and one scene.',
     'trash.changed': 'This changed. Refresh and select again.',
@@ -38,7 +38,7 @@ export const trashCatalogs = {
     'trash.name': 'Name',
     'trash.restored': 'Restored',
     'trash.deleted': 'Deleted forever',
-    'trash.unavailable': 'You can\'t do that to this item right now.',
+    'trash.unavailable': "You can't do that to this item right now.",
   },
   zh: {
     'trash.menu': '更多',
@@ -88,7 +88,7 @@ Object.assign(trashCatalogs.en, {
   'trash.unsaved': 'Save your changes before deleting.',
   'trash.untitled': 'Untitled',
   'trash.retention':
-    'Deleted items stay here until you delete them forever. Restoring doesn\'t regenerate anything.',
+    "Deleted items stay here until you delete them forever. Restoring doesn't regenerate anything.",
   'trash.conversations': 'Manage conversation trash',
   'trash.summary': 'Removes {removed} files ({bytes} bytes); keeps {kept} shared files.',
 });
