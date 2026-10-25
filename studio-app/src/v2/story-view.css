@@ -1151,14 +1151,18 @@ body.sb-resizing-y video {
   min-width: 0;
 }
 .editor .ed-expand {
-  width: 30px;
-  min-width: 30px;
+  flex: none;
   height: 30px;
   min-height: 30px;
-  padding: 0;
-  display: grid;
-  place-items: center;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
   color: var(--ink-2);
+}
+.editor .ed-head .trash-button {
+  margin-left: 0;
 }
 .editor .ed-expand:hover {
   color: var(--ink);
@@ -1361,7 +1365,7 @@ body.sb-resizing-y video {
   grid-template-columns: minmax(0, 1fr) minmax(380px, 1fr);
 }
 .drawer.wide .editor.wide .ed-preview {
-  width: min(100%, calc(42vh * 16 / 9));
+  width: min(100%, calc(38vh * 16 / 9));
   justify-self: center;
 }
 .drawer.wide .editor.wide .ed-preview video,
@@ -1450,4 +1454,9 @@ body.sb-resizing-y video {
 }
 .timeline .tseg {
   cursor: pointer;
+}
+/* Smaller take cards in the full-window editor, so the trim and parts stay in view. */
+.drawer.wide .editor.wide .storyboard-takes .take-grid {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
 }

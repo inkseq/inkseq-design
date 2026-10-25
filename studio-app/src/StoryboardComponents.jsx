@@ -1647,8 +1647,10 @@ function Slot({ id, label, hint, help, children, onClear, onPick, onFiles, class
       title={tr('storyboard.finish8')}
     >
       <div className="slot-label">
-        {label}
-        {help && <HelpTip text={help} />}
+        <span className="slot-name">
+          {label}
+          {help && <HelpTip text={help} />}
+        </span>
         <span>
           {onPick && (
             <button className="x" title={tr('storyboard.finish9')} onClick={open}>
