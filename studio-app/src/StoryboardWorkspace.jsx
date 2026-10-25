@@ -501,23 +501,28 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       const first = groups.find((g) => g.chapterId === chapter.id && g.shots.length)?.shots[0];
       if (first) chapterStarts.add(first.id);
     }
+  // #232 (#6): dragged to its narrowest, the library is the same icon rail as collapsed.
+  const railed = libraryCollapsed || library.size <= 150,
+    toggleLibrary = () => {
+      if (!railed) return setLibraryCollapsed(true);
+      setLibraryCollapsed(false);
+      if (library.size <= 150) library.set(260);
+    };
   return (
     <div
-      className={
-        'layout A' + (libraryCollapsed ? ' library-collapsed' : '') + (theater ? ' theater' : '')
-      }
+      className={'layout A' + (railed ? ' library-collapsed' : '') + (theater ? ' theater' : '')}
       data-testid="storyboard-layout-a"
       style={{
         // Theater (#232 #4): the player and its timeline take the whole window width.
         gridTemplateColumns: theater
           ? 'minmax(0,1fr)'
-          : libraryCollapsed
+          : railed
             ? '44px minmax(0,1fr)'
             : `${library.size}px 8px minmax(0,1fr)`,
-        '--libw': (libraryCollapsed ? 44 : library.size) + 'px',
+        '--libw': (railed ? 44 : library.size) + 'px',
       }}
     >
-      {!libraryCollapsed && (
+      {!railed && (
         <button
           type="button"
           className="sb-library-backdrop"
@@ -528,10 +533,10 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       <AssetLibrary
         onPick={pickAsset}
         selectedShot={state.shots.find((shot) => shot.id === selected)}
-        collapsed={libraryCollapsed}
-        onToggle={() => setLibraryCollapsed((value) => !value)}
+        collapsed={railed}
+        onToggle={toggleLibrary}
       />
-      {!libraryCollapsed && <StoryboardSplitter panel={library} label={t('storyboard.copy17')} />}
+      {!railed && <StoryboardSplitter panel={library} label={t('storyboard.copy17')} />}
       <div
         className={'col' + (selected && !expanded ? ' with-drawer' : '')}
         ref={column}

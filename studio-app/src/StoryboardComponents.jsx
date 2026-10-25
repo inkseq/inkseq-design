@@ -528,6 +528,18 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
           <Upload size={14} />
           {tr('storyboard.copy42')}
         </button>
+        {isProfileTab && (
+          // #232 (#8): one "+" that creates whatever category is open.
+          <button
+            className="small ghost lib-new"
+            disabled={state.busy}
+            title={tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
+            aria-label={tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
+            onClick={() => setNewProfileType(tab)}
+          >
+            <Plus size={14} />
+          </button>
+        )}
         <input
           ref={uploadInput}
           type="file"
@@ -557,7 +569,11 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
               (tab === k ? ' on' : '') +
               (k === 'inbox' && inbox.length ? ' alert' : '')
             }
-            onClick={() => setTab(k)}
+            onClick={() => {
+              setTab(k);
+              // On the icon rail a category opens the library at that category.
+              if (collapsed) onToggle?.();
+            }}
             title={l}
             aria-label={l}
             aria-pressed={tab === k}
@@ -568,13 +584,33 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
           </button>
         ))}
       </div>
-      {selectedShot && (
-        <div className="lib-ctx">{tr('storyboard.mixed15', { title: selectedShot.title })}</div>
-      )}
 
       {isProfileTab && (
         <>
-          <div className="plist">
+          <div
+            className="plist"
+            onContextMenu={(event) => {
+              // Right-click empty list space: create one of this category (a shortcut to "+").
+              if (event.target.closest('.pcard') || state.busy) return;
+              event.preventDefault();
+              setNewProfileType(tab);
+            }}
+          >
+            {!state.profiles.some((p) => p.type === tab) && (
+              <div className="lib-empty">
+                <span className="muted">
+                  {tr('storyboard.libEmpty', { kind: TYPE_LABEL[tab] })}
+                </span>
+                <button
+                  className="small"
+                  disabled={state.busy}
+                  onClick={() => setNewProfileType(tab)}
+                >
+                  <Plus size={14} />
+                  {tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
+                </button>
+              </div>
+            )}
             {state.profiles
               .filter((p) => p.type === tab && match(p.name + p.desc))
               .map((p) => (
@@ -587,14 +623,6 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
                 />
               ))}
           </div>
-          <button
-            className="small add-profile"
-            disabled={state.busy}
-            onClick={() => setNewProfileType(tab)}
-          >
-            <Plus size={14} />
-            {tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
-          </button>
           <div className="lib-tip">
             {tab === 'character'
               ? tr('storyboard.detail18')

@@ -1239,3 +1239,6 @@ body.sb-resizing-y video {
 .layout.A.theater > :not(.col) {
   display: none;
 }
+.timeline .tseg {
+  padding: 0;
+}
