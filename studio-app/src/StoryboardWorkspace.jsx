@@ -61,6 +61,7 @@ import {
   totalDuration,
   variantOf,
   storyboardDockLayout,
+  DOCK_MIN,
 } from './storyboard-ui-model.js';
 
 function collision(args) {
@@ -438,7 +439,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     return () => window.removeEventListener('keydown', clear);
   }, [theater, expanded, selected]);
   const library = useStoryboardPanelSize('library', 260, 140, 560),
-    dock = useStoryboardPanelSize('dock', 190, 110, 900),
+    dock = useStoryboardPanelSize('dock', DOCK_MIN, DOCK_MIN, 900),
     drawer = useStoryboardPanelSize('drawer', 440, 340, 820),
     dockLayout = storyboardDockLayout({ ...room, manual: dock.custom ? dock.size : null });
   const [headCompact, setHeadCompact] = usePersistentFlag('inkseq.sbHeadCompact'),
@@ -490,12 +491,17 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     }
   return (
     <div
-      className={'layout A' + (libraryCollapsed ? ' library-collapsed' : '')}
+      className={
+        'layout A' + (libraryCollapsed ? ' library-collapsed' : '') + (theater ? ' theater' : '')
+      }
       data-testid="storyboard-layout-a"
       style={{
-        gridTemplateColumns: libraryCollapsed
-          ? '44px minmax(0,1fr)'
-          : `${library.size}px 8px minmax(0,1fr)`,
+        // Theater (#232 #4): the player and its timeline take the whole window width.
+        gridTemplateColumns: theater
+          ? 'minmax(0,1fr)'
+          : libraryCollapsed
+            ? '44px minmax(0,1fr)'
+            : `${library.size}px 8px minmax(0,1fr)`,
         '--libw': (libraryCollapsed ? 44 : library.size) + 'px',
       }}
     >
@@ -886,9 +892,6 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                     }
               }
             />
-            {!dockMini && (
-              <small className="muted sb-timeline-hint">{t('storyboard.copy21')}</small>
-            )}
           </div>
         </div>
       </div>

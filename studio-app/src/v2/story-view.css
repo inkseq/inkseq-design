@@ -1194,3 +1194,48 @@ body.sb-resizing-y video {
   width: auto;
   flex: 0 1 auto;
 }
+
+/* Owner review #232 (#3/#13): segments sit on true time — left/width are percentages of the
+   film — so the ruler, playhead and selected outline always line up, however many shots. */
+.timeline .track.video {
+  display: block;
+  gap: 0;
+}
+.timeline .tseg {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  min-width: 0;
+  border-radius: 0;
+  box-shadow: inset -1px 0 0 var(--surface);
+}
+.timeline .tseg:first-child {
+  border-radius: 6px 0 0 6px;
+}
+.timeline .tseg.selected {
+  z-index: 2;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}
+.timeline .tseg.chapter-start {
+  box-shadow:
+    inset 2px 0 0 var(--accent),
+    inset -1px 0 0 var(--surface);
+}
+.timeline.compact .tseg {
+  border-radius: 0;
+}
+/* #232 (#2): the collapse arrow stays at the dock's top-right corner in both states, so a
+   second press lands on it; (#1) contents never spill past the dock's bottom edge. */
+.dock-mini-toggle {
+  left: auto;
+  right: 16px;
+  transform: none;
+}
+.sb-workspace .dock-right {
+  min-height: 0;
+  overflow: hidden;
+}
+.layout.A.theater > :not(.col) {
+  display: none;
+}

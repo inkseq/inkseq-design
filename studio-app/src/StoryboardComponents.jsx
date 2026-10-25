@@ -2401,7 +2401,7 @@ export function Transport({ player }) {
   );
 }
 
-function Segment({ seg, index, chapterStart, selected, onPick, compact }) {
+function Segment({ seg, index, chapterStart, selected, onPick, compact, total, numbered }) {
   const { t: tr, locale } = useI18n();
   const { TYPE_LABEL, VARIANT_LABEL, KIND_LABEL, MODE_LABEL, QUALITY_LABEL } = displayLabels(tr);
   const { state } = useStore();
@@ -2419,7 +2419,11 @@ function Segment({ seg, index, chapterStart, selected, onPick, compact }) {
       {...drag.attributes}
       {...drag.listeners}
       aria-label={tr('storyboard.detail71') + seg.shot.title}
-      style={{ flexGrow: seg.dur, flexBasis: 0 }}
+      // Placed on true time so the ruler, playhead and selection always agree.
+      style={{
+        left: `${total ? (seg.start / total) * 100 : 0}%`,
+        width: `${total ? (seg.dur / total) * 100 : 0}%`,
+      }}
       className={
         'tseg' +
         (compact ? ' compact ' + status.tone : '') +
@@ -2433,7 +2437,7 @@ function Segment({ seg, index, chapterStart, selected, onPick, compact }) {
     >
       {compact ? (
         // Too many shots for pictures: a coloured square per shot, number when it fits.
-        <span className="tseg-n">{index + 1}</span>
+        numbered && <span className="tseg-n">{index + 1}</span>
       ) : (
         <>
           {seg.version ? (
@@ -2504,6 +2508,9 @@ export function Timeline({ player, selectedId, onPick, chapterStarts }) {
             seg={seg}
             index={index}
             compact={compact}
+            total={total}
+            // A number only where the segment is wide enough to show it whole.
+            numbered={!!total && (seg.dur / total) * width >= 26}
             chapterStart={index > 0 && !!chapterStarts?.has(seg.shot.id)}
             selected={seg.shot.id === selectedId}
             onPick={pick}
