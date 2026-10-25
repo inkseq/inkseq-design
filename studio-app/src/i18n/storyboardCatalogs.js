@@ -1,6 +1,9 @@
 export const storyboardCatalogs = {
   en: {
     'segments.title': 'Kept parts',
+    'segments.playAll': 'Play kept parts',
+    'segments.barHelp':
+      'Drag on the bar to keep a part · drag a part to move it, its edges to resize · select and press Delete to remove',
     'segments.help': 'Keep several parts of this take; they play in this order at this shot.',
     'segments.start': 'Keep parts of this take',
     'segments.add': 'Add this part',
@@ -465,6 +468,9 @@ export const storyboardCatalogs = {
   },
   zh: {
     'segments.title': '保留片段',
+    'segments.playAll': '播放保留片段',
+    'segments.barHelp':
+      '在条上拖动就保留一段 · 拖动片段可移动，拖两端改长短 · 选中后按 Delete 删除',
     'segments.help': '从这个版本里保留几段，会按这个顺序在这个镜头的位置播放。',
     'segments.start': '分段保留这个版本',
     'segments.add': '添加这一段',
