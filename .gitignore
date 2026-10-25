@@ -351,6 +351,7 @@ design/inkseq-v2-prototype/dist/
 
 # Shared approved v2 presentation
 !studio-app/src/StudioHeader.jsx
+!studio-app/src/ThemeToggle.jsx
 !studio-app/src/demo-v2.css
 
 !studio-app/src/library-thumbnails.js
