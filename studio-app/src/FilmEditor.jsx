@@ -6,7 +6,7 @@ import { AbsoluteFill, Html5Audio, Html5Video, Sequence } from 'remotion';
 import { DndContext, PointerSensor, closestCenter, useSensor, useSensors } from '@dnd-kit/core';
 import { SortableContext, horizontalListSortingStrategy, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { Eye, EyeOff, Gauge, Unlink, Volume2, VolumeX, X } from 'lucide-react';
+import { Clapperboard, Eye, EyeOff, Gauge, Unlink, Volume2, VolumeX, X } from 'lucide-react';
 import { store } from './store.js';
 import { useStoryboardMediaUrl } from './StoryboardMedia.jsx';
 import { cutFps } from './video-cut-model.js';
@@ -495,6 +495,17 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
           </label>
         )}
         <CloudSaveStatus />
+        {/* #232 (#31): export from where the cut is made; the film dialog keeps its own confirm. */}
+        <button
+          className="primary small"
+          onClick={() => {
+            onClose();
+            window.dispatchEvent(new Event('inkseq-open-film'));
+          }}
+        >
+          <Clapperboard size={14} />
+          {t('film.open')}
+        </button>
         <button
           className="ghost round"
           aria-label={t('editor.close')}
@@ -618,15 +629,14 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
                     <div className="film-speed" role="group" aria-label={t('editor.speed')}>
                       <Gauge size={14} aria-hidden="true" />
                       <span>{t('editor.speed')}</span>
-                      {rates.map((rate) => (
-                        <button
-                          key={rate}
-                          type="button"
-                          className={'small ghost' + (selected.rate === rate ? ' on' : '')}
-                          aria-pressed={selected.rate === rate}
-                          disabled={busy}
-                          onClick={() =>
-                            selected.rate !== rate &&
+                      {/* #232 (#29): one compact choice instead of a row of six buttons. */}
+                      <select
+                        aria-label={t('editor.speed')}
+                        value={selected.rate}
+                        disabled={busy}
+                        onChange={(event) => {
+                          const rate = Number(event.target.value);
+                          if (selected.rate !== rate)
                             edit((p) =>
                               setClipSpeed(
                                 p,
@@ -634,12 +644,15 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
                                 rate,
                                 selected.sourceSeconds ?? durations[selected.asset.id],
                               ),
-                            )
-                          }
-                        >
-                          {t('editor.rate', { rate })}
-                        </button>
-                      ))}
+                            );
+                        }}
+                      >
+                        {rates.map((rate) => (
+                          <option key={rate} value={rate}>
+                            {t('editor.rate', { rate })}
+                          </option>
+                        ))}
+                      </select>
                       {selectedSound?.slow && selectedSound.state === 'off' && (
                         <small className="muted">{t('editor.slowSoundMuted')}</small>
                       )}
@@ -766,6 +779,21 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
               <span className="film-playhead" style={{ left: (frame / cutFps) * pps }} />
             </div>
           </div>
+          {excluded.length > 0 && (
+            <div className="film-excluded">
+              <small className="muted">{t('editor.excludedList')}</small>
+              {excluded.map((clip) => (
+                <button
+                  key={clip.id}
+                  type="button"
+                  className={'small ghost' + (selected?.id === clip.id ? ' on' : '')}
+                  onClick={() => select(clip)}
+                >
+                  {clip.index + 1}. {clip.title}
+                </button>
+              ))}
+            </div>
+          )}
           <FilmAudioLane
             part="controls"
             blocks={blocks}
@@ -782,21 +810,6 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
             }
             onRemove={(id) => edit((p) => removeTrack(p, chapterId, id))}
           />
-          {excluded.length > 0 && (
-            <div className="film-excluded">
-              <small className="muted">{t('editor.excludedList')}</small>
-              {excluded.map((clip) => (
-                <button
-                  key={clip.id}
-                  type="button"
-                  className={'small ghost' + (selected?.id === clip.id ? ' on' : '')}
-                  onClick={() => select(clip)}
-                >
-                  {clip.index + 1}. {clip.title}
-                </button>
-              ))}
-            </div>
-          )}
           <footer className="film-editor-foot muted">
             {/* Once the server exports in editor order without left-out shots (#347), say nothing. */}
             {excluded.length > 0 &&
