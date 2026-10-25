@@ -1239,6 +1239,34 @@ body.sb-resizing-y video {
 .layout.A.theater > :not(.col) {
   display: none;
 }
+.sb-workspace .timeline .tseg,
 .timeline .tseg {
   padding: 0;
+}
+/* #232 (#12): status is a dot in the thumbnail corner; text pills only for queue/progress/failure. */
+.card .card-state {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--muted);
+  box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.55);
+  z-index: 2;
+}
+.card .card-state.good {
+  background: var(--good);
+}
+.card .card-state.warn {
+  background: var(--warn);
+}
+.card .card-state.busy {
+  background: var(--fl);
+}
+.card .card-state.wait {
+  background: var(--ref);
+}
+.sb-workspace .card .card-meta:empty {
+  display: none;
 }

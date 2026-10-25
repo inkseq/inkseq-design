@@ -1479,6 +1479,28 @@ const dragItem = (active, db) => {
   return null;
 };
 
+// Whole seconds for a card; a cut shorter than a second still reads as 0:01.
+const roundedSeconds = (sec) =>
+  Number.isFinite(sec) && sec > 0 ? Math.max(1, Math.round(sec)) : sec;
+// 4 → "4", 0.6666 → "0.7".
+const shortSeconds = (sec) => (Number.isFinite(sec) ? String(Math.round(sec * 10) / 10) : sec);
+// The story's most common mode and tier; a card labels only what differs from them.
+const usualCache = new WeakMap();
+function usualSettings(shots, db, locale) {
+  if (usualCache.has(shots)) return usualCache.get(shots);
+  const top = (values) => {
+    const counts = new Map();
+    for (const v of values) counts.set(v, (counts.get(v) || 0) + 1);
+    return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
+  };
+  const value = {
+    mode: top(shots.map((s) => expand(s, db, locale).mode)),
+    quality: top(shots.map((s) => s.quality)),
+  };
+  usualCache.set(shots, value);
+  return value;
+}
+
 export function ShotCard({
   shot,
   index,
@@ -1496,6 +1518,7 @@ export function ShotCard({
   const info = expand(shot, db, locale);
   const status = shotStatus(shot, queuePositions(state.shots)[shot.id], locale);
   const latest = shot.versions[shot.versions.length - 1];
+  const usual = usualSettings(state.shots, db, locale);
   const item = isOver ? dragItem(active, db) : null;
   const plan = item && (item.asset || item.profile) ? planDrop(shot, item, 'smart', db) : null;
   return (
@@ -1542,8 +1565,14 @@ export function ShotCard({
         <ShotThumb shot={shot} />
         <span className="card-no">{String(index + 1).padStart(2, '0')}</span>
         <span className="card-dur">
-          {fmt(shot.segments?.length && shot.chosen ? segmentsTotal(shot.segments) : info.sec)}
+          {fmt(
+            // #232 (#27): show the real length, never 0:00 for a short kept cut.
+            roundedSeconds(
+              shot.segments?.length && shot.chosen ? segmentsTotal(shot.segments) : info.sec,
+            ),
+          )}
         </span>
+        <span className={'card-state ' + status.tone} title={status.label} />
         <Progress v={latest} />
       </div>
       <div className="card-body">
@@ -1552,8 +1581,11 @@ export function ShotCard({
           <AssistantBadge createdBy={shot.created_by} />
         </div>
         <div className="card-meta">
-          <ModeChip info={info} />
-          <span className="q">{QUALITY_LABEL[shot.quality]}</span>
+          {/* #232 (#12): mode and tier only when this shot differs from the story's usual. */}
+          {info.mode !== usual.mode && <ModeChip info={info} />}
+          {shot.quality !== usual.quality && (
+            <span className="q">{QUALITY_LABEL[shot.quality]}</span>
+          )}
           {info.warnings.length > 0 && (
             <span className="warnbadge" title={info.warnings.join('\n')}>
               !
@@ -1561,7 +1593,7 @@ export function ShotCard({
           )}
         </div>
         <WhoChips shot={shot} small />
-        <Pill status={status} />
+        {['wait', 'busy', 'warn'].includes(status.tone) && <Pill status={status} />}
       </div>
       {plan && (
         <div className={'drop-hint' + (plan.warn ? ' warn' : '')}>{plan.hint || plan.msg}</div>
@@ -2187,7 +2219,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
             <b>{tr('storyboard.copy90')}</b>
             <ModeChip info={info} />
             <span className="muted">
-              {info.machine} · {info.res} · {info.sec} {tr('storyboard.secondsUnit')}
+              {info.machine} · {info.res} · {shortSeconds(info.sec)} {tr('storyboard.secondsUnit')}
             </span>
           </div>
           <div className="sent-prompt">
@@ -2245,7 +2277,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               onChange={(quality) => upd({ quality })}
             />
             <small className="muted">
-              {info.res} · {info.sec} {tr('storyboard.secondsUnit')}
+              {info.res} · {shortSeconds(info.sec)} {tr('storyboard.secondsUnit')}
             </small>
           </div>
           {shot.versions.length > 0 && (
