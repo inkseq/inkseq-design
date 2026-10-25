@@ -36,6 +36,7 @@ import {
   pointerWithin,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core';
 import {
   SortableContext,
@@ -66,6 +67,16 @@ import {
 } from './storyboard-ui-model.js';
 
 const EMPTY_SET = new Set();
+
+// An empty scene is a drop target for shot cards, highlighted while a card is over it.
+function EmptySceneDrop({ sceneId, label }) {
+  const drop = useDroppable({ id: 'sceneto:' + sceneId });
+  return (
+    <p ref={drop.setNodeRef} className={'scene-empty muted' + (drop.isOver ? ' drop-hot' : '')}>
+      {label}
+    </p>
+  );
+}
 
 function collision(args) {
   const id = String(args.active.id);
@@ -769,7 +780,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                           ))}
                         </div>
                       ) : (
-                        <p className="scene-empty muted">{t('storyboard.sceneEmpty')}</p>
+                        <EmptySceneDrop sceneId={group.id} label={t('storyboard.sceneEmpty')} />
                       )}
                     </section>
                   );
@@ -1021,6 +1032,9 @@ function StoryboardShell({ onLegacyGuide, onCanvas, onNewScene, filmControl }) {
       o = String(over.id);
     if (a.startsWith('shot:') && o.startsWith('shot:'))
       return dispatch({ type: 'reorder', from: a.slice(5), to: o.slice(5) });
+    // #232 (#11): a card dropped on an empty scene (any chapter) moves into it.
+    if (a.startsWith('shot:') && o.startsWith('sceneto:'))
+      return dispatch({ type: 'moveToScene', from: a.slice(5), scene: o.slice(8) });
     if (a.startsWith('seg:') && o.startsWith('segto:'))
       return a.slice(4) === o.slice(6)
         ? undefined

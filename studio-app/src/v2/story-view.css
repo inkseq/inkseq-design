@@ -1342,3 +1342,8 @@ body.sb-resizing-y video {
   color: var(--warn);
   background: color-mix(in srgb, var(--warn) 10%, transparent);
 }
+.scene-empty.drop-hot {
+  outline: 2px dashed var(--accent);
+  outline-offset: -2px;
+  color: var(--ink);
+}
