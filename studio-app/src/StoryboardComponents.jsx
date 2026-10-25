@@ -1746,6 +1746,15 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   useEffect(() => {
     editorRef.current?.querySelectorAll('textarea').forEach(growTextarea);
   });
+  // #232 (#35): the ⋯ take menu closes on any outside press, like every other menu.
+  useEffect(() => {
+    const close = (event) =>
+      document.querySelectorAll('details.take-more[open]').forEach((menu) => {
+        if (!menu.contains(event.target)) menu.open = false;
+      });
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, []);
   if (!shot) return null;
   const index = state.shots.indexOf(shot);
   const info = expand(shot, db, locale);
@@ -1853,42 +1862,53 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           onPreview={(row) => setPreview(row.entity_id || row.id)}
         />
         {['done', 'succeeded'].includes(viewing?.status) && (
-          <div className="row tight">
-            <StoryboardDownloads version={viewing} title={shot.title} />
-            <button
-              className="small"
-              disabled={saving}
-              title={tr('storyboard.saveFrameHint')}
-              onClick={() => {
-                // Save the frame on screen right away, in the background (owner, 2026-10-22).
-                const node = mediaRef.current?.querySelector('video');
-                node?.pause();
-                const at = Number((node?.currentTime || 0).toFixed(3));
-                setSaving(true);
-                setMsg(tr('storyboard.savingFrame', { seconds: at.toFixed(2) }));
-                Promise.resolve(
-                  dispatch({
-                    type: 'saveFrame',
-                    shot: shot.id,
-                    version: viewing.id,
-                    artifactId: viewing.artifactId,
-                    t: at,
-                  }),
-                )
-                  .then((receipt) =>
-                    setMsg(
-                      !receipt || receipt.ok === false
-                        ? receipt?.error || tr('storyboard.detail43')
-                        : tr('storyboard.frameSaved', { seconds: at.toFixed(2) }),
-                    ),
-                  )
-                  .catch((error) => setMsg(error?.message || tr('storyboard.detail43')))
-                  .finally(() => setSaving(false));
-              }}
-            >
-              <Pin size={14} />
-              {tr('storyboard.copy81')}
-            </button>
+          <div className="row tight take-tools">
+            {/* #232 (#22): downloads and "save frame" live in one ⋯ menu. */}
+            <details className="take-more">
+              <summary
+                aria-label={tr('storyboard.moreActions')}
+                title={tr('storyboard.moreActions')}
+              >
+                ⋯
+              </summary>
+              <div className="take-more-menu">
+                <StoryboardDownloads version={viewing} title={shot.title} />
+                <button
+                  className="small"
+                  disabled={saving}
+                  title={tr('storyboard.saveFrameHint')}
+                  onClick={() => {
+                    // Save the frame on screen right away, in the background (owner, 2026-10-22).
+                    const node = mediaRef.current?.querySelector('video');
+                    node?.pause();
+                    const at = Number((node?.currentTime || 0).toFixed(3));
+                    setSaving(true);
+                    setMsg(tr('storyboard.savingFrame', { seconds: at.toFixed(2) }));
+                    Promise.resolve(
+                      dispatch({
+                        type: 'saveFrame',
+                        shot: shot.id,
+                        version: viewing.id,
+                        artifactId: viewing.artifactId,
+                        t: at,
+                      }),
+                    )
+                      .then((receipt) =>
+                        setMsg(
+                          !receipt || receipt.ok === false
+                            ? receipt?.error || tr('storyboard.detail43')
+                            : tr('storyboard.frameSaved', { seconds: at.toFixed(2) }),
+                        ),
+                      )
+                      .catch((error) => setMsg(error?.message || tr('storyboard.detail43')))
+                      .finally(() => setSaving(false));
+                  }}
+                >
+                  <Pin size={14} />
+                  {tr('storyboard.copy81')}
+                </button>
+              </div>
+            </details>
             {msg && <small className="okmsg">{msg}</small>}
           </div>
         )}
@@ -2280,17 +2300,21 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               {info.res} · {shortSeconds(info.sec)} {tr('storyboard.secondsUnit')}
             </small>
           </div>
-          {shot.versions.length > 0 && (
-            <label className="check">
-              <input
-                type="checkbox"
-                checked={shot.seedLock}
-                onChange={(e) => upd({ seedLock: e.target.checked })}
-              />
-              {tr('storyboard.mixed21')}
-            </label>
-          )}
-          <WorkbenchCopies value={copies} onChange={setCopies} max={state.copiesMax} />
+          {/* #232 (#25): seed lock and copies are occasional; they fold under "More settings". */}
+          <details className="ed-more">
+            <summary>{tr('storyboard.moreSettings')}</summary>
+            {shot.versions.length > 0 && (
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={shot.seedLock}
+                  onChange={(e) => upd({ seedLock: e.target.checked })}
+                />
+                {tr('storyboard.mixed21')}
+              </label>
+            )}
+            <WorkbenchCopies value={copies} onChange={setCopies} max={state.copiesMax} />
+          </details>
           <div className="ed-actions">
             <button
               className="primary"
