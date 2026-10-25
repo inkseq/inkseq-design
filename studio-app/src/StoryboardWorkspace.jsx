@@ -19,6 +19,7 @@ import {
   ChevronsDownUp,
   ChevronsUpDown,
   Sparkles,
+  AlertTriangle,
   CheckCheck,
 } from 'lucide-react';
 import { RenameDialog, useTrash } from './UniversalTrash.jsx';
@@ -607,8 +608,9 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
               )}
               {pending.length > 0 && (
                 <button
+                  className="sb-pending-chip"
                   disabled={state.busy || !state.copiesMax}
-                  title={t('storyboard.copy35', { count: pending.length })}
+                  title={t('storyboard.pendingHint')}
                   onClick={() =>
                     dispatch({
                       type: 'workbenchGenerate',
@@ -617,7 +619,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                     })
                   }
                 >
-                  <Sparkles size={14} />
+                  <AlertTriangle size={14} />
                   <span className="label">{t('storyboard.copy35', { count: pending.length })}</span>
                 </button>
               )}

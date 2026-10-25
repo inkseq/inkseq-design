@@ -100,7 +100,8 @@ export const storyboardCatalogs = {
     'storyboard.headExpand': 'Expand toolbar',
     'storyboard.dockCollapse': 'Collapse preview',
     'storyboard.dockExpand': 'Expand preview',
-    'storyboard.copy35': 'Generate the {count} without video',
+    'storyboard.copy35': '{count} shots have no video yet',
+    'storyboard.pendingHint': 'Review these shots, the estimated cost and wait, then generate',
     'storyboard.useLatest': 'Use the latest take for {count}',
     'storyboard.useLatestHelp':
       'Shots with finished takes but none chosen get their newest video. You can change any shot afterwards.',
@@ -561,7 +562,8 @@ export const storyboardCatalogs = {
     'storyboard.headExpand': '展开工具栏',
     'storyboard.dockCollapse': '收起预览',
     'storyboard.dockExpand': '展开预览',
-    'storyboard.copy35': '生成没视频的 {count} 个',
+    'storyboard.copy35': '{count} 个镜头还没有视频',
+    'storyboard.pendingHint': '查看这些镜头、预计费用和等待时间，确认后生成',
     'storyboard.useLatest': '{count} 个镜头用最新版本',
     'storyboard.useLatestHelp':
       '有成片但还没选版本的镜头，统一用最新的视频；之后每个镜头都还能改。',

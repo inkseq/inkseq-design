@@ -158,7 +158,8 @@ export const editorCatalogs = {
     'editor.apply': '应用',
     'editor.cancel': '取消',
     'editor.trimTimes': '入点 {in} 秒 · 出点 {out} 秒 · 留下 {len} 秒（素材共 {total} 秒）',
-    'editor.trimKeys': '拖动两端裁剪 · 空格 播放/暂停 · I 设入点 · O 设出点 · ←/→ 逐帧 · 双击：用整段',
+    'editor.trimKeys':
+      '拖动两端裁剪 · 空格 播放/暂停 · I 设入点 · O 设出点 · ←/→ 逐帧 · 双击：用整段',
     'editor.trimNeedsVideo': '这个镜头还没有视频，生成或选好视频后才能精剪。',
     'editor.trimHandleIn': '入点',
     'editor.trimHandleOut': '出点',

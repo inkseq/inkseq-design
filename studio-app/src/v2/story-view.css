@@ -1336,3 +1336,9 @@ body.sb-resizing-y video {
 .drawer.wide .editor.wide .ed-form > * {
   flex-shrink: 0;
 }
+/* #232 (#33): unfinished shots read as a status, not a vague action. */
+.sb-pending-chip {
+  border-color: color-mix(in srgb, var(--warn) 55%, transparent);
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+}
