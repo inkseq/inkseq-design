@@ -408,6 +408,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/ui/Field.jsx
 !studio-app/src/ui/useDragMove.js
 !studio-app/src/ShotSegments.jsx
+!studio-app/src/ScriptWindows.jsx
 !studio-app/src/shot-segments.js
 !studio-app/src/shot-segments.css
 !studio-app/src/shot-segments.test.js
