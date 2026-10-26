@@ -74,6 +74,7 @@
 !studio-app/tools/ui-pattern-baseline.json
 !studio-app/tools/check-lint.mjs
 !studio-app/tools/lint-baseline.json
+!studio-app/tools/check-css-classes.mjs
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
