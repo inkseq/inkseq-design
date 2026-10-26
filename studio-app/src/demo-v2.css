@@ -1129,33 +1129,6 @@ small {
   margin-bottom: 10px;
   align-items: center;
 }
-.lib-tabs button {
-  padding: 3px 9px;
-  font-size: 12px;
-  border-radius: 999px;
-  background: transparent;
-  border-color: var(--line-2);
-  color: var(--ink-2);
-}
-.lib-tabs button small {
-  color: var(--muted);
-  margin-left: 2px;
-  font-size: 10px;
-}
-.lib-tabs button.on {
-  background: var(--ink);
-  color: var(--bg);
-  border-color: var(--ink);
-}
-.lib-tabs button.on small {
-  color: var(--muted);
-}
-.lib-tabs button.alert small {
-  background: var(--warn);
-  color: var(--warn-ink);
-  border-radius: 8px;
-  padding: 0 5px;
-}
 
 .lib-tip {
   margin-top: 14px;
@@ -3784,9 +3757,6 @@ h4,
 }
 
 /* ================= polish pass ================= */
-.lib-tabs button {
-  white-space: nowrap;
-}
 .x {
   min-height: 0;
 }
@@ -3808,22 +3778,6 @@ h4,
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
   gap: 6px;
-}
-.lib-tabs button {
-  justify-content: flex-start;
-  gap: 6px;
-  padding: 5px 9px;
-  min-height: 30px;
-  border-radius: 8px;
-}
-.lib-tabs button span {
-  flex: 1;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.lib-tabs button small {
-  margin-left: auto;
 }
 
 /* shot cards: one tidy line per row, equal heights */
