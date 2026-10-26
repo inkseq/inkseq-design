@@ -34,7 +34,7 @@ import { useDragMove } from './ui/useDragMove.js';
 import { Badge, Chip, Note } from './ui/Note.jsx';
 import './profile-editor.css';
 import { TrashMenu, TrashButton, RenameDialog } from './UniversalTrash.jsx';
-import { WorkbenchTakes, WorkbenchCopies, WorkbenchDefaults } from './StoryboardWorkbench.jsx';
+import { WorkbenchTakes, WorkbenchCopies } from './StoryboardWorkbench.jsx';
 import { AssistantBadge } from './AssistantConnections.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
@@ -2383,14 +2383,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           ))}
         </details>
 
-        <WorkbenchDefaults
-          shotId={shot.id}
-          initialTarget={
-            new URLSearchParams(globalThis.location?.search || '').get('defaults') === 'account'
-              ? 'account'
-              : 'shot'
-          }
-        />
+        {/* No per-shot model parameters (owner, 2026-10-26): quality, copies and seed below are
+            the creator's controls; the tier fixes steps, sampler and decoding. */}
         {/* Quality, copies and Generate stay in view at the bottom (owner, 2026-10-24). */}
         <div className="ed-footer">
           <div className="row quality-row">
