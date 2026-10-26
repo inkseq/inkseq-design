@@ -434,9 +434,9 @@ function BudgetAdministration({ account }) {
       {state.pending && current && authorized && (
         <section className="card-box" role="alert">
           <p>{t('operatorPanel.pendingAdmin')}</p>
-          <button disabled={state.busy} onClick={() => void controller.recover().catch(() => {})}>
+          <Button disabled={state.busy} onClick={() => void controller.recover().catch(() => {})}>
             {t('operatorPanel.checkAdmin')}
-          </button>
+          </Button>
         </section>
       )}
     </section>
@@ -634,16 +634,15 @@ export default function AdminHome({ account }) {
           <nav className="ah-nav" aria-label={t('adminHome.title')}>
             <h1>{t('adminHome.title')}</h1>
             {SECTIONS.map(([id, label, Icon]) => (
-              <button
+              <Button
                 key={id}
-                type="button"
                 className={section === id ? 'on' : ''}
                 aria-current={section === id ? 'page' : undefined}
                 onClick={() => go(id)}
               >
                 <Icon size={16} aria-hidden="true" />
                 {t(label)}
-              </button>
+              </Button>
             ))}
           </nav>
           <main className="ah-main">

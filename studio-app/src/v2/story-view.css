@@ -736,10 +736,6 @@ body.sb-resizing-y video {
   font-size: 11px;
   color: var(--muted);
 }
-.sb-confirm-row {
-  border-top: 1px solid var(--line);
-  padding: 12px 0;
-}
 .sb-portal.sb-dialog {
   width: min(440px, calc(100vw - 32px));
 }

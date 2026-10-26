@@ -1,4 +1,5 @@
 import { SettingRow, SettingsSection } from './ui/Settings.jsx';
+import { Button } from './ui/Button.jsx';
 import { Note } from './ui/Note.jsx';
 import { previewingAsUser } from './preview-as-user.js';
 import VideoCacheSettings from './VideoCacheSettings.jsx';
@@ -253,7 +254,7 @@ export default function SpendingSettings({ account }) {
               ? [['budget', creditMode ? 'settings.limits' : 'settings.budget', Wallet]]
               : []),
           ].map(([id, label, Icon]) => (
-            <button
+            <Button
               key={id}
               className={section === id ? 'on' : ''}
               aria-current={section === id ? 'page' : undefined}
@@ -261,7 +262,7 @@ export default function SpendingSettings({ account }) {
             >
               <Icon size={16} />
               {t(label)}
-            </button>
+            </Button>
           ))}
         </aside>
         <section className="spanel">
@@ -276,15 +277,16 @@ export default function SpendingSettings({ account }) {
               )}
             </h2>
             <div className="spacer" />
-            <button
-              className="small ghost"
+            <Button
+              variant="ghost"
+              size="sm"
               title={t('settings.reload')}
               aria-label={t('settings.reload')}
               disabled={busy}
               onClick={() => void load()}
             >
               <RefreshCw size={14} />
-            </button>
+            </Button>
           </div>
           {error && <p role="alert">{error}</p>}
           {notice && <p role="status">{t(notice)}</p>}
@@ -321,8 +323,8 @@ export default function SpendingSettings({ account }) {
                 )}
                 <VideoCacheSettings account={account} />
                 <div className="row tight account-signout">
-                  <button
-                    className="ghost danger"
+                  <Button
+                    variant="ghost-danger"
                     disabled={busy}
                     onClick={() =>
                       void cloud.logout().catch((failure) => setError(failure.message))
@@ -330,12 +332,12 @@ export default function SpendingSettings({ account }) {
                   >
                     <LogOut size={15} />
                     {t('operator.status117')}
-                  </button>
+                  </Button>
                   {everywhere ? (
                     <>
                       <small className="muted">{t('account.signOutEverywhereConfirm')}</small>
-                      <button
-                        className="danger"
+                      <Button
+                        variant="danger"
                         disabled={busy}
                         onClick={() =>
                           void cloud
@@ -344,15 +346,15 @@ export default function SpendingSettings({ account }) {
                         }
                       >
                         {t('account.signOutEverywhereYes')}
-                      </button>
-                      <button className="ghost" onClick={() => setEverywhere(false)}>
+                      </Button>
+                      <Button variant="ghost" onClick={() => setEverywhere(false)}>
                         {t('library.cancel')}
-                      </button>
+                      </Button>
                     </>
                   ) : (
-                    <button className="ghost" disabled={busy} onClick={() => setEverywhere(true)}>
+                    <Button variant="ghost" disabled={busy} onClick={() => setEverywhere(true)}>
                       {t('account.signOutEverywhere')}
-                    </button>
+                    </Button>
                   )}
                 </div>
               </>
@@ -425,9 +427,9 @@ export default function SpendingSettings({ account }) {
                 </div>
               </SettingsSection>
               <div className="row tight" style={{ justifyContent: 'flex-end' }}>
-                <button className="primary" disabled={busy}>
+                <Button variant="primary" type="submit" disabled={busy}>
                   {t(busy ? 'settings.saving' : 'settings.save')}
-                </button>
+                </Button>
               </div>
             </form>
           )}

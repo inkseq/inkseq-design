@@ -1,4 +1,5 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
+import { Button } from './ui/Button.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import { usePageActive } from './AppRouteCache.jsx';
 import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
@@ -106,9 +107,9 @@ function CancelReview({ jobs, reason, busy, current, onClose, onConfirm }) {
           <h2>{t('operator.confirmJobs', { count: jobs.length })}</h2>
           <p>{t('operator.copy31')}</p>
         </div>
-        <button disabled={busy} aria-label={t('operator.status121')} onClick={onClose}>
+        <Button disabled={busy} aria-label={t('operator.status121')} onClick={onClose}>
           {t('operator.copy32')}
-        </button>
+        </Button>
       </header>
       <ul className="p4-cancel-review">
         {jobs.map((job) => (
@@ -128,12 +129,12 @@ function CancelReview({ jobs, reason, busy, current, onClose, onConfirm }) {
         </p>
       )}
       <footer>
-        <button disabled={busy} onClick={onClose}>
+        <Button disabled={busy} onClick={onClose}>
           {t('operator.copy36')}
-        </button>
-        <button className="p4-primary" disabled={busy || !current} onClick={onConfirm}>
+        </Button>
+        <Button className="p4-primary" disabled={busy || !current} onClick={onConfirm}>
           {busy ? t('operator.status68') : t('operator.status69')}
-        </button>
+        </Button>
       </footer>
     </dialog>
   );
@@ -216,9 +217,9 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
           <h3>{t('operator.copy37')}</h3>
           <p className="p4-meta">{t('operator.copy38')}</p>
         </div>
-        <button disabled={blocked} onClick={() => void read()}>
+        <Button disabled={blocked} onClick={() => void read()}>
           {loading ? t('operator.status70') : t('operator.status71')}
-        </button>
+        </Button>
       </header>
       <FloatingMessage tone="info" text={notice ? notice : null} />
       <FloatingMessage tone="error" text={error ? error : null} />
@@ -227,7 +228,7 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
           {jobs.length ? (
             <>
               <div className="p4-between p4-jobs-selection">
-                <button
+                <Button
                   disabled={blocked || !jobs.some(canCancelJob)}
                   onClick={() => {
                     setSelected(jobs.filter(canCancelJob).slice(0, 100));
@@ -236,7 +237,7 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
                   }}
                 >
                   {t('operator.copy39')}
-                </button>
+                </Button>
                 <span>{t('operatorPanel.selected', { count: selected.length })}</span>
               </div>
               <OperatorJobsTable
@@ -255,9 +256,9 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
             <p>{t('operator.copy41')}</p>
           )}
           {value.next_after_id && (
-            <button disabled={blocked} onClick={() => void read(value.next_after_id)}>
+            <Button disabled={blocked} onClick={() => void read(value.next_after_id)}>
               {t('operator.copy42')}
-            </button>
+            </Button>
           )}
           <div className="p4-jobs-actions">
             <label>
@@ -279,13 +280,13 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
                 ))}
               </select>
             </label>
-            <button
+            <Button
               className="p4-primary"
               disabled={blocked || !current || !reason}
               onClick={() => setReview({ jobs: structuredClone(selected), reason })}
             >
               {t('operatorPanel.reviewCancel', { count: selected.length || '' })}
-            </button>
+            </Button>
           </div>
           <small>{t('operator.copy45')}</small>
         </>

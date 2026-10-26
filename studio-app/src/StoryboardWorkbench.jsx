@@ -188,7 +188,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
         <small className="muted">{versions.length}</small>
         <div className="spacer" />
         {wide && versions.length > 1 && (
-          <button
+          <Button
             className={'small ghost' + (comparing ? ' on' : '')}
             aria-pressed={comparing}
             onClick={() => {
@@ -199,27 +199,28 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
           >
             <Columns2 size={13} />
             {comparing ? t('workbench.cancel') : t('takes.compare')}
-          </button>
+          </Button>
         )}
         {versions.some((row) => row.starred) && (
-          <button
+          <Button
             className={'small ghost' + (onlyStar ? ' on' : '')}
             aria-pressed={onlyStar}
             onClick={() => setOnlyStar((value) => !value)}
           >
             <Star size={13} />
             {t('workbench.star')}
-          </button>
+          </Button>
         )}
-        <button
-          className="small ghost"
+        <Button
+          variant="ghost"
+          size="sm"
           disabled={loading}
           onClick={() => load()}
           aria-label={t('workbench.refresh')}
           title={t('workbench.refresh')}
         >
           <RefreshCw size={13} />
-        </button>
+        </Button>
       </div>
       {loading && <p role="status">{t('workbench.loading')}</p>}
       {error && <p role="alert">{error}</p>}
@@ -249,13 +250,14 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                             : versionTime(row?.created_at, locale, t))}
                       </b>
                       <div className="spacer" />
-                      <button
-                        className="small primary"
+                      <Button
+                        variant="primary"
+                        size="sm"
                         disabled={state.busy || !!state.workbenchPending || !row}
                         onClick={() => choose(row)}
                       >
                         {t('workbench.use')}
-                      </button>
+                      </Button>
                     </div>
                     <TakeRecipe
                       take={{ ...row, seed: row?.recipe?.controls?.seed }}
@@ -295,8 +297,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
           if (!wide)
             return (
               <div className="ver-wrap" key={row.id}>
-                <button
-                  type="button"
+                <Button
                   className={'ver' + (row.selected ? ' chosen' : '') + (viewing ? ' viewing' : '')}
                   onClick={preview}
                 >
@@ -319,18 +320,18 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                   )}
                   {/* A take adopted from an old Quick Create conversation (#481). */}
                   {row.aliased && <em className="ver-legacy">{t('workbench.fromQuickCreate')}</em>}
-                </button>
+                </Button>
                 {/* The narrow panel needs its own "use" action: cloud takes are not always local
                   versions, so the preview above cannot offer one (found in #347 staging check). */}
                 {!row.selected && !comparing && (
-                  <button
-                    type="button"
-                    className="small ver-use"
+                  <Button
+                    size="sm"
+                    className="ver-use"
                     disabled={state.busy || !!state.workbenchPending}
                     onClick={() => choose(row)}
                   >
                     {t('workbench.use')}
-                  </button>
+                  </Button>
                 )}
               </div>
             );
@@ -375,7 +376,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                   <em className="cmp-n">{compare.indexOf(row.id) === 0 ? 'A' : 'B'}</em>
                 )}
                 <div className="spacer" />
-                <button
+                <Button
                   className={'take-star' + (row.starred ? ' on' : '')}
                   aria-label={t(row.starred ? 'takes.unstar' : 'takes.star')}
                   aria-pressed={row.starred}
@@ -390,7 +391,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                   }
                 >
                   <Star size={13} fill={row.starred ? 'currentColor' : 'none'} />
-                </button>
+                </Button>
               </div>
               <div className="take-info">
                 <b>
@@ -429,16 +430,17 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                     : ''}
                 </small>
                 <div className="take-acts">
-                  <button
-                    className="small"
+                  <Button
+                    size="sm"
                     disabled={state.busy || !!state.workbenchPending}
                     aria-pressed={row.selected}
                     onClick={() => choose(row)}
                   >
                     {t('workbench.use')}
-                  </button>
-                  <button
-                    className="small ghost"
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                     disabled={
                       state.busy || !!state.workbenchPending || row.recipe_status !== 'known'
                     }
@@ -452,7 +454,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                     }
                   >
                     {t('workbench.settings')}
-                  </button>
+                  </Button>
                   {comparing && (
                     <label>
                       <input
@@ -493,9 +495,9 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
         })}
       </div>
       {Number.isInteger(data?.next_offset) && (
-        <button disabled={loading} onClick={() => load(true)}>
+        <Button disabled={loading} onClick={() => load(true)}>
           {t('workbench.more')}
-        </button>
+        </Button>
       )}
       {renaming && (
         <RenameDialog
@@ -553,21 +555,21 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
       <div className="workbench-bulk-row">
         <b>{t('workbench.selected', { count: ids.length })}</b>
         <span className="workbench-bulk-links">
-          <button type="button" className="link" onClick={onSelectAll}>
+          <Button className="link" onClick={onSelectAll}>
             {t('workbench.all')}
-          </button>
+          </Button>
           {pendingCount > 0 && (
-            <button type="button" className="link" onClick={onSelectPending}>
+            <Button className="link" onClick={onSelectPending}>
               {t('workbench.onlyPending', { count: pendingCount })}
-            </button>
+            </Button>
           )}
-          <button type="button" className="link" onClick={onClear}>
+          <Button className="link" onClick={onClear}>
             {t('workbench.clear')}
-          </button>
+          </Button>
         </span>
         <span className="workbench-bulk-spacer" />
-        <button
-          className="primary"
+        <Button
+          variant="primary"
           disabled={!valid || locked}
           onClick={() =>
             dispatch({ type: 'workbenchGenerate', ids: [...ids], copies: Number(copies) })
@@ -575,9 +577,9 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
         >
           <Sparkles size={14} />
           {t('workbench.generateSelected', { count: ids.length })}
-        </button>
+        </Button>
         {trash?.account && (
-          <button
+          <Button
             disabled={locked || trash.busy || !!trash.pending}
             onClick={async () => {
               const receipt = await trash.request(
@@ -589,30 +591,29 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
           >
             <Trash2 size={14} />
             {t('workbench.trashSelected')}
-          </button>
+          </Button>
         )}
-        <button
-          type="button"
-          className="ghost"
+        <Button
+          variant="ghost"
           aria-expanded={more}
           aria-label={t('workbench.more')}
           title={t('workbench.more')}
           onClick={() => setMore((v) => !v)}
         >
           <MoreHorizontal size={16} />
-        </button>
+        </Button>
       </div>
       {more && (
         <div className="workbench-bulk-more">
           <WorkbenchCopies value={copies} onChange={setCopies} max={state.copiesMax} />
           {!state.copiesMax && (
-            <button onClick={() => dispatch({ type: 'workbenchRefresh' })}>
+            <Button onClick={() => dispatch({ type: 'workbenchRefresh' })}>
               {t('workbench.refresh')}
-            </button>
+            </Button>
           )}
           <span className="workbench-bulk-group">
             {['draft', 'final'].map((operation) => (
-              <button
+              <Button
                 key={operation}
                 disabled={locked}
                 onClick={() =>
@@ -624,7 +625,7 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
                 }
               >
                 {t('workbench.' + operation)}
-              </button>
+              </Button>
             ))}
             <select
               value={profile}
@@ -652,7 +653,7 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
                 </option>
               ))}
             </select>
-            <button
+            <Button
               disabled={!scene || locked}
               onClick={() =>
                 dispatch({
@@ -667,7 +668,7 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
               }
             >
               {t('workbench.move')}
-            </button>
+            </Button>
           </span>
           <WorkbenchFork ids={ids} />
           <small className="muted">{t('workbench.qualityHint')}</small>
@@ -700,7 +701,7 @@ export function WorkbenchFork({ ids }) {
           </option>
         ))}
       </select>
-      <button
+      <Button
         disabled={!profile || !ids.length || state.busy || !!state.workbenchPending}
         onClick={() =>
           dispatch({
@@ -715,7 +716,7 @@ export function WorkbenchFork({ ids }) {
         }
       >
         {t('workbench.fork')}
-      </button>
+      </Button>
     </details>
   );
 }

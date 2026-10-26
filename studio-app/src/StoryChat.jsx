@@ -239,9 +239,8 @@ function CardDetail({
             {profiles.map((profile) => {
               const on = refs.includes(profile.id);
               return (
-                <button
+                <Button
                   key={profile.id}
-                  type="button"
                   aria-pressed={on}
                   onClick={() =>
                     onEdit(card.id, {
@@ -251,7 +250,7 @@ function CardDetail({
                 >
                   <Thumb card={profile} />
                   {profile.name}
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -342,7 +341,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
             <h3>{t('storyChat.' + group.key)}</h3>
             <div className="sc-tiles">
               {groups[group.kind].map((card) => (
-                <button
+                <Button
                   key={card.id}
                   className={
                     'sc-tile' +
@@ -354,7 +353,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
                   <Thumb card={card} />
                   <strong>{card.name}</strong>
                   <small>{card.text}</small>
-                </button>
+                </Button>
               ))}
             </div>
           </section>
@@ -366,7 +365,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
           <ol className="sc-shots">
             {groups.shot.map((card) => (
               <li key={card.id}>
-                <button
+                <Button
                   className={
                     'sc-shot' +
                     (fresh.includes(card.id) ? ' fresh' : '') +
@@ -393,7 +392,7 @@ function Board({ state, fresh, openId, onOpen, onWorks, notice }) {
                         ))}
                     </span>
                   </span>
-                </button>
+                </Button>
               </li>
             ))}
           </ol>
@@ -681,16 +680,16 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       )}
       <div className="sc-tabs" role="tablist">
         {stories && (
-          <button role="tab" aria-selected={tab === 'stories'} onClick={() => setTab('stories')}>
+          <Button role="tab" aria-selected={tab === 'stories'} onClick={() => setTab('stories')}>
             {t('storyChat.tabStories')}
-          </button>
+          </Button>
         )}
-        <button role="tab" aria-selected={tab === 'chat'} onClick={() => setTab('chat')}>
+        <Button role="tab" aria-selected={tab === 'chat'} onClick={() => setTab('chat')}>
           {t('storyChat.tabChat')}
-        </button>
-        <button role="tab" aria-selected={tab === 'cards'} onClick={() => setTab('cards')}>
+        </Button>
+        <Button role="tab" aria-selected={tab === 'cards'} onClick={() => setTab('cards')}>
           {t('storyChat.tabCards', { count: state.cards.length })}
-        </button>
+        </Button>
       </div>
       <main
         className={
@@ -731,14 +730,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
             <ul>
               {(stories || []).map((item) => (
                 <li key={item.project_id}>
-                  <button
+                  <Button
                     title={item.title}
                     aria-current={item.project_id === story.current ? 'page' : undefined}
                     onClick={() => item.project_id !== story.current && openStory(item.project_id)}
                   >
                     <span>{item.title}</span>
                     <small>{whenText(item.updated_at, locale)}</small>
-                  </button>
+                  </Button>
                   <ItemMenu label={t('storyChat.chatMenu')}>
                     <MenuItem onSelect={() => setRenaming(item)}>
                       {t('storyChat.renameChat')}
@@ -796,9 +795,9 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 <p>{t('storyChat.welcomeHelp')}</p>
                 <div className="sc-starters">
                   {starters.map((key) => (
-                    <button key={key} onClick={() => send(t(key))}>
+                    <Button key={key} onClick={() => send(t(key))}>
                       {t(key)}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -819,14 +818,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 );
               if (message.role === 'change')
                 return (
-                  <button
+                  <Button
                     key={message.id}
                     className="sc-change keep-label"
                     onClick={() => setTab('cards')}
                   >
                     <Check size={13} aria-hidden="true" />
                     {t('storyChat.change.' + message.summary.kind, message.summary)}
-                  </button>
+                  </Button>
                 );
               if (message.role === 'quote')
                 return (
@@ -845,8 +844,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                     !state.busy &&
                     state.undoTurnId &&
                     message.turnId === state.undoTurnId && (
-                      <button
-                        type="button"
+                      <Button
                         className="sc-undo linkish"
                         onClick={() =>
                           void chat.current.undo(state.undoTurnId, emit).then((ok) => {
@@ -857,7 +855,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                       >
                         <Undo2 size={13} aria-hidden="true" />
                         {t('storyChat.undo')}
-                      </button>
+                      </Button>
                     )}
                   {message === lastAssistant &&
                     !state.busy &&
@@ -865,9 +863,9 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                     message.chips.length > 0 && (
                       <div className="sc-chips">
                         {message.chips.map((chip) => (
-                          <button key={chip} onClick={() => send(chip)}>
+                          <Button key={chip} onClick={() => send(chip)}>
                             {chip}
-                          </button>
+                          </Button>
                         ))}
                       </div>
                     )}
@@ -912,13 +910,12 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 {files.map((file) => (
                   <span key={file.url}>
                     <img src={file.url} alt={file.name} />
-                    <button
-                      type="button"
+                    <Button
                       aria-label={t('storyChat.close')}
                       onClick={() => setFiles((current) => current.filter((item) => item !== file))}
                     >
                       <X size={12} />
-                    </button>
+                    </Button>
                   </span>
                 ))}
               </div>
@@ -955,13 +952,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                   }
                 }}
               />
-              <button
+              <Button
+                type="submit"
                 className="sc-send"
                 aria-label={t('storyChat.send')}
                 disabled={state.busy || (!text.trim() && !files.length)}
               >
                 <ArrowUp size={17} />
-              </button>
+              </Button>
             </div>
           </form>
         </section>
