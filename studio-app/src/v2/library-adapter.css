@@ -132,7 +132,6 @@
 /* Keep filters, counts and file cards readable without shrinking the file previews. */
 .lib-shell .libp-group small,
 .lib-shell .libp-meta,
-.lib-shell .libp-side small,
 .lib-shell .tagchip small {
   font-size: 11px;
 }
@@ -162,10 +161,6 @@
   height: 36px;
   min-height: 36px;
 }
-.lib-shell .libp-side > button {
-  height: 32px;
-  min-height: 32px;
-}
 .lib-shell :is(input:not([type='checkbox']):not([type='radio']), select) {
   height: 36px;
   min-height: 36px;
@@ -190,10 +185,6 @@
   line-height: 1.5;
 }
 @media (max-width: 760px) {
-  .lib-shell .libp-side > button {
-    height: 36px;
-    min-height: 36px;
-  }
   .lib-shell .libp-head {
     gap: 8px;
   }
@@ -217,14 +208,6 @@
   min-width: 0;
   max-width: 100%;
   box-sizing: border-box;
-}
-.lib-shell .libp-side > button > span {
-  min-width: 0;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  text-align: left;
 }
 .lib-shell .library-source-tools > div,
 .lib-shell .library-source-tools select {

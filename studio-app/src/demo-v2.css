@@ -2043,22 +2043,8 @@ small {
   align-content: start;
 }
 .snav {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
   position: sticky;
   top: 80px;
-}
-.snav button {
-  background: transparent;
-  border-color: transparent;
-  color: var(--ink-2);
-  justify-content: flex-start;
-  padding: 8px 12px;
-}
-.snav button.on {
-  background: var(--surface-3);
-  color: var(--ink);
 }
 .spanel {
   display: flex;
@@ -2791,23 +2777,6 @@ pre {
   gap: 2px;
   overflow: auto;
 }
-.libp-side > button {
-  background: transparent;
-  border-color: transparent;
-  justify-content: space-between;
-  padding: 6px 10px;
-  font-size: 13px;
-  min-width: 0;
-}
-.libp-side > button.on {
-  background: var(--surface-3);
-}
-.libp-side > button small {
-  color: var(--muted);
-}
-.libp-side > button.alert small {
-  color: var(--accent, var(--accent));
-}
 .libp-group {
   font-size: 11px;
   color: var(--muted);
@@ -3345,8 +3314,7 @@ h4,
 .stats b,
 .card-dur,
 .card-no,
-.agent-spend,
-.libp-side small {
+.agent-spend {
   font-variant-numeric: tabular-nums;
 }
 
@@ -3469,19 +3437,6 @@ h4,
 }
 
 /* Settings sidebar like macOS */
-.snav {
-  gap: 1px;
-}
-.snav button {
-  min-height: 32px;
-  gap: 9px;
-}
-.snav button svg {
-  color: var(--muted);
-}
-.snav button.on svg {
-  color: var(--accent);
-}
 .spanel {
   gap: 16px;
 }
@@ -3614,13 +3569,6 @@ h4,
     gap: 4px;
     flex: none;
     scrollbar-width: none;
-  }
-  .libp-side > button {
-    flex: none;
-    padding: 5px 10px;
-    border: 1px solid var(--line);
-    border-radius: 999px;
-    gap: 6px;
   }
   .libp-group,
   .libp-side .libp-tags {
@@ -3769,7 +3717,7 @@ h4,
           .account-menu,
           .story-recent-menu,
           .app-nav,
-          .libp-side,
+          .side-nav,
           .chapter-menu
         )
         *
@@ -3836,8 +3784,7 @@ h4,
 }
 
 /* ================= polish pass ================= */
-.lib-tabs button,
-.snav button {
+.lib-tabs button {
   white-space: nowrap;
 }
 .x {
@@ -3877,23 +3824,6 @@ h4,
 }
 .lib-tabs button small {
   margin-left: auto;
-}
-.libp-side > button {
-  justify-content: flex-start;
-  gap: 9px;
-}
-.libp-side > button span {
-  flex: 1;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.libp-side > button svg {
-  color: var(--muted);
-}
-.libp-side > button.on svg {
-  color: var(--accent);
 }
 
 /* shot cards: one tidy line per row, equal heights */
