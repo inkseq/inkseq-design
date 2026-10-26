@@ -15,6 +15,7 @@ import React, {
   useRef,
   useState,
   useSyncExternalStore,
+  useEffectEvent,
 } from 'react';
 import { createCloudClient } from './cloud-client.js';
 import { createTrashController, trashTargetKey, trashErrorKey } from './trash-commands.js';
@@ -409,12 +410,14 @@ export default function UniversalTrash() {
       if (n === epoch.current) setLoading(false);
     }
   };
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
     setRows([]);
     setSelected([]);
-    if (ctx?.account && kind !== 'conversation') load();
+    if (ctx?.account && kind !== 'conversation') loadEvent();
+    const epochRef = epoch;
     return () => {
-      epoch.current++;
+      epochRef.current++;
     };
   }, [ctx?.account, ctx?.revision, kind]);
   const inGroup = (row, value = group) =>
@@ -773,9 +776,10 @@ function ConversationTrash({ account, busy, onCount }) {
       controller.destroy();
     };
   }, [account, controller]);
+  const onCountEvent = useEffectEvent((...args) => onCount(...args));
   useEffect(() => {
     if (state.account === account && state.historyView === 'trash' && state.trashAsOf !== null)
-      onCount?.(state.trashSessions.length, !!state.trashCursor);
+      onCountEvent?.(state.trashSessions.length, !!state.trashCursor);
   }, [
     state.account,
     state.historyView,

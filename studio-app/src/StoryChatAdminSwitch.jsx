@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useEffectEvent } from 'react';
 import { ImagePlus } from 'lucide-react';
 import { useI18n } from './i18n/I18nProvider.jsx';
 
@@ -22,6 +22,7 @@ export default function StoryChatAdminSwitch({ api, active }) {
         setDraft(String(next.image_credits ?? next.recommended_image_credits ?? ''));
       })
       .catch(() => setPrices(null));
+  const loadPricesEvent = useEffectEvent((...args) => loadPrices(...args));
   useEffect(() => {
     if (!active) return undefined;
     let live = true;
@@ -29,7 +30,7 @@ export default function StoryChatAdminSwitch({ api, active }) {
       .request('/v1/admin/story-chat/settings')
       .then((next) => live && setValue(next))
       .catch(() => live && setValue(null));
-    void loadPrices();
+    void loadPricesEvent();
     return () => {
       live = false;
     };

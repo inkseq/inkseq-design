@@ -1,7 +1,7 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import './i18n/workspace-language.css';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import { Copy, KeyRound, RefreshCw, ShieldCheck, X } from 'lucide-react';
 import { createCloudClient } from './cloud-client.js';
 import { translate } from './i18n/locale.js';
@@ -71,13 +71,14 @@ export default function ApiKeys({
     const data = await client.apiKeys();
     if (live.current) setKeys(data.api_keys || []);
   }
+  const refreshEvent = useEffectEvent((...args) => refresh(...args));
   useEffect(() => {
     live.current = true;
     setCreated(null);
     setKeys([]);
     setError('');
     setBusy(true);
-    refresh()
+    refreshEvent()
       .catch(() => {
         if (live.current) setError(t('account.status62'));
       })
@@ -88,7 +89,7 @@ export default function ApiKeys({
       live.current = false;
       client.reset();
     };
-  }, [client]);
+  }, [client, t]);
   async function act(fn) {
     setBusy(true);
     setError('');

@@ -4,7 +4,7 @@ import { profileLabel } from './model-visibility.js';
 import { isActiveTrashItem } from './trash-commands.js';
 import { TrashMenu, RenameDialog, useTrash } from './UniversalTrash.jsx';
 import TakeRecipe from './QuickChatTakeRecipe.jsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { useStoryboardUI } from './storyboard-ui-context.jsx';
 import { StoryboardVideo, StoryboardAssetImage } from './StoryboardMedia.jsx';
@@ -102,24 +102,31 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
       if (n === generation.current) setLoading(false);
     }
   }
+  // Reload when the shot or story version changes; the events read the latest adapter/load.
+  const reload = useEffectEvent(() => {
+    if (adapter.readVersions) load();
+  });
+  const trashChanged = useEffectEvent((e) => {
+    if (e.detail?.items?.some((row) => row.target.project_id === state.project.id)) {
+      setCompare([]);
+      load();
+    }
+  });
   useEffect(() => {
     setRenaming(null);
     setData(null);
     setCompare([]);
     setOnlyStar(false);
     setComparing(false);
-    if (adapter.readVersions) load();
+    reload();
+    // Bump on leave so an answer for the previous shot is ignored.
+    const counter = generation;
     return () => {
-      generation.current++;
+      counter.current++;
     };
   }, [scope, state.projectVersion]);
   useEffect(() => {
-    const changed = (e) => {
-      if (e.detail?.items?.some((row) => row.target.project_id === state.project.id)) {
-        setCompare([]);
-        load();
-      }
-    };
+    const changed = (e) => trashChanged(e);
     window.addEventListener('inkseq-trash-changed', changed);
     return () => window.removeEventListener('inkseq-trash-changed', changed);
   }, [scope, state.projectVersion]);

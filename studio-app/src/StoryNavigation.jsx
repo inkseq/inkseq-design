@@ -412,11 +412,11 @@ function useLibraryReader(account) {
     return value;
   }, [account]);
   useEffect(() => () => reader.reset(), [reader]);
-  const guard = () => {
-    if (!account || cloud.getState().account !== account) throw Error(t('legacy.visible14'));
-  };
-  return useMemo(
-    () => ({
+  return useMemo(() => {
+    const guard = () => {
+      if (!account || cloud.getState().account !== account) throw Error(t('legacy.visible14'));
+    };
+    return {
       project: async (id) => {
         guard();
         const record = checkedProjectRecord(await reader.project(id));
@@ -430,9 +430,8 @@ function useLibraryReader(account) {
         guard();
         return Object.freeze({ href, assertCurrent: guard });
       },
-    }),
-    [reader, account],
-  );
+    };
+  }, [reader, account, t]);
 }
 
 function StoryLibraryCard({ story, reader, working, onOpen, picked = false, onPick }) {
@@ -471,11 +470,12 @@ function StoryLibraryCard({ story, reader, working, onOpen, picked = false, onPi
     if (ref.current) observer.observe(ref.current);
     return () => observer.disconnect();
   }, []);
+  const hasEntities = Array.isArray(story.project.entities);
   useEffect(() => {
     let alive = true;
     setLoaded(null);
     setDetailError(false);
-    if (!visible || story.mode !== 'cloud' || Array.isArray(story.project.entities)) return;
+    if (!visible || story.mode !== 'cloud' || hasEntities) return;
     reader
       .project(story.project.id)
       .then((project) => {
@@ -494,19 +494,24 @@ function StoryLibraryCard({ story, reader, working, onOpen, picked = false, onPi
     story.project.id,
     story.project.version,
     story.project.updated_at,
-    Array.isArray(story.project.entities),
+    hasEntities,
   ]);
+  // Keyed on the file's identity, not the summary object rebuilt on every render.
+  const fileId = file?.fileId,
+    fileKind = file?.kind,
+    filePath = file?.cloudPath;
   useEffect(() => {
+    const key = filePath || fileId;
     let alive = true,
       url = '';
     setCover(null);
     setCoverError(false);
-    if (!visible || !file) return;
-    if (file.cloudPath) {
+    if (!visible || !key) return;
+    if (filePath) {
       try {
-        const target = reader.cover(file);
+        const target = reader.cover({ cloudPath: filePath });
         target.assertCurrent();
-        setCover({ reader, key: coverKey, url: target.href, target });
+        setCover({ reader, key, url: target.href, target });
       } catch {
         setCoverError(true);
       }
@@ -514,15 +519,15 @@ function StoryLibraryCard({ story, reader, working, onOpen, picked = false, onPi
         alive = false;
       };
     }
-    getFile(file.fileId)
+    getFile(fileId)
       .then((blob) => {
         if (!alive) return;
-        if (!blob?.size || (blob.type && !blob.type.startsWith(file.kind + '/'))) {
+        if (!blob?.size || (blob.type && !blob.type.startsWith(fileKind + '/'))) {
           setCoverError(true);
           return;
         }
         url = URL.createObjectURL(blob);
-        setCover({ reader, key: coverKey, url });
+        setCover({ reader, key, url });
       })
       .catch(() => {
         if (alive) setCoverError(true);
@@ -531,7 +536,7 @@ function StoryLibraryCard({ story, reader, working, onOpen, picked = false, onPi
       alive = false;
       if (url) URL.revokeObjectURL(url);
     };
-  }, [visible, reader, file?.fileId, file?.kind, file?.cloudPath]);
+  }, [visible, reader, fileId, fileKind, filePath]);
   const small = useThumbnailSource(reader, coverUrl, { enabled: !!file?.cloudPath }),
     coverSrc = file?.cloudPath ? small.src : coverUrl;
   const coverFailed = () => {

@@ -1,7 +1,7 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import { usePageActive } from './AppRouteCache.jsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
 import {
   cancellationReasons,
   canCancelJob,
@@ -84,9 +84,11 @@ function CancelReview({ jobs, reason, busy, current, onClose, onConfirm }) {
       return;
     }
     dialog.showModal();
+    const openerRef = opener;
     return () => {
       dialog.close();
-      if (opener.current?.isConnected && !opener.current.closest('[inert]')) opener.current.focus();
+      if (openerRef.current?.isConnected && !openerRef.current.closest('[inert]'))
+        openerRef.current.focus();
     };
   }, [active]);
   return (
@@ -149,6 +151,7 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
     jobs = value?.jobs || [],
     current = selectionCurrent(selected, jobs),
     blocked = busy || loading;
+  const readEvent = useEffectEvent((...args) => read(...args));
   useEffect(() => {
     generation.current++;
     setSelected([]);
@@ -156,9 +159,10 @@ export default function OperatorJobsPanel({ controller, state, busy = false }) {
     setReview(null);
     setNotice('');
     setError('');
-    void read();
+    void readEvent();
+    const generationRef = generation;
     return () => {
-      generation.current++;
+      generationRef.current++;
     };
   }, [controller, state.account]);
   async function read(after_id) {

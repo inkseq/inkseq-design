@@ -425,16 +425,16 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     };
     window.addEventListener('keydown', close, true);
     return () => window.removeEventListener('keydown', close, true);
-  }, [theater, expanded, selected]);
+  }, [theater, expanded, selected, setSelected]);
   useEffect(() => {
     setSelection(emptySelection());
   }, [state.contextId]);
+  // Keyed on the shot ids, not the array: a re-render with the same shots changes nothing.
+  const liveShotIds = state.shots.map((s) => s.id).join('|');
   useEffect(() => {
-    setSelection((old) => ({
-      ...old,
-      ids: old.ids.filter((id) => state.shots.some((s) => s.id === id)),
-    }));
-  }, [state.shots.map((s) => s.id).join('|')]);
+    const live = new Set(liveShotIds.split('|'));
+    setSelection((old) => ({ ...old, ids: old.ids.filter((id) => live.has(id)) }));
+  }, [liveShotIds]);
   useEffect(() => {
     const clear = (e) => {
       if (
@@ -958,13 +958,14 @@ function StoryboardShell({ onLegacyGuide, onCanvas, onNewScene, filmControl }) {
     else url.searchParams.delete('entity');
     navigateApp(url.pathname + url.search, { restore: false });
   };
+  const shotIdsKey = state.shots.map((s) => s.id).join('|');
   useEffect(() => {
     if (!pageActive || location.path !== '/') return;
     const params = new URLSearchParams(location.search),
       id = params.get('entity');
-    if (id && state.shots.some((s) => s.id === id)) setSelected(id);
+    if (id && shotIdsKey.split('|').includes(id)) setSelected(id);
     else if (!id) setSelected(null);
-  }, [pageActive, location.href, state.project.id, state.shots.map((s) => s.id).join('|')]);
+  }, [pageActive, location.path, location.search, state.project.id, shotIdsKey]);
   const container = useRef(),
     sensors = useSensors(
       useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),

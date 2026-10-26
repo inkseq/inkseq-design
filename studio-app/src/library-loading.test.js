@@ -95,6 +95,13 @@ function mountedLibrary() {
       }
     },
     useSyncExternalStore: (subscribe, snapshot) => snapshot(),
+    // Effect events always call the latest render's function.
+    useEffectEvent: (fn) => {
+      const index = cursor++;
+      const slot = (hooks[index] ??= { kind: 'event', fn });
+      slot.fn = fn;
+      return (...args) => slot.fn(...args);
+    },
   };
   const filename = directory + 'library-loading-test.cjs',
     mod = new Module(filename),

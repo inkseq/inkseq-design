@@ -130,7 +130,7 @@ export function useStoryboardMediaUrl(asset, { thumbnail = false } = {}) {
       alive = false;
       if (owned) URL.revokeObjectURL(owned);
     };
-  }, [direct, fileId, native]);
+  }, [direct, fileId, native, t]);
   // A failed request (for example a temporary 429) must not remove the media
   // element. Keep its captured source so metadata can recover or an explicit
   // retry can reload it; never re-resolve it under a later account.

@@ -4,7 +4,14 @@ import StoryFilmControl from './StoryFilmControl.jsx';
 import { formatMoneyMicros } from './money.js';
 import { createQuickChatClient } from './quick-chat-client.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
-import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, {
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { StoryboardWorkspace } from './StoryboardWorkspace.jsx';
 import { store } from './store.js';
 import { useCloud } from './CloudStudio.jsx';
@@ -33,8 +40,9 @@ function Confirmation({ ids, onClose }) {
     [error, setError] = useState('');
   const p = useSyncExternalStore(store.subscribe, store.getState, store.getState).project;
   useEffect(() => {
-    ref.current.showModal();
-    return () => ref.current?.close();
+    const dialog = ref.current;
+    dialog.showModal();
+    return () => dialog?.close();
   }, []);
   const rows = ids.map((id) => ({
       id,
@@ -200,8 +208,9 @@ function WorkbenchConfirmation({ receipt, onClose }) {
   const s = useSyncExternalStore(store.subscribe, store.getState, store.getState),
     scope = useRef({ account: c.account, project: s.project.id });
   useEffect(() => {
-    ref.current.showModal();
-    return () => ref.current?.close();
+    const dialog = ref.current;
+    dialog.showModal();
+    return () => dialog?.close();
   }, []);
   const same =
     scope.current.account === c.account &&
@@ -333,9 +342,12 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
     c.account && s.workspace.mode === 'cloud' && !cloud.workbenchRunning()
       ? cloud.workbenchPending()?.kind
       : null;
+  const recoverPending = useEffectEvent(() =>
+    dispatch({ type: 'workbenchRecover' }).catch(() => {}),
+  );
   useEffect(() => {
     if (!['actions', 'preferences', 'copies'].includes(pendingKind)) return;
-    void dispatch({ type: 'workbenchRecover' }).catch(() => {});
+    void recoverPending();
   }, [pendingKind, s.project.id]);
   useEffect(() => {
     if (!c.account || !c.operatorAccess) {
@@ -768,6 +780,9 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
   // A shot with no chosen take and exactly one finished take uses it without a click
   // (owner, 2026-10-25). An existing choice is never replaced by a newer take.
   const autoPicked = useRef(new Set());
+  const choose = useEffectEvent((shot, version) =>
+    dispatch({ type: 'choose', shot, version }).catch(() => {}),
+  );
   useEffect(() => {
     if (busy || serial.current) return;
     const shot = view.shots.find((item) => {
@@ -782,7 +797,7 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
     if (!shot) return;
     autoPicked.current.add(shot.id);
     const version = shot.versions.find((v) => v.status === 'done');
-    void dispatch({ type: 'choose', shot: shot.id, version: version.id }).catch(() => {});
+    void choose(shot.id, version.id);
   }, [view, busy]);
   const adapter = {
     previewScriptWindows: (id, options) => cloud.previewScriptWindows(id, options),

@@ -37,7 +37,14 @@ import { TrashMenu, TrashButton, RenameDialog } from './UniversalTrash.jsx';
 import { WorkbenchTakes, WorkbenchCopies } from './StoryboardWorkbench.jsx';
 import { AssistantBadge } from './AssistantConnections.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
-import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, {
+  useEffect,
+  useEffectEvent,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import { store } from './store.js';
 import { cutFps, videoCut } from './video-cut-model.js';
 import { trimClip } from './film-edit-model.js';
@@ -2544,7 +2551,11 @@ export function Screen({ player, big, style }) {
       playing,
       onFailure: () => player.setPlaying(false),
     });
-  useEffect(sync, [seg?.version?.id, seg?.shot.id, playing, local]);
+  // Re-sync when the take, playing state, position or the shot's kept parts change; the event
+  // reads the latest player and segments without re-running on every render.
+  const syncFromEffect = useEffectEvent(sync),
+    partsKey = JSON.stringify(seg?.shot.segments || null);
+  useEffect(() => syncFromEffect(), [seg?.version?.id, seg?.shot.id, playing, local, partsKey]);
   useEffect(() => () => playback.current.reset(), []);
   if (!seg)
     return (

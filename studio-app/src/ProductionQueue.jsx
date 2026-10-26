@@ -47,10 +47,11 @@ export default function ProductionQueue({ project, onInspect }) {
     setQuery('');
     setConfirmed('');
   }, [project.id]);
-  useEffect(
-    () => setSelected((ids) => ids.filter((id) => rows.some((row) => row.id === id))),
-    [project.id, rows.length],
-  );
+  const rowIds = rows.map((row) => row.id).join('|');
+  useEffect(() => {
+    const live = new Set(rowIds.split('|'));
+    setSelected((ids) => ids.filter((id) => live.has(id)));
+  }, [project.id, rowIds]);
   const changeSelection = (next) => {
     setSelected(next);
     setConfirmed('');

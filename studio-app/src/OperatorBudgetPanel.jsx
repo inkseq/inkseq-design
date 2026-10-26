@@ -1,6 +1,6 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { usePageActive } from './AppRouteCache.jsx';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import { createP4OperatorClient } from './p4-operator-client.js';
 import { money, time } from './p4-operator-model.js';
 import {
@@ -218,19 +218,22 @@ export default function OperatorBudgetPanel({ account, compact = false }) {
         setState({ account, value: null, loading: false, error: error.message });
     }
   }
+  const readEvent = useEffectEvent((...args) => read(...args));
   useEffect(() => {
     client.setAccount(account);
     generation.current++;
     setState({ account, value: null, loading: false, error: '' });
-    if (account) void read();
+    if (account) void readEvent();
     const timer = account
       ? setInterval(() => {
-          if (visible.current && globalThis.document?.visibilityState !== 'hidden') void read();
+          if (visible.current && globalThis.document?.visibilityState !== 'hidden')
+            void readEvent();
         }, 30000)
       : null;
+    const generationRef = generation;
     return () => {
       clearInterval(timer);
-      generation.current++;
+      generationRef.current++;
       client.reset();
     };
   }, [account, client]);
@@ -279,7 +282,7 @@ function BudgetEditor({ row, busy, onSave }) {
   useEffect(() => {
     setInput(usdInput(row.limit_microusd));
     setError('');
-  }, [row.id, row.snapshot]);
+  }, [row.id, row.snapshot, row.limit_microusd]);
   const limit = usdMicrousd(input),
     minimum = row.spent_microusd + row.reserved_microusd;
   const retired = row.limit_mode === 'settings' || row.legacy_projection_only === true;
@@ -339,7 +342,7 @@ function PriceEditor({ row, busy, onPreview, onSave }) {
     setReview(null);
     setReason('');
     setError('');
-  }, [row.id, row.snapshot]);
+  }, [row.id, row.snapshot, row.max_price_microusd, row.price_ceiling_microusd]);
   const defaultValue = usdMicrousd(max),
     ceilingValue = usdMicrousd(ceiling),
     valid =
@@ -451,8 +454,9 @@ export function AdminBudgetPanel({ controller, state, busy }) {
       setReading(false);
     }
   }
+  const readEvent = useEffectEvent((...args) => read(...args));
   useEffect(() => {
-    if (authorized) void read();
+    if (authorized) void readEvent();
   }, [controller, state.account, authorized]);
   async function save(fn) {
     const result = await fn();

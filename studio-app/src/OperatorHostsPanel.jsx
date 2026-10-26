@@ -1,7 +1,7 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import { usePageActive } from './AppRouteCache.jsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
 import {
   failureLabel,
   hostPolicyOptions,
@@ -360,9 +360,11 @@ function PolicyReview({ host, selection, current, busy, onClose, onConfirm }) {
       return;
     }
     dialog.showModal();
+    const openerRef = opener;
     return () => {
       dialog.close();
-      if (opener.current?.isConnected && !opener.current.closest('[inert]')) opener.current.focus();
+      if (openerRef.current?.isConnected && !openerRef.current.closest('[inert]'))
+        openerRef.current.focus();
     };
   }, [active]);
   return (
@@ -556,12 +558,14 @@ export default function OperatorHostsPanel({ controller, state, admin = false, b
     [loading, setLoading] = useState(false),
     [error, setError] = useState(''),
     generation = useRef(0);
+  const readEvent = useEffectEvent((...args) => read(...args));
   useEffect(() => {
     generation.current++;
     setError('');
-    void read();
+    void readEvent();
+    const generationRef = generation;
     return () => {
-      generation.current++;
+      generationRef.current++;
     };
   }, [controller, state.account, admin]);
   async function read(offset = 0) {
