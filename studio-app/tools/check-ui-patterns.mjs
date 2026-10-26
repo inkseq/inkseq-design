@@ -1,7 +1,8 @@
 // Ratchet for h3-studio#514 phase 2: hand-rolled UI patterns that have a shared replacement
 // may only go down, per file. Run with --update after removing some to lower the baseline.
-// - disabled={busy…}: page-wide busy that greys out everything; use per-action pending
-//   (data/query.js mutations, the cloud controller's quiet operations)
+// - disabled={c.busy…}: a shared controller's busy flag greys out everything; use per-action
+//   pending (data/query.js mutations, the cloud controller's quiet operations). A component's
+//   own in-flight flag, such as a dialog's `busy` state, is already per-action and not counted.
 // - <details>: hand-rolled floating panels; menus use ui/Menu, panels ui/Popover
 //   (inline expand/collapse sections still count, so new ones are a deliberate choice)
 // - <dialog / window.confirm / ChatDialog: use ui/Dialog
@@ -18,7 +19,7 @@ const baselineFile = new URL('./ui-pattern-baseline.json', import.meta.url);
 // The shared primitives in ui/ are where these patterns belong.
 const owners = new Set(['QuickChatControls.jsx']);
 const patterns = {
-  busyDisables: /disabled=\{[^}]*\bbusy\b/g,
+  busyDisables: /disabled=\{[^}]*\b(?:c|state|ctx|cloud|trash)\??\.busy\b/g,
   details: /<details\b/g,
   rawDialog: /<dialog\b/g,
   confirm: /window\.confirm\(/g,
