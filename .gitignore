@@ -130,8 +130,6 @@
 !studio-app/src/ink-mark-daily.test.js
 !studio-app/src/account-menu.css
 !studio-app/src/dialogs.css
-!studio-app/src/popover-dismiss.js
-!studio-app/src/popover-dismiss.test.js
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
@@ -422,6 +420,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/ui/FilterChip.jsx
 !studio-app/src/ui/filter-chip.css
 !studio-app/src/ui/density.css
+!studio-app/src/ui/Disclosure.jsx
 !studio-app/src/ui/Chip.jsx
 !studio-app/src/ui/chip.css
 !studio-app/src/ui/Tabs.jsx

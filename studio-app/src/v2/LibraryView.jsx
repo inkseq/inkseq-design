@@ -338,7 +338,7 @@ export default function LibraryView({
             <div className="libp-bulk">
               <b>{t('library.selected', { count: picked.length })}</b>
               <PopMenu
-                summaryClass="small"
+                look="small"
                 disabled={locked || pickedManaged}
                 title={pickedManaged ? t('library.managedHint') : undefined}
                 label={

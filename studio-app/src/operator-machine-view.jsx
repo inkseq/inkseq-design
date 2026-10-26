@@ -1,4 +1,5 @@
 import { Note } from './ui/Note.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { operatorOfferReadiness as rawOfferReadiness } from './operator-model.js';
 import { operatorNodeStatus as rawOperatorNodeStatus } from './operator-presentation.js';
@@ -232,8 +233,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
               {date(removal.last_checked_at)} · {age(removal.last_checked_at, now)}
             </p>
             {removal.last_checked_at != null && <p>{removal.observationText}</p>}
-            <details className="op-details">
-              <summary>{lo('legacyOp.copy340')}</summary>
+            <Disclosure className="op-details" summary={lo('legacyOp.copy340')}>
               <dl>
                 <dt>{lo('legacyOp.copy341')}</dt>
                 <dd>{date(removal.requested_at)}</dd>
@@ -258,7 +258,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
                 </p>
               )}
               <p>{lo('legacyOp.copy347')}</p>
-            </details>
+            </Disclosure>
           </div>
         </div>
       )}
@@ -279,7 +279,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
           </div>
         </div>
       )}
-      <details
+      <Disclosure
         className="op-details op-bootstrap"
         open={
           !history &&
@@ -287,15 +287,17 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
             node.runtime_state,
           )
         }
+        summary={
+          <>
+            {history ? lo('legacyOp.copy351') : lo('legacyOp.copy352')} ·{' '}
+            {bootstrap.freshness === 'fresh'
+              ? lo('legacyOp.copy353')
+              : bootstrap.freshness === 'stale'
+                ? lo('legacyOp.copy354')
+                : lo('legacyOp.copy355')}
+          </>
+        }
       >
-        <summary>
-          {history ? lo('legacyOp.copy351') : lo('legacyOp.copy352')} ·{' '}
-          {bootstrap.freshness === 'fresh'
-            ? lo('legacyOp.copy353')
-            : bootstrap.freshness === 'stale'
-              ? lo('legacyOp.copy354')
-              : lo('legacyOp.copy355')}
-        </summary>
         <p>
           {date(bootstrap.observed_at)} · {age(bootstrap.observed_at, now)}
           {bootstrap.freshness !== 'fresh' && !history ? lo('legacyOp.copy356') : ''}
@@ -331,7 +333,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
           <p>{lo('legacyOp.copy362')}</p>
         )}
         <p>{history ? lo('legacyOp.copy363') : lo('legacyOp.copy364')}</p>
-      </details>
+      </Disclosure>
       <div className="op-slots">
         {history && node.slots?.length > 0 && <Note>{lo('legacyOp.copy365')}</Note>}
         {node.slots?.length ? (
@@ -388,8 +390,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
           <Note>{history ? lo('legacyOp.copy376') : lo('legacyOp.copy377')}</Note>
         )}
       </div>
-      <details className="op-details">
-        <summary>{lo('legacyOp.copy378')}</summary>
+      <Disclosure className="op-details" summary={lo('legacyOp.copy378')}>
         <dl>
           <dt>{lo('legacyOp.copy379')}</dt>
           <dd>
@@ -424,7 +425,7 @@ export function NodeCard({ node, profiles = [], disabled, onAction, now = Date.n
           <dd>{node.version}</dd>
         </dl>
         <p>{lo('legacyOp.copy390')}</p>
-      </details>
+      </Disclosure>
       <footer>
         <Button
           disabled={disabled || !node.actions?.drain?.allowed}
@@ -545,10 +546,12 @@ export function CandidateCard({ row, index, current, busy, onStart }) {
       {row.preference_hints?.length > 0 && (
         <Note>{row.preference_hints.map(reasonText).join(' ')}</Note>
       )}
-      <details className="op-details">
-        <summary>
-          {row.offer_kind === 'resource_sku' ? lo('legacyOp.copy404') : lo('legacyOp.copy378')}
-        </summary>
+      <Disclosure
+        className="op-details"
+        summary={
+          row.offer_kind === 'resource_sku' ? lo('legacyOp.copy404') : lo('legacyOp.copy378')
+        }
+      >
         <p>
           <code>{row.offer_id}</code>
         </p>
@@ -557,7 +560,7 @@ export function CandidateCard({ row, index, current, busy, onStart }) {
           {lo('legacyOp.copy407')} {date(row.observed_at)}
           {row.country && ` · ${row.country}`}
         </p>
-      </details>
+      </Disclosure>
       <footer>
         <span>
           {!current

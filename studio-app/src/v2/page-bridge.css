@@ -115,32 +115,9 @@ dialog::backdrop {
 }
 
 .story-recent-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  z-index: 80;
   width: min(320px, 90vw);
-  padding: 10px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 12px;
-  box-shadow: var(--shadow);
 }
-
-.story-recent {
-  position: relative;
-}
-.story-recent > summary {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  cursor: pointer;
-}
-.story-recent-menu {
-  right: auto;
-  left: 0;
-}
-.story-recent-menu > button {
+.story-recent-menu > div > button {
   width: 100%;
   display: flex;
   justify-content: space-between;

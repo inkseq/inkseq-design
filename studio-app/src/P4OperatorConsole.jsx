@@ -1,4 +1,5 @@
 import { EmptyState, Note } from './ui/Note.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { Chip } from './ui/Chip.jsx';
 import StudioHeader from './StudioHeader.jsx';
@@ -811,12 +812,12 @@ function StartDialog({
                   {/* Same model and GPU can exist as several engine builds; only the newest
                       usually has a current execution policy, so older ones fail at launch. */}
                   {engines.length > 1 && (
-                    <details className="p4-engine">
-                      <summary>
-                        {t('operator.more.engine', {
-                          version: engineVersion(selected) || '—',
-                        })}
-                      </summary>
+                    <Disclosure
+                      className="p4-engine"
+                      summary={t('operator.more.engine', {
+                        version: engineVersion(selected) || '—',
+                      })}
+                    >
                       <div className="p4-engine-list">
                         {engines.map((profile, position) => (
                           <Chip
@@ -834,7 +835,7 @@ function StartDialog({
                         ))}
                       </div>
                       <small>{t('operator.more.engineHelp')}</small>
-                    </details>
+                    </Disclosure>
                   )}
                   <small>
                     {selected && (
@@ -1292,8 +1293,7 @@ export function MachineDetail({
           })}
         </p>
       )}
-      <details className="p4-method">
-        <summary>{t('operator.copy91')}</summary>
+      <Disclosure className="p4-method" summary={t('operator.copy91')}>
         <p>{t('operator.copy92')}</p>
         <p>
           {metrics.generation_basis || metrics.basis || t('operator.status42')} ·{' '}
@@ -1304,7 +1304,7 @@ export function MachineDetail({
               end: time(metrics.window_end, locale),
             })}
         </p>
-      </details>
+      </Disclosure>
       {terminal(node) && (
         <div className="p4-kv">
           <div>
@@ -1324,11 +1324,10 @@ export function MachineDetail({
         </div>
       )}
       {admin && node.reason_code && (
-        <details className="p4-method">
-          <summary>{t('operator.copy95')}</summary>
+        <Disclosure className="p4-method" summary={t('operator.copy95')}>
           <code>{node.reason_code}</code>
           <p>{t('operator.copy96')}</p>
-        </details>
+        </Disclosure>
       )}
       <footer>
         <Button disabled={terminal(node) || stopping(node)} onClick={() => onStop(node)}>
@@ -1673,8 +1672,7 @@ function AdminView({ snapshot, profiles, onDetail, onStop }) {
           <div className="ui-empty ui-empty-compact">{t('operator.copy120')}</div>
         )}
       </div>
-      <details className="p4-method">
-        <summary>{t('operator.copy121')}</summary>
+      <Disclosure className="p4-method" summary={t('operator.copy121')}>
         <p>{t('operator.copy122')}</p>
         {snapshot.reviews?.map((row) => (
           <p key={row.node_id || row.id}>
@@ -1682,7 +1680,7 @@ function AdminView({ snapshot, profiles, onDetail, onStop }) {
           </p>
         ))}
         <a href="/operator?legacy=1">{t('operator.copy123')}</a>
-      </details>
+      </Disclosure>
     </>
   );
 }

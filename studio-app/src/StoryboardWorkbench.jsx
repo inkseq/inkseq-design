@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Columns2, MoreHorizontal, RefreshCw, Sparkles, Star, Trash2 } from 'lucide-react';
 import { profileLabel } from './model-visibility.js';
 import { isActiveTrashItem } from './trash-commands.js';
@@ -687,8 +688,7 @@ export function WorkbenchFork({ ids }) {
   useEffect(() => setProfile(''), [state.contextId]);
   if (!ids.length) return null;
   return (
-    <details>
-      <summary>{t('workbench.fork')}</summary>
+    <Disclosure summary={t('workbench.fork')}>
       <p>{t('workbench.forkHint')}</p>
       <select
         value={profile}
@@ -718,6 +718,6 @@ export function WorkbenchFork({ ids }) {
       >
         {t('workbench.fork')}
       </Button>
-    </details>
+    </Disclosure>
   );
 }

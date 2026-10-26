@@ -1,4 +1,5 @@
 import StudioHeader from './StudioHeader.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Segmented } from './ui/Segmented.jsx';
 import { Button } from './ui/Button.jsx';
 import { Dialog, DialogActions } from './ui/Dialog.jsx';
@@ -551,11 +552,15 @@ export default function UniversalTrash() {
               </div>
             ) : (
               <>
-                <details className="ops-tools">
-                  <summary>
-                    <SlidersHorizontal size={14} />
-                    {t('trash.filters')}
-                  </summary>
+                <Disclosure
+                  className="ops-tools"
+                  summary={
+                    <>
+                      <SlidersHorizontal size={14} />
+                      {t('trash.filters')}
+                    </>
+                  }
+                >
                   <div className="row tight">
                     <select
                       aria-label={t('trash.all')}
@@ -603,7 +608,7 @@ export default function UniversalTrash() {
                       {t('trash.selectAll')}
                     </Button>
                   </div>
-                </details>
+                </Disclosure>
                 {error && <p role="alert">{error}</p>}
                 {items.length ? (
                   <div className="trash-list" aria-busy={loading}>

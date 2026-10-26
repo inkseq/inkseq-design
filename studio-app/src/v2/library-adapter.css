@@ -241,58 +241,14 @@ body.libp-resizing {
 
 /* Asset library redesign (owner, 2026-10-22): menus under their buttons, edits in place,
    a details panel beside the clicked card. */
-.lib-pop {
-  position: relative;
-}
-.lib-pop > summary {
-  list-style: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  cursor: pointer;
-  white-space: nowrap;
-  padding: 7px 14px;
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
-  background: var(--surface-2);
-  font-weight: 600;
-}
-.lib-pop > summary::-webkit-details-marker {
-  display: none;
-}
-.lib-pop > summary.small {
-  padding: 4px 10px;
-  font-size: 12px;
-}
-.lib-pop > summary.primary {
-  background: var(--accent);
-  color: var(--accent-ink);
-  border-color: transparent;
-}
-.lib-pop > summary.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 .lib-pop-panel {
-  position: absolute;
-  z-index: 40;
-  top: calc(100% + 6px);
-  left: 0;
   width: 280px;
-  max-width: calc(100vw - 32px);
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 12px;
-  background: var(--surface-2);
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgb(0 0 0 / 0.35);
-  font-weight: 400;
 }
-.lib-upload .lib-pop-panel {
-  left: auto;
-  right: 0;
+.lib-pop-panel.lib-upload {
   width: 320px;
 }
 .lib-pop-panel .field,
@@ -478,16 +434,6 @@ body.libp-resizing {
 .lib-float .field > span {
   font-size: 12px;
   color: var(--muted);
-}
-.lib-float .lib-pop > summary {
-  width: 100%;
-  justify-content: center;
-}
-.lib-float .lib-pop-panel {
-  position: static;
-  width: 100%;
-  margin-top: 6px;
-  box-shadow: none;
 }
 .lib-float .libp-actions {
   display: flex;
