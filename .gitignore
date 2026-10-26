@@ -421,6 +421,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/ui/side-nav.css
 !studio-app/src/ui/FilterChip.jsx
 !studio-app/src/ui/filter-chip.css
+!studio-app/src/ui/density.css
 !studio-app/src/data/
 !studio-app/src/data/query.js
 !studio-app/src/query-layer.test.js

@@ -356,7 +356,13 @@ function ChooseFiles({ kind, exclude, title, onPick, onFiles, onClose }) {
   );
   // Its own modal on top of whatever opened it (e.g. the profile editor), via ui/Dialog.
   return (
-    <Dialog title={title} onClose={onClose} portal wide className="sb-portal pe-choose">
+    <Dialog
+      title={title}
+      onClose={onClose}
+      portal
+      wide
+      className="sb-portal density-compact pe-choose"
+    >
       <div
         className="pe-choose-body"
         {...nativeDrop((files) => {
@@ -1333,7 +1339,7 @@ export function AssetPicker({ shotId, slot, x, y, onClose }) {
   return createPortal(
     <div
       ref={box}
-      className="sb-portal picker"
+      className="sb-portal density-compact picker"
       style={{ left: left + moved.x, top: top + moved.y }}
       role="dialog"
       aria-label={SLOT_TITLE[slot]}

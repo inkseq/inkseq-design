@@ -3,7 +3,7 @@
     "busyDisables": 221,
     "details": 60,
     "rawDialog": 2,
-    "controlRestyle": 128
+    "controlRestyle": 125
   },
   "files": {
     "busyDisables": {
@@ -96,7 +96,7 @@
       "v2/ops-adapter.css": 14,
       "v2/page-bridge.css": 9,
       "v2/story-film.css": 6,
-      "v2/story-view.css": 12,
+      "v2/story-view.css": 9,
       "v2/works-adapter.css": 4
     }
   }
