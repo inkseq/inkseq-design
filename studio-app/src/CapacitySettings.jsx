@@ -312,7 +312,7 @@ export default function CapacitySettings({ settings, api, onSaved }) {
         extra={
           <>
             {suggested && (
-              <Button className="linkish" onClick={() => recommend([id])}>
+              <Button variant="link" onClick={() => recommend([id])}>
                 {t('capacity.recommended', { value: toText(id, leaf(defaults, id)) })}
               </Button>
             )}

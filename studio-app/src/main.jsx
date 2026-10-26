@@ -12,7 +12,7 @@ import './ui/density.css';
 import './ui/feedback.css';
 import './demo-v2.css';
 import './v2/page-bridge.css';
-import './dialogs.css';
+import './ui/dialog.css';
 import './skins.css';
 import { startSkin } from './skins.js';
 import { installPopoverDismiss } from './popover-dismiss.js';

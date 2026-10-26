@@ -115,7 +115,6 @@
 }
 .film-zoom input[type='range'] {
   width: 140px;
-  accent-color: var(--accent);
 }
 .film-timeline {
   overflow-x: auto;
@@ -381,7 +380,6 @@ button.autosave-status {
 }
 .film-audio-controls input[type='range'] {
   width: 120px;
-  accent-color: var(--accent);
 }
 @media (pointer: coarse) {
   .film-audio-trim {

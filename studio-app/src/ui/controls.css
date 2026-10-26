@@ -108,6 +108,19 @@ button.option:hover {
   background: var(--surface);
   border-color: color-mix(in srgb, var(--accent) 40%, transparent);
 }
+button.link {
+  min-height: 0;
+  padding: 0;
+  color: var(--accent);
+  background: none;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+button.link:hover {
+  background: none;
+  filter: brightness(1.1);
+}
 button.on-media {
   color: var(--white);
   background: var(--media-scrim-strong);
@@ -181,9 +194,9 @@ textarea {
   line-height: 1.55;
 }
 /* A field that sits inside its own frame (the chat composer): no box of its own. */
-:is(input, textarea).field-bare,
-:is(input, textarea).field-bare:focus,
-:is(input, textarea).field-bare:focus-visible {
+:is(input, textarea, select).field-bare,
+:is(input, textarea, select).field-bare:focus,
+:is(input, textarea, select).field-bare:focus-visible {
   padding-inline: 4px;
   background: none;
   border: 0;
@@ -207,6 +220,11 @@ select {
   background-image: url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 fill=%22none%22 stroke=%22%23808983%22 stroke-width=%221.6%22%3E%3Cpath d=%22M1 1l4 4 4-4%22/%3E%3C/svg%3E');
   background-repeat: no-repeat;
   background-position: right 10px center;
+}
+select option,
+select optgroup {
+  background-color: var(--surface-2);
+  color: var(--ink);
 }
 input[type='range'] {
   accent-color: var(--accent);
@@ -248,6 +266,12 @@ select.field-sm {
   select,
   textarea {
     font-size: 16px;
+  }
+  /* Touch targets: buttons are at least 36px square (the 22px chip remove and inline links
+   * excepted). */
+  button:not(.xsmall, .link) {
+    min-height: 36px;
+    min-width: 36px;
   }
   .seg button {
     min-height: 36px;

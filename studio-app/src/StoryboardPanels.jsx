@@ -76,7 +76,7 @@ export function StoryboardSplitter({
   const { t } = useI18n();
   return (
     <div
-      className={'splitter ' + axis + ' ' + className}
+      className={'splitter axis-' + axis + ' ' + className}
       tabIndex={0}
       role="separator"
       aria-label={label || t('storyboard.resize')}
