@@ -1391,7 +1391,7 @@ small {
     var(--surface-3) 8px
   );
 }
-.achip.overlay {
+.achip.drag-ghost {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1516,55 +1516,6 @@ small {
   border-top: 1px solid var(--line);
   padding-top: 6px;
 }
-.choose-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 80;
-  background: rgba(5, 6, 5, 0.65);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  animation: fade 0.15s ease-out;
-}
-@keyframes fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-.choose {
-  width: min(620px, 92vw);
-  max-height: 86vh;
-  overflow: auto;
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: var(--r-lg);
-  padding: 18px 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  box-shadow: var(--shadow-lg);
-  animation: pop 0.16s ease-out;
-}
-.choose .picker-head b {
-  font-size: 16px;
-}
-.choose.settings,
-.choose.newstory {
-  width: min(660px, 94vw);
-}
-.choose .picker-grid {
-  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
-  grid-auto-rows: 96px;
-  max-height: 50vh;
-}
-.choose .picker-grid .tile {
-  height: 96px;
-}
-
 .modes {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -2579,11 +2530,6 @@ pre {
     opacity: 0;
   }
 }
-@keyframes fade {
-  from {
-    opacity: 0;
-  }
-}
 
 .switch {
   width: 38px;
@@ -2734,11 +2680,6 @@ pre {
   padding: 3px 6px;
 }
 
-.choose.wide {
-  width: min(980px, 96vw);
-  max-height: 90vh;
-  overflow: auto;
-}
 .cfg {
   border: 1px solid var(--line);
   border-radius: var(--r-lg);
@@ -4164,7 +4105,6 @@ h4,
           .story-recent-menu,
           .hbar nav,
           .libp-side,
-          .choose,
           .chapter-menu
         )
         *

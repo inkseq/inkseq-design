@@ -2,11 +2,8 @@
   "totals": {
     "busyDisables": 221,
     "details": 60,
-    "confirm": 1,
-    "customOverlay": 4,
-    "rawMenuItem": 2,
     "rawDialog": 2,
-    "controlRestyle": 201
+    "controlRestyle": 199
   },
   "files": {
     "busyDisables": {
@@ -82,17 +79,6 @@
       "UniversalTrash.jsx": 1,
       "v2/LibraryParts.jsx": 2
     },
-    "confirm": {
-      "AssistantConnections.jsx": 1
-    },
-    "customOverlay": {
-      "CreditsUI.jsx": 1,
-      "StoryboardWorkspace.jsx": 2,
-      "StoryOpenNotice.jsx": 1
-    },
-    "rawMenuItem": {
-      "FilmAudioLane.jsx": 2
-    },
     "rawDialog": {
       "OperatorHostsPanel.jsx": 1,
       "OperatorJobsPanel.jsx": 1
@@ -105,7 +91,7 @@
       "cloud-studio.css": 9,
       "demo-v2.css": 80,
       "dialogs.css": 5,
-      "film-editor.css": 8,
+      "film-editor.css": 6,
       "floating-notices.css": 2,
       "generation-availability.css": 1,
       "i18n/workspace-language.css": 4,

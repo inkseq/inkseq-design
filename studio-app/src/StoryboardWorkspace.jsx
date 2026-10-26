@@ -525,7 +525,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     >
       {!railed && (
         <Button
-          className="sb-library-backdrop"
+          className="sb-library-scrim"
           aria-label={t('storyboard.detail15')}
           onClick={() => setLibraryCollapsed(true)}
         />
@@ -1118,7 +1118,7 @@ function StoryboardShell({ onLegacyGuide, onCanvas, onNewScene, filmControl }) {
         />
         <DragOverlay dropAnimation={null}>
           {dragged ? (
-            <div className="sb-portal achip overlay">
+            <div className="sb-portal achip drag-ghost">
               <AssetThumb asset={thumb} />
               <b>{dragged.name}</b>
             </div>

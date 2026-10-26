@@ -527,7 +527,7 @@
   left: 0;
   right: 0;
 }
-.sb-workspace button:not(:is(.tile, .ver, .card, .sb-library-backdrop)),
+.sb-workspace button:not(:is(.tile, .ver, .card, .sb-library-scrim)),
 .sb-portal button:not(.tile) {
   min-height: 32px;
   display: inline-flex;
