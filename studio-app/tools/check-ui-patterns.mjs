@@ -6,6 +6,10 @@
 //   (inline expand/collapse sections still count, so new ones are a deliberate choice)
 // - <dialog / window.confirm / ChatDialog: use ui/Dialog
 // - role="menuitem": use ui/Menu MenuItem
+// - <button: use ui/Button, IconButton or Segmented (fields go inside ui/Field)
+// - className "...overlay/backdrop...": hand-made modal layers; use ui/Dialog
+// - page CSS rules that restyle buttons or fields (background, border, padding, size, colour):
+//   the look belongs to ui/controls.css; pages only place controls
 import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 
@@ -20,13 +24,19 @@ const patterns = {
   confirm: /window\.confirm\(/g,
   chatDialog: /<ChatDialog\b/g,
   rawMenuItem: /role="menuitem"/g,
+  rawButton: /<button\b/g,
+  customOverlay: /className="[^"]*\b[\w-]*(?:overlay|backdrop)\b[^"]*"/g,
 };
+const controlSelector = /(^|[\s>,+~(])(button|input|select|textarea)\b|\.x\b|-btn\b|\.play\b/;
+const controlLook = /(background|border|padding|height|border-radius|font-size|color)\s*:/;
 const files = [];
+const cssFiles = [];
 const walk = (dir) => {
   for (const name of readdirSync(dir)) {
     const path = join(dir, name);
     if (statSync(path).isDirectory()) walk(path);
     else if (name.endsWith('.jsx') && !name.endsWith('.test.jsx')) files.push(path);
+    else if (name.endsWith('.css')) cssFiles.push(path);
   }
 };
 walk(root);
@@ -39,6 +49,15 @@ for (const file of files) {
     const n = (text.match(re) || []).length;
     if (n) (counts[name] ||= {})[rel] = n;
   }
+}
+for (const file of cssFiles) {
+  const rel = relative(root, file).split(sep).join('/');
+  if (rel.startsWith('ui/') || rel === 'skins.css') continue;
+  const text = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  let n = 0;
+  for (const [, selector, body] of text.matchAll(/([^{}@]+)\{([^{}]*)\}/g))
+    if (controlSelector.test(selector.trim()) && controlLook.test(body)) n++;
+  if (n) (counts.controlRestyle ||= {})[rel] = n;
 }
 const totals = Object.fromEntries(
   Object.entries(counts).map(([k, v]) => [k, Object.values(v).reduce((a, b) => a + b, 0)]),
