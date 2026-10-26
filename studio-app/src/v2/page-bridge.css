@@ -723,6 +723,20 @@ dialog.modal.wide {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Fixed columns, so hiding the picture (narrow sidebar) never shifts the name into the
+   picture's 46 px slot or stretches the add button. */
+.sb-workspace .library .pcard {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.sb-workspace .library .pcard > :is(.athumb, .profile-initial) {
+  grid-column: 1;
+}
+.sb-workspace .library .pcard > .pcard-body {
+  grid-column: 2;
+}
+.sb-workspace .library .pcard > .pcard-open {
+  grid-column: 3;
+}
 /* The card's "…" menu floats over its top-right corner on hover or focus, so the name and
    details keep the full width at any sidebar size; touch screens always show it. */
 .sb-workspace .library .pcard > .item-menu {
