@@ -72,9 +72,6 @@ export const landingCatalogs = {
     'landing.v2.flowBody6': 'Only the marked part is redone',
     'landing.v2.flowBody7': 'Export, or polish it in your editor',
     'landing.v2.loop': 'Watch · mark · change only that — until you are happy',
-    'landing.v2.baTitle': 'Only the part you marked changes',
-    'landing.v2.baHint': 'Drag to compare before and after',
-    'landing.v2.baLabel': 'The same shot before and after one marked fix',
     'landing.v2.agents':
       'There is a built-in assistant, or bring your own Claude, Codex, ChatGPT or Telegram — you all edit the same story.',
     'landing.v2.agentsLabel': 'Assistants that can work with you',
@@ -182,9 +179,6 @@ export const landingCatalogs = {
     'landing.v2.flowBody6': '只重做标出的那一处',
     'landing.v2.flowBody7': '导出，或交给剪辑软件精修',
     'landing.v2.loop': '看片 · 标注 · 只改那一处 —— 直到满意',
-    'landing.v2.baTitle': '只改你标出的那一处',
-    'landing.v2.baHint': '拖动看看改前改后',
-    'landing.v2.baLabel': '同一镜头标注修改前后的对比',
     'landing.v2.agents':
       '网页里有内置小墨滴；也可以请你自己的 Claude、Codex、ChatGPT 或 Telegram 来帮忙，大家改的是同一个故事。',
     'landing.v2.agentsLabel': '能和你一起干活的助手',
