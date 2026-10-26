@@ -8,7 +8,7 @@
     "customOverlay": 4,
     "rawMenuItem": 2,
     "rawDialog": 4,
-    "controlRestyle": 237
+    "controlRestyle": 236
   },
   "files": {
     "rawButton": {
@@ -194,7 +194,6 @@
       "floating-notices.css": 2,
       "generation-availability.css": 1,
       "i18n/workspace-language.css": 6,
-      "landing-parts.css": 1,
       "operator-budget.css": 2,
       "production-queue.css": 3,
       "roughcut.css": 2,
