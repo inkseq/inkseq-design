@@ -6,7 +6,7 @@
     "customOverlay": 4,
     "rawMenuItem": 2,
     "rawDialog": 2,
-    "controlRestyle": 236
+    "controlRestyle": 201
   },
   "files": {
     "busyDisables": {
@@ -103,21 +103,21 @@
       "api-keys.css": 1,
       "capacity-settings.css": 1,
       "cloud-studio.css": 9,
-      "demo-v2.css": 110,
+      "demo-v2.css": 80,
       "dialogs.css": 5,
       "film-editor.css": 8,
       "floating-notices.css": 2,
       "generation-availability.css": 1,
-      "i18n/workspace-language.css": 6,
+      "i18n/workspace-language.css": 4,
       "operator-budget.css": 2,
       "production-queue.css": 3,
       "roughcut.css": 2,
       "shot-segments.css": 1,
       "story-chat.css": 18,
       "story-open.css": 1,
-      "v2/library-adapter.css": 11,
-      "v2/ops-adapter.css": 16,
-      "v2/page-bridge.css": 13,
+      "v2/library-adapter.css": 10,
+      "v2/ops-adapter.css": 15,
+      "v2/page-bridge.css": 12,
       "v2/story-film.css": 6,
       "v2/story-view.css": 12,
       "v2/works-adapter.css": 4
