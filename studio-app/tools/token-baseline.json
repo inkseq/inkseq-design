@@ -1,22 +1,7 @@
 {
-  "total": 146,
+  "total": 9,
   "files": {
-    "admin.css": 1,
-    "api-keys.css": 9,
-    "capacity-settings.css": 13,
-    "cloud-studio.css": 28,
-    "demo-v2.css": 38,
-    "floating-notices.css": 6,
-    "i18n/workspace-language.css": 1,
-    "landing.css": 8,
-    "maintenance.css": 4,
-    "persistence-warning.css": 4,
-    "production-queue.css": 8,
-    "project-activity.css": 6,
-    "roughcut.css": 2,
-    "story-chat.css": 2,
-    "story-open.css": 6,
-    "v2/page-bridge.css": 4,
-    "v2/story-view.css": 6
+    "landing.css": 7,
+    "roughcut.css": 2
   }
 }
