@@ -715,7 +715,7 @@
   height: 28px;
   min-height: 28px;
 }
-.ops-adapter :is(.p4-page-launch, .assistant-connect, .snav button) {
+.ops-adapter :is(.p4-page-launch, .assistant-connect) {
   height: 36px;
   min-height: 36px;
 }
@@ -782,10 +782,6 @@
     position: static;
     flex-direction: row;
     overflow-x: auto;
-  }
-  .ops-adapter .snav button {
-    flex: none;
-    white-space: nowrap;
   }
   .ops-adapter :is(.trash-filter button, .ops-page-tabs button) {
     height: 36px;
