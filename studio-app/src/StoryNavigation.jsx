@@ -1024,7 +1024,7 @@ export function RecentStoriesDropdown({ state, onOpenCloud, onOpenLocal, onSelec
         <StoryLocation mode={state.workspace.mode} />
         <ChevronDown size={14} />
       </summary>
-      <div className="story-recent-menu">
+      <div className="story-recent-menu" data-keep-labels>
         <b>{t('account.copy30')}</b>
         {stories.map((story) => (
           <Button

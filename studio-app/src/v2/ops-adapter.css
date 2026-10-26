@@ -764,10 +764,6 @@
     flex-direction: row;
     overflow-x: auto;
   }
-  .ops-adapter :is(.trash-filter button, .ops-page-tabs button) {
-    height: 36px;
-    min-height: 36px;
-  }
   .ops-adapter .trash-row {
     grid-template-columns: 20px 32px minmax(0, 1fr) auto;
     gap: 8px;

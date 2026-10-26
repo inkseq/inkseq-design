@@ -432,9 +432,6 @@ dialog::backdrop {
     min-height: 36px;
     min-width: 36px;
   }
-  .ops-adapter .ops-page-tabs > button {
-    min-height: 36px;
-  }
   .ops-adapter details > summary {
     min-height: 36px;
     display: flex;

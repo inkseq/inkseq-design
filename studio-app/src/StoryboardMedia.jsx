@@ -427,7 +427,9 @@ export function StoryboardPlayButton({ asset, start = 0, len = null, label }) {
   };
   return (
     <Button
-      className={'play' + (playing ? ' on' : '')}
+      size="sm"
+      variant={playing ? 'primary' : undefined}
+      className="play"
       disabled={!url}
       onPointerDown={(event) => event.stopPropagation()}
       onClick={toggle}
