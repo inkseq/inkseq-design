@@ -217,7 +217,7 @@ await journey(
     // The old Settings → Admin link now lands on /admin (h3-studio#537).
     await p.goto(BASE + '/settings?tab=admin');
     await p.waitForURL(/\/admin\?section=limits/, { timeout: 15000 });
-    await p.waitForSelector('.admin-home .cap-group', { timeout: 15000 });
+    await p.waitForSelector('.admin-home .cap .ui-setting-row', { timeout: 15000 });
     for (const [section, selector] of [
       ['overview', '.admin-home .ah-kpis'],
       ['users', '.admin-home .user-row:not(.head)'],
