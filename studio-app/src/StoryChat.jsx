@@ -435,7 +435,9 @@ function useRemembered(key, initial) {
   useEffect(() => {
     try {
       localStorage.setItem(key, value ? '1' : '0');
-    } catch {}
+    } catch {
+      // Browser storage is optional (private mode, blocked site data).
+    }
   }, [key, value]);
   return [value, setValue];
 }

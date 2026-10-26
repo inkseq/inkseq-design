@@ -21,11 +21,17 @@ export default [
       'react-hooks/exhaustive-deps': 'warn',
       // Sanitisers strip control characters on purpose.
       'no-control-regex': 'off',
-      // Unused catch bindings and leading-underscore placeholders are intentional. Vite builds JSX
-      // in classic mode (React.createElement), so the React import is always needed.
+      // Unused catch bindings and leading-underscore placeholders are intentional, and so is
+      // dropping a field with a rest sibling ({ omitted, ...rest }). Vite builds JSX in classic
+      // mode (React.createElement), so the React import is always needed.
       'no-unused-vars': [
         'warn',
-        { caughtErrors: 'none', argsIgnorePattern: '^_', varsIgnorePattern: '^(_|React$)' },
+        {
+          caughtErrors: 'none',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^(_|React$)',
+          ignoreRestSiblings: true,
+        },
       ],
       complexity: ['warn', 25],
       'max-lines-per-function': ['warn', { max: 200, skipBlankLines: true, skipComments: true }],

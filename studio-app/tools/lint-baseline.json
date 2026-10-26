@@ -1,12 +1,7 @@
 {
   "totals": {
     "complexity": 110,
-    "no-unused-vars": 91,
-    "max-lines-per-function": 52,
-    "no-empty": 31,
-    "preserve-caught-error": 7,
-    "no-useless-assignment": 5,
-    "no-loss-of-precision": 1
+    "max-lines-per-function": 52
   },
   "files": {
     "complexity": {
@@ -114,64 +109,6 @@
       "src/UniversalTrash.jsx": 2,
       "src/v2/LibraryView.jsx": 1,
       "src/video-cache-core.js": 1
-    },
-    "no-unused-vars": {
-      "src/App.jsx": 8,
-      "src/assistant-connections.test.js": 1,
-      "src/CloudStudio.jsx": 2,
-      "src/CreationHistory.jsx": 1,
-      "src/DstackCapacity.jsx": 1,
-      "src/media-read-gate.test.js": 1,
-      "src/operator-machine-view.jsx": 3,
-      "src/operator-market.test.js": 1,
-      "src/operator-model.js": 1,
-      "src/operator.test.js": 1,
-      "src/OperatorConsole.jsx": 2,
-      "src/P4OperatorConsole.jsx": 1,
-      "src/private-media.test.js": 1,
-      "src/production-model.js": 1,
-      "src/ProductionQueue.jsx": 1,
-      "src/quick-chat-history.test.js": 1,
-      "src/quick-chat.test.js": 2,
-      "src/StoryboardComponents.jsx": 55,
-      "src/StoryboardMedia.jsx": 1,
-      "src/StoryboardWorkspace.jsx": 4,
-      "src/StoryNavigation.jsx": 1,
-      "src/trash-commands.js": 1
-    },
-    "no-empty": {
-      "src/AssistantConnections.jsx": 1,
-      "src/cloud-controller.js": 1,
-      "src/CreationHistory.jsx": 2,
-      "src/DstackCapacity.jsx": 1,
-      "src/Landing.jsx": 1,
-      "src/Library.jsx": 1,
-      "src/operator-controller.js": 2,
-      "src/OperatorBudgetPanel.jsx": 1,
-      "src/OperatorConsole.jsx": 1,
-      "src/p4-operator-controller.js": 8,
-      "src/P4OperatorConsole.jsx": 3,
-      "src/preview-as-user.js": 1,
-      "src/quick-chat-controller.js": 3,
-      "src/quick-chat-draft.js": 2,
-      "src/StoryboardPanels.jsx": 1,
-      "src/StoryChat.jsx": 1,
-      "src/v2/LibraryView.jsx": 1
-    },
-    "preserve-caught-error": {
-      "src/cloud-controller.js": 4,
-      "src/library-commands.js": 2,
-      "src/trash-commands.js": 1
-    },
-    "no-useless-assignment": {
-      "src/Library.jsx": 1,
-      "src/operator-controller.js": 1,
-      "src/p4-operator-controller.js": 1,
-      "src/store.js": 1,
-      "src/UniversalTrash.jsx": 1
-    },
-    "no-loss-of-precision": {
-      "src/quick-chat.test.js": 1
     }
   }
 }

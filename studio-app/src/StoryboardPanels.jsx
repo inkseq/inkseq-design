@@ -30,7 +30,9 @@ export function useStoryboardPanelSize(key, initial, min, max) {
       saved === null
         ? localStorage.removeItem(storageKey)
         : localStorage.setItem(storageKey, JSON.stringify({ size: saved }));
-    } catch {}
+    } catch {
+      // Browser storage is optional (private mode, blocked site data).
+    }
   }, [storageKey, saved]);
   useEffect(() => () => cleanup.current(), []);
   return {
