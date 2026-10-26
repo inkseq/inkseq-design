@@ -3,7 +3,7 @@
     "busyDisables": 221,
     "details": 60,
     "rawDialog": 2,
-    "controlRestyle": 199
+    "controlRestyle": 174
   },
   "files": {
     "busyDisables": {
@@ -86,19 +86,11 @@
     "controlRestyle": {
       "account-menu.css": 1,
       "admin-home.css": 3,
-      "api-keys.css": 1,
-      "capacity-settings.css": 1,
-      "cloud-studio.css": 9,
-      "demo-v2.css": 80,
+      "cloud-studio.css": 3,
+      "demo-v2.css": 74,
       "dialogs.css": 5,
       "film-editor.css": 6,
-      "floating-notices.css": 2,
-      "generation-availability.css": 1,
       "i18n/workspace-language.css": 4,
-      "operator-budget.css": 2,
-      "production-queue.css": 3,
-      "roughcut.css": 2,
-      "shot-segments.css": 1,
       "story-chat.css": 18,
       "story-open.css": 1,
       "v2/library-adapter.css": 10,

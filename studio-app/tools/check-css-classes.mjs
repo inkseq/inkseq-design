@@ -18,12 +18,22 @@ const walk = (dir) => {
 };
 walk(src);
 const text = code.map((path) => readFileSync(path, 'utf8')).join('\n');
-const words = new Set(text.match(/[A-Za-z_][\w-]*/g));
+// Only text inside string and template literals (and HTML) can become a class name.
+const literals = [...text.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g)]
+  .map((m) => m[0])
+  .join('\n');
+const words = new Set(literals.match(/[A-Za-z_][\w-]*/g));
 const prefixes = [
   ...[...text.matchAll(/([A-Za-z][\w-]*)['"`]\s*\+/g)].map((m) => m[1]),
   ...[...text.matchAll(/([A-Za-z][\w-]*)\$\{/g)].map((m) => m[1]),
 ];
-const used = (name) => words.has(name) || prefixes.some((prefix) => name.startsWith(prefix));
+// A short fragment ('c' + n) only builds numbered classes (c20, t1).
+const used = (name) =>
+  words.has(name) ||
+  prefixes.some(
+    (prefix) =>
+      name.startsWith(prefix) && (prefix.length >= 3 || /^\d+$/.test(name.slice(prefix.length))),
+  );
 const unused = [];
 for (const file of css) {
   const sheet = readFileSync(file, 'utf8')
