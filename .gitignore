@@ -420,6 +420,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/take-review.test.js
 !studio-app/src/LandingParts.jsx
 !studio-app/src/landing-parts.css
+!studio-app/src/profile-editor.css
 !studio-app/src/ui/Menu.jsx
 !studio-app/src/ui/menu.css
 !studio-app/src/ui/Tooltip.jsx
