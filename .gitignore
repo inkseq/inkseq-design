@@ -412,6 +412,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/ui/Menu.jsx
 !studio-app/src/ui/menu.css
 !studio-app/src/ui/Tooltip.jsx
+!studio-app/src/ui/Popover.jsx
 !studio-app/src/ShotSegments.jsx
 !studio-app/src/ScriptWindows.jsx
 !studio-app/src/shot-segments.js

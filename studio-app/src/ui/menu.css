@@ -66,3 +66,31 @@
   line-height: 1.5;
   white-space: normal;
 }
+.ui-popover {
+  z-index: 1000;
+  display: grid;
+  gap: 6px;
+  min-width: 220px;
+  max-width: min(340px, calc(100vw - 16px));
+  max-height: var(--radix-popover-content-available-height);
+  overflow: auto;
+  padding: 10px;
+  background: var(--surface-2);
+  color: var(--ink);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r, 10px);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.32);
+  font-size: 13px;
+}
+.ui-popover > button {
+  justify-content: flex-start;
+  width: 100%;
+}
+.ui-popover p {
+  margin: 0;
+}
+.ui-menu-item small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
