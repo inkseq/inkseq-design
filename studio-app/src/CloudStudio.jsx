@@ -244,7 +244,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
         <div className="cloud-project-list">
           {visibleProjects.map((p) => (
             <div key={p.id}>
-              <Button disabled={c.busy} onClick={() => open(p.id)}>
+              <Button variant="option" disabled={c.busy} onClick={() => open(p.id)}>
                 <span>
                   <b>{p.title?.trim() || t('legacy.visible24')}</b>
                   <small>

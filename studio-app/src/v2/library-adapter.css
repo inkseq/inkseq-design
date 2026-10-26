@@ -150,18 +150,6 @@
 .lib-shell .libp-pcard {
   height: auto;
 }
-.lib-shell .libp-head > button.primary {
-  height: 36px;
-  min-height: 36px;
-}
-.lib-shell .libp-head .pill > .x {
-  width: 28px;
-  min-width: 28px;
-  height: 28px;
-  min-height: 28px;
-  padding: 0;
-  justify-content: center;
-}
 
 .lib-shell .libp-tile {
   min-width: 0;
@@ -327,18 +315,6 @@ body.libp-resizing {
   max-height: 240px;
   overflow: auto;
 }
-.lib-pop-list > button {
-  display: flex;
-  gap: 8px;
-  align-items: baseline;
-  justify-content: flex-start;
-  background: transparent;
-  border-color: transparent;
-  text-align: left;
-}
-.lib-pop-list > button:hover {
-  background: var(--surface-3);
-}
 .lib-pop-new {
   display: flex;
   flex-wrap: wrap;
@@ -451,18 +427,9 @@ body.libp-resizing {
   align-items: center;
   gap: 4px;
 }
-.lib-tag-editor .tagchip .x {
-  padding: 0;
-  background: none;
-  border: 0;
-  color: inherit;
-  cursor: pointer;
-}
 .lib-tag-editor input {
   flex: 1 1 90px;
   min-width: 90px;
-  padding: 4px 8px;
-  font-size: 12px;
 }
 
 /* Details beside the clicked card. */
@@ -536,4 +503,10 @@ body.libp-resizing {
   flex: 0 1 320px;
   min-width: 160px;
   margin-left: 12px;
+}
+.lib-pop-list > .lib-pop-item {
+  justify-content: flex-start;
+  align-items: baseline;
+  gap: 8px;
+  text-align: left;
 }

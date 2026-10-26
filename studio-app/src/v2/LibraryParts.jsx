@@ -102,6 +102,7 @@ export function TagEditor({ tags, suggestions = [], onChange, disabled }) {
         </span>
       ))}
       <input
+        className="field-sm"
         list={listId}
         value={text}
         disabled={disabled}
@@ -196,6 +197,8 @@ export function ReferencePicker({ items, loadProfiles, onFile, onCreate, disable
             <div className="lib-pop-list">
               {profiles.map((p) => (
                 <Button
+                  variant="ghost"
+                  className="lib-pop-item"
                   key={p.target.id}
                   onClick={(e) => {
                     closeDetails(e.currentTarget);
