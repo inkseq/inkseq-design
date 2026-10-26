@@ -128,7 +128,7 @@ export default function ProductionQueue({ project, onInspect }) {
             value={status}
             onChange={(e) => setStatus(e.target.value)}
           >
-            {Object.entries(queueFilters).map(([value, label]) => (
+            {Object.entries(queueFilters).map(([value]) => (
               <option key={value} value={value}>
                 {lt('queue.filter.' + value)}
               </option>

@@ -355,7 +355,7 @@ function useStoryLibrary(state) {
       setPending('');
     }
   }
-  async function openStory(story, onSelect, onOpenCloud) {
+  async function openStory(story, onSelect) {
     return act(t('legacy.visible1'), async () => {
       const active = state.workspace.mode === story.mode && state.project.id === story.project.id;
       const done = active

@@ -59,7 +59,9 @@ function useSideWidth() {
     setWidth(value);
     try {
       localStorage.setItem(SIDE_KEY, String(value));
-    } catch {}
+    } catch {
+      // Browser storage is optional (private mode, blocked site data).
+    }
   };
   const start = (event) => {
     event.preventDefault();

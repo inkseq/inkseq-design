@@ -98,7 +98,7 @@ export function TrashProvider({ account, children }) {
     setBusy(false);
     setRevision((v) => v + 1);
   }, [account]);
-  let pending = null;
+  let pending;
   try {
     pending = controller.pending();
   } catch {

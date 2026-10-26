@@ -4,8 +4,6 @@ import { FloatingMessage } from './floating-notice.js';
 import HostedSignIn from './HostedSignIn.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import './i18n/workspace-language.css';
-import { deferredPanel } from './deferred-panel.js';
-const ProductionQueue = deferredPanel(() => import('./ProductionQueue.jsx'), '制作队列');
 import React, { useEffect, useState, useSyncExternalStore } from 'react';
 import { LogOut, RefreshCw, ChevronRight } from 'lucide-react';
 import { store } from './store.js';
@@ -317,7 +315,6 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
   );
 }
 
-const basics = new Set(['duration', 'resolution', 'aspect_ratio', 'generate_audio', 'seed']);
 export function JobList({ jobs, project, onInspect, onReview }) {
   const { t, locale } = useI18n();
   const c = useCloud();

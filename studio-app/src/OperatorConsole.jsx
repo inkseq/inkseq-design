@@ -57,8 +57,6 @@ export { NodeCard } from './operator-machine-view.jsx';
 
 const quietly = (promise) => promise.catch(() => {});
 const known = (value) => (Number.isFinite(value) ? value : '—');
-const date = (value) =>
-  typeof value === 'number' ? new Date(value * 1000).toLocaleString('zh-CN') : '尚未记录';
 // The console's dialogs use the shared Dialog (h3-studio#514); op-dialog keeps their content layout.
 function Dialog({ title, subtitle, onClose, children, wide = false }) {
   return (
@@ -972,7 +970,9 @@ export default function OperatorConsole() {
       if (document.visibilityState !== 'hidden')
         try {
           await controller.poll();
-        } catch {}
+        } catch {
+          // A failed refresh already shows in the controller state; the next poll retries.
+        }
       if (!stopped) timer = setTimeout(tick, 5000);
     };
     timer = setTimeout(tick, 5000);

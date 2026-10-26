@@ -1101,7 +1101,9 @@ function StopDialog({ target, kind, controller, busy, onClose }) {
       setImpact(null);
       try {
         setImpact(await controller.stopImpact(kind, target.id));
-      } catch {}
+      } catch {
+        // The impact summary is advisory; the dialog works without it.
+      }
     } finally {
       setWorking(false);
     }
@@ -1699,7 +1701,7 @@ export default function P4OperatorConsole() {
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
     [view, setView] = useState('machines'),
     [dialog, setDialog] = useState(null),
-    [now, setNow] = useState(Date.now());
+    [, setNow] = useState(Date.now());
   const legacyView =
     state.snapshot?.operator?.admin === true &&
     new URLSearchParams(ownLocation.current.search).get('legacy') === '1';
@@ -1721,7 +1723,9 @@ export default function P4OperatorConsole() {
       if (document.visibilityState !== 'hidden')
         try {
           await controller.poll(view === 'admin');
-        } catch {}
+        } catch {
+          // A failed refresh already shows in the controller state; the next poll retries.
+        }
       // 15 s: each poll rebuilds every machine's projection on the small CPU host.
       if (!stopped) timer = setTimeout(tick, 15000);
     };
@@ -1784,7 +1788,9 @@ export default function P4OperatorConsole() {
     setView('admin');
     try {
       await controller.readAdmin();
-    } catch {}
+    } catch {
+      // A failed refresh already shows in the controller state; the next poll retries.
+    }
   }
   if (legacyView)
     return (
