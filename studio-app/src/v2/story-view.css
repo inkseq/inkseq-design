@@ -509,12 +509,9 @@
     .tile-badge,
     .tile-used,
     .tile-play .play,
-    .vtabs button em,
-    .vimg small,
     .take-top em
   ),
-.sb-portal
-  :is(.tile-name, .tile-badge, .tile-audio small, .tile-used, .vtabs button em, .vimg small) {
+.sb-portal :is(.tile-name, .tile-badge, .tile-audio small, .tile-used) {
   font-size: 11px;
 }
 .sb-workspace .tseg-title {

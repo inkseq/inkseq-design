@@ -38,13 +38,7 @@ a {
   height: 100%;
   min-height: 0;
 }
-.v2-chapter {
-  width: auto;
-  max-width: 240px;
-  border: 0;
-  background: transparent;
-  font-weight: 600;
-}
+
 /* Export and cloud-status triggers sit in the story header; their panels are the shared
    ui/Menu and ui/Popover (#514 phase 2). */
 .v2-export-trigger,
@@ -158,23 +152,7 @@ dialog::backdrop {
 .story-recent .badge {
   display: none;
 }
-.v2-library-tools {
-  position: relative;
-}
-.v2-library-tools > summary {
-  list-style: none;
-  cursor: pointer;
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
-  padding: 7px;
-}
-.v2-library-tools > div {
-  position: absolute;
-  right: 0;
-  z-index: 20;
-  min-width: 260px;
-  box-shadow: var(--shadow);
-}
+
 .libp-tile .library-preview-error {
   display: grid;
   place-items: center;
@@ -461,7 +439,6 @@ dialog::backdrop {
   .ops-adapter .ops-page-tabs > button {
     min-height: 36px;
   }
-  .v2-library-tools > summary,
   .ops-adapter details > summary {
     min-height: 36px;
     display: flex;
@@ -475,7 +452,7 @@ dialog::backdrop {
 }
 
 /* The header is shared by all creator pages; captions remain readable on mobile. */
-.hbar :is(.chip, .navdot) {
+.hbar .chip {
   font-size: 11px;
 }
 .hbar > button:not(.avatar) {
