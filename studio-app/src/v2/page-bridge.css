@@ -216,7 +216,7 @@ dialog::backdrop {
   border: 1px solid var(--line-2);
   border-radius: 10px;
 }
-.sb-library-backdrop {
+.sb-library-scrim {
   display: none;
 }
 .workbench-select {
@@ -417,7 +417,7 @@ dialog::backdrop {
   .sb-workspace .layout {
     padding-bottom: 0;
   }
-  .sb-library-backdrop {
+  .sb-library-scrim {
     display: block;
     position: fixed;
     inset: 0;

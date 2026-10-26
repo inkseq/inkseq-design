@@ -191,12 +191,6 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.choose.low-credits {
-  width: min(440px, 92vw);
-}
-.low-credits-actions {
-  justify-content: flex-end;
-}
 
 @media (max-width: 760px) {
   .credits-chip .credits-word {
