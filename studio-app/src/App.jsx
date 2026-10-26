@@ -109,11 +109,6 @@ const getChapter = (p, e) => {
   }
   return null;
 };
-const statuses = {
-  draft: 'story.status.draft',
-  review: 'story.status.review',
-  ready: 'story.status.ready',
-};
 const readLocalLibrary = readLocalStoryLibrary;
 function Icon({ type, size = 18 }) {
   const { t, locale } = useI18n();
@@ -948,20 +943,6 @@ function SeriesApp({ sidebarView, onSidebarView }) {
   );
 }
 
-function descendants(p, id) {
-  const result = [];
-  const visit = (x) =>
-    p.entities
-      .filter((e) => e.parentId === x)
-      .forEach((e) => {
-        if (!result.includes(e.id)) {
-          result.push(e.id);
-          visit(e.id);
-        }
-      });
-  visit(id);
-  return result;
-}
 function ProjectList({ currentId, onSelect }) {
   const { t } = useI18n();
   const { projects, raw, error } = readLocalLibrary();
