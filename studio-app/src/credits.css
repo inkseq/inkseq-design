@@ -154,9 +154,7 @@
   min-width: 64px;
   text-align: right;
 }
-.checkout {
-  width: min(460px, 94vw);
-}
+
 .checkout-sum {
   display: flex;
   justify-content: space-between;
