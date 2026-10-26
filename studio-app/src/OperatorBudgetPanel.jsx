@@ -446,6 +446,7 @@ export function AdminBudgetPanel({ controller, state, busy }) {
     try {
       await controller.readBudgetAdmin({ after_id });
     } catch {
+      // A failed refresh already shows in the controller state; the next poll retries.
     } finally {
       setReading(false);
     }

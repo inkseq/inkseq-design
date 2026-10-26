@@ -19,10 +19,6 @@ import { usePageActive } from './AppRouteCache.jsx';
 import './v2/ops-adapter.css';
 
 const quietly = (promise) => promise.catch(() => {});
-const date = (value) =>
-  typeof value === 'number' && Number.isFinite(value)
-    ? new Date(value * 1000).toLocaleString('zh-CN')
-    : '尚未确认';
 // The console's dialogs use the shared Dialog (h3-studio#514); op-dialog keeps their content layout.
 function Dialog({ title, onClose, children }) {
   return (
@@ -465,7 +461,9 @@ export default function DstackCapacity({ account }) {
       if (document.visibilityState !== 'hidden')
         try {
           await controller.poll();
-        } catch {}
+        } catch {
+          // A failed refresh already shows in the controller state; the next poll retries.
+        }
       if (!stopped) timer = setTimeout(tick, 5000);
     };
     timer = setTimeout(tick, 5000);

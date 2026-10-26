@@ -20,11 +20,6 @@ import { reasonText, stateTone } from './operator-model.js';
 import { uniqueOperatorReasons, historicalNode } from './operator-presentation.js';
 
 const known = (value) => (Number.isFinite(value) ? value : '—');
-const date = (value) =>
-  typeof value === 'number' && Number.isFinite(value)
-    ? new Date(value * 1000).toLocaleString('zh-CN')
-    : '尚未记录';
-const short = (value) => String(value || '尚未确认').slice(0, 12);
 export function Reasons({ items = [] }) {
   const { locale } = useI18n();
   const { reasonText } = operatorFormatters(locale);
@@ -74,19 +69,10 @@ export function MachineRow({
   disabled = false,
 }) {
   const { t: lo, locale } = useI18n();
-  const {
-    date,
-    short,
-    age,
-    providerLabel,
-    dollars,
-    nodeDeadline,
-    deadlineLabel,
-    operatorNodeStatus,
-  } = operatorFormatters(locale);
+  const { date, short, age, providerLabel, dollars, nodeDeadline, deadlineLabel } =
+    operatorFormatters(locale);
   const history = historicalNode(node),
     profile = profiles.find((p) => p.id === node.runtime_profile_id),
-    status = operatorNodeStatus(node, now),
     deadline = nodeDeadline(node, now);
   return (
     <article className={'op-machine-row' + (history ? ' historical' : '')}>

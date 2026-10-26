@@ -179,7 +179,9 @@ export default function AssistantConnections({
           setNow(Date.now());
           try {
             await refreshEvent();
-          } catch {}
+          } catch {
+            // A failed refresh already shows in the controller state; the next poll retries.
+          }
         }
         if (epoch.current === at) timer = setTimeout(poll, 5000);
       };
