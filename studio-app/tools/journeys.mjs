@@ -255,6 +255,238 @@ await journey(
   },
 );
 
+// ---- Acceptance checks that used to be manual (h3-studio#665) ----
+
+// JSON request in the page (cookies of the signed-in QA account).
+const send = (p, method, path, body, key) =>
+  p.evaluate(
+    async ([method, path, body, key]) => {
+      const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+      if (key) headers['Idempotency-Key'] = crypto.randomUUID();
+      const r = await fetch(path, { method, headers, body: JSON.stringify(body) });
+      return { status: r.status, body: await r.json().catch(() => null) };
+    },
+    [method, path, body, key],
+  );
+
+// A qa-user story with a shot that already has a take (for settings, preflight and reviews).
+async function qaShot(p) {
+  const list = await api(p, '/v1/projects?limit=40');
+  for (const row of list.body?.projects || list.body?.items || []) {
+    const id = row.id || row.project_id;
+    const doc = await api(p, '/v1/projects/' + encodeURIComponent(id));
+    const project = doc.body?.payload || doc.body?.project || doc.body;
+    for (const shot of (project?.entities || []).filter((e) => e.type === 'shot')) {
+      if (!shot.data?.selectedAssetId) continue;
+      const reviews = await api(p, `/v1/projects/${id}/shots/${shot.id}/take-reviews`);
+      if (Array.isArray(reviews.body) && reviews.body.length) return { project: id, shot: shot.id };
+    }
+  }
+  throw Error('qa-user has no story with a generated take to check against');
+}
+const shotControls = async (p, where) => {
+  const doc = await api(p, '/v1/projects/' + encodeURIComponent(where.project));
+  const project = doc.body?.payload || doc.body?.project || doc.body;
+  return {
+    version: doc.body?.version,
+    controls: project.entities.find((e) => e.id === where.shot)?.data?.h3?.controls || {},
+  };
+};
+async function openShot(p, where) {
+  await p.goto(BASE + '/?view=workspace&project=' + encodeURIComponent(where.project));
+  const card = p.locator(`[data-shot-card="${where.shot}"]`);
+  await card.waitFor({ timeout: 60000 });
+  await card.click();
+  await p.locator('.ed-footer').waitFor({ timeout: 20000 });
+  await settle(p, 1500);
+}
+const saved = async (p) => {
+  await settle(p, 500);
+  await p.getByText('已保存').first().waitFor({ timeout: 60000 });
+  await settle(p, 800);
+};
+
+await journey('home page: one flow, loop from Video to Fix, coral look', null, async (open) => {
+  const p = await open(null);
+  await p.locator('.lp-flow').waitFor({ timeout: 30000 });
+  const home = await p.evaluate(() => {
+    const nodes = [...document.querySelectorAll('.lp-node')].map((n) => n.getBoundingClientRect());
+    const loop = document.querySelector('.lp-loop-line')?.getBoundingClientRect();
+    const centre = (r) => r.left + r.width / 2;
+    return {
+      skin: document.documentElement.dataset.skin,
+      nodes: nodes.length,
+      beforeAfter: document.querySelectorAll('.lp-ba').length,
+      loopStart: loop && Math.abs(loop.left - centre(nodes[3])),
+      loopEnd: loop && Math.abs(loop.right - centre(nodes[5])),
+      chips: [...document.querySelectorAll('.lp-agents li')].map((n) => n.textContent),
+      overflow: document.documentElement.scrollWidth - innerWidth,
+    };
+  });
+  expect(/^coral/.test(home.skin), 'home page is not on the coral look: ' + home.skin);
+  expect(home.nodes === 7 && home.beforeAfter === 0, 'home page sections changed');
+  expect(home.loopStart < 12 && home.loopEnd < 12, 'review loop no longer spans 04 to 06');
+  expect(!home.chips.includes('Codex'), 'assistant list names Codex again');
+  expect(home.overflow <= 0, 'home page scrolls sideways');
+  return p;
+});
+
+await journey('an old stored light/dark choice moves to coral', null, async () => {
+  const context = await browser.newContext({ viewport: { width: 1366, height: 860 } });
+  await context.addInitScript(() => {
+    if (!sessionStorage.getItem('journey-seeded')) {
+      localStorage.setItem('inkseq.skin', 'default');
+      localStorage.removeItem('inkseq.skin.coral-v1');
+      sessionStorage.setItem('journey-seeded', '1');
+    }
+  });
+  const p = await context.newPage();
+  p.errors = [];
+  p.on('pageerror', (error) => p.errors.push(error.message));
+  await p.goto(BASE + '/');
+  await p.locator('.landing').waitFor({ timeout: 30000 });
+  const skin = await p.evaluate(() => document.documentElement.dataset.skin);
+  expect(skin === 'coral-dark', 'old dark choice was not moved to coral-dark: ' + skin);
+  return p;
+});
+
+await journey(
+  'shot editor: creator settings save, preflight and restore',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    const where = await qaShot(p);
+    await openShot(p, where);
+    const footer = await p.evaluate(() => ({
+      raw: document.querySelectorAll('.workbench-defaults').length,
+      tips: document.querySelectorAll('.ed-footer .help-tip').length,
+      text: document.querySelector('.ed-footer')?.innerText || '',
+    }));
+    expect(footer.raw === 0, 'model parameter panel is back in the shot editor');
+    expect(footer.tips >= 3, 'help tips missing in the shot editor footer');
+    for (const word of ['横屏', '竖屏', '方形', '保留声音', '换一版'])
+      expect(footer.text.includes(word), 'shot editor footer lost: ' + word);
+    const before = await shotControls(p, where);
+    const aspect = p.locator('.ed-footer .seg').nth(1);
+    const keep = p.locator('.ed-footer label.check', { hasText: '保留声音' }).locator('input');
+    try {
+      await aspect.getByRole('button', { name: '竖屏' }).click();
+      await saved(p);
+      if (await keep.isChecked()) {
+        await keep.uncheck();
+        await saved(p);
+      }
+      const after = await shotControls(p, where);
+      expect(
+        after.controls.aspect_ratio === '9:16' && after.controls.generate_audio === false,
+        'portrait / silent did not save: ' + JSON.stringify(after.controls),
+      );
+      const plan = await send(
+        p,
+        'POST',
+        `/v1/projects/${where.project}/shots/${where.shot}/generation-plans`,
+        { expected_version: after.version },
+      );
+      const effective = plan.body?.effective_request || {};
+      expect(plan.status === 201, 'shot preflight failed: ' + plan.status);
+      expect(
+        effective.aspect_ratio === '9:16' && effective.generate_audio === false,
+        'preflight ignored the creator choices: ' + JSON.stringify(effective),
+      );
+      expect(
+        (await shotControls(p, where)).version === after.version,
+        'preflight changed the story',
+      );
+    } finally {
+      // Put the QA shot back as it was.
+      const wanted =
+        before.controls.aspect_ratio === '9:16'
+          ? '竖屏'
+          : before.controls.aspect_ratio === '1:1'
+            ? '方形'
+            : '横屏';
+      await aspect
+        .getByRole('button', { name: wanted })
+        .click()
+        .catch(() => {});
+      await saved(p).catch(() => {});
+      if (before.controls.generate_audio !== false && !(await keep.isChecked().catch(() => true))) {
+        await keep.check().catch(() => {});
+        await saved(p).catch(() => {});
+      }
+    }
+    return p;
+  },
+);
+
+await journey(
+  'profile editor is a dialog; Escape closes the file chooser first',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    const where = await qaShot(p);
+    await openShot(p, where);
+    const card = p.locator('.pcard').first();
+    if (!(await card.count())) return p; // no character, place or prop in this story
+    await card.click();
+    await p.locator('dialog.pe-dialog[open]').waitFor({ timeout: 15000 });
+    await p.locator('dialog.pe-dialog .pe-photo-add').click();
+    await p.locator('dialog.pe-choose[open]').waitFor({ timeout: 10000 });
+    await p.keyboard.press('Escape');
+    await settle(p, 400);
+    expect(!(await p.locator('dialog.pe-choose[open]').count()), 'Escape left the chooser open');
+    expect(await p.locator('dialog.pe-dialog[open]').count(), 'Escape closed the editor too');
+    await p.keyboard.press('Escape');
+    await settle(p, 400);
+    expect(
+      !(await p.locator('dialog.pe-dialog[open]').count()),
+      'second Escape left the editor open',
+    );
+    return p;
+  },
+);
+
+await journey(
+  'take review verdict shows on the take card and is put back',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    const where = await qaShot(p);
+    const list = await api(p, `/v1/projects/${where.project}/shots/${where.shot}/take-reviews`);
+    const take = list.body[0];
+    const path = `/v1/projects/${where.project}/shots/${where.shot}/takes/${take.artifact_id}/review`;
+    const current = await api(p, path);
+    const original = current.body?.verdict ?? null;
+    const set = await send(
+      p,
+      'PATCH',
+      path,
+      { expected_revision: current.body.revision, verdict: 'keep' },
+      true,
+    );
+    expect(set.status === 200, 'saving a verdict failed: ' + set.status);
+    try {
+      await openShot(p, where);
+      await p
+        .locator('.take-review-badges')
+        .first()
+        .waitFor({ timeout: 15000 })
+        .catch(() => {
+          throw Error('take card shows no review badge');
+        });
+    } finally {
+      await send(
+        p,
+        'PATCH',
+        path,
+        { expected_revision: set.body.revision, verdict: original },
+        true,
+      );
+    }
+    return p;
+  },
+);
+
 await browser.close();
 const width = Math.max(...results.map((r) => r.name.length));
 for (const r of results) console.log(`${r.status.padEnd(4)}  ${r.name.padEnd(width)}  ${r.detail}`);
