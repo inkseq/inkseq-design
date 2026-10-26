@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 104,
+    "complexity": 101,
     "max-lines-per-function": 51
   },
   "files": {
@@ -14,7 +14,7 @@
       "src/ChapterRoughCut.jsx": 1,
       "src/cloud-client.js": 1,
       "src/cloud-controller.js": 7,
-      "src/cloud-model.js": 5,
+      "src/cloud-model.js": 2,
       "src/CloudStudio.jsx": 1,
       "src/delivery-model.js": 1,
       "src/dstack-presentation.js": 2,

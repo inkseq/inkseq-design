@@ -127,24 +127,58 @@ export function jobMessage(job, locale = 'zh') {
     job?.failure_diagnostic?.message || job?.message || job?.error?.message || job?.error_code || ''
   );
 }
+// Diagnostics show only short machine tokens and numbers, never free text from the worker.
+const SAFE_TOKEN = /^[A-Za-z0-9_.:-]{1,200}$/;
+function diagnosticCode(value, at) {
+  return typeof value === 'string' && SAFE_TOKEN.test(value)
+    ? value
+    : at('adjunct.failureDetails.copy18');
+}
+function diagnosticScalar(value, at) {
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  if (typeof value === 'boolean')
+    return at(value ? 'adjunct.failureDetails.copy19' : 'adjunct.failureDetails.copy20');
+  return typeof value === 'string' && SAFE_TOKEN.test(value) ? value : null;
+}
+// Input rows: file counts and clip lengths per kind, frames, sound tracks and time anchors.
+function inputRows(inputs, { at, add, scalar, code, rows }) {
+  for (const [field, label] of [
+    ['images', at('adjunct.failureDetails.copy28')],
+    ['videos', at('adjunct.failureDetails.copy29')],
+    ['audios', at('adjunct.failureDetails.copy30')],
+  ]) {
+    const entry = inputs?.[field];
+    add(label + at('adjunct.failureDetails.copy31'), entry?.count);
+    if (Array.isArray(entry?.durations_seconds) && entry.durations_seconds.length)
+      rows.push([
+        label + at('adjunct.failureDetails.copy32'),
+        entry.durations_seconds.map((value) => scalar(value) ?? '?').join('、'),
+      ]);
+    add(label + at('adjunct.failureDetails.copy33'), entry?.total_duration_seconds);
+  }
+  add(at('adjunct.failureDetails.copy34'), inputs?.first_frame);
+  add(at('adjunct.failureDetails.copy35'), inputs?.last_frame);
+  add(at('adjunct.failureDetails.copy36'), inputs?.video_audio_enabled_count);
+  if (Array.isArray(inputs?.guides))
+    rows.push([
+      at('adjunct.failureDetails.copy37'),
+      inputs.guides
+        .map((guide) =>
+          at('adjunct.failureDetails.copy38', {
+            v0: code(guide.kind),
+            v1: scalar(guide.time_seconds) ?? '?',
+            v2: guide.use_audio ? at('adjunct.failureDetails.copy39') : '',
+          }),
+        )
+        .join('；') || at('adjunct.failureDetails.copy27'),
+    ]);
+}
 export function failureDetails(job, locale = 'zh') {
   const at = (key, values) => translate(locale, key, values);
   const diagnostic = job?.failure_diagnostic;
   if (!diagnostic || diagnostic.version !== 1) return null;
-  const code = (value) =>
-      typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value)
-        ? value
-        : at('adjunct.failureDetails.copy18'),
-    scalar = (value) =>
-      typeof value === 'number' && Number.isFinite(value)
-        ? String(value)
-        : typeof value === 'boolean'
-          ? value
-            ? at('adjunct.failureDetails.copy19')
-            : at('adjunct.failureDetails.copy20')
-          : typeof value === 'string' && /^[A-Za-z0-9_.:-]{1,200}$/.test(value)
-            ? value
-            : null,
+  const code = (value) => diagnosticCode(value, at),
+    scalar = (value) => diagnosticScalar(value, at),
     rows = [];
   const add = (label, value) => {
     const text = scalar(value);
@@ -191,36 +225,7 @@ export function failureDetails(job, locale = 'zh') {
           )
           .join('；') || at('adjunct.failureDetails.copy27'),
       ]);
-  for (const [field, label] of [
-    ['images', at('adjunct.failureDetails.copy28')],
-    ['videos', at('adjunct.failureDetails.copy29')],
-    ['audios', at('adjunct.failureDetails.copy30')],
-  ]) {
-    const entry = diagnostic.inputs?.[field];
-    add(label + at('adjunct.failureDetails.copy31'), entry?.count);
-    if (Array.isArray(entry?.durations_seconds) && entry.durations_seconds.length)
-      rows.push([
-        label + at('adjunct.failureDetails.copy32'),
-        entry.durations_seconds.map((value) => scalar(value) ?? '?').join('、'),
-      ]);
-    add(label + at('adjunct.failureDetails.copy33'), entry?.total_duration_seconds);
-  }
-  add(at('adjunct.failureDetails.copy34'), diagnostic.inputs?.first_frame);
-  add(at('adjunct.failureDetails.copy35'), diagnostic.inputs?.last_frame);
-  add(at('adjunct.failureDetails.copy36'), diagnostic.inputs?.video_audio_enabled_count);
-  if (Array.isArray(diagnostic.inputs?.guides))
-    rows.push([
-      at('adjunct.failureDetails.copy37'),
-      diagnostic.inputs.guides
-        .map((guide) =>
-          at('adjunct.failureDetails.copy38', {
-            v0: code(guide.kind),
-            v1: scalar(guide.time_seconds) ?? '?',
-            v2: guide.use_audio ? at('adjunct.failureDetails.copy39') : '',
-          }),
-        )
-        .join('；') || at('adjunct.failureDetails.copy27'),
-    ]);
+  inputRows(diagnostic.inputs, { at, add, scalar, code, rows });
   for (const [field, label] of [
     ['width', at('adjunct.failureDetails.copy41')],
     ['height', at('adjunct.failureDetails.copy42')],
@@ -644,19 +649,8 @@ export function validateControlValues(recipe, controls) {
   }
   return issues;
 }
-export function buildPlanPayload(
-  project,
-  shotId,
-  { recipe, capabilitiesVersion, assetMap = {}, sourceHash } = {},
-) {
-  const shot = project.entities.find((e) => e.id === shotId);
-  if (!shot) throw Error('镜头已被删除。');
-  if (!recipe) throw Error('先选择有明确能力说明的配方。');
-  const { references, issues } = referenceSpecs(project, shotId, { mode: recipe.mode }),
-    controls = controlsForRecipe(recipe, shot.data.h3?.controls, shot.data.seconds);
-  issues.push(...validateControlValues(recipe, controls));
-  const prompt = String(shot.data.prompt ?? shot.description ?? '').trim();
-  if (!prompt) issues.push('先写清这个镜头的画面与动作。');
+// The shot's linked media as plan inputs: one first/last frame, each other file once.
+function referenceInputs(shot, references, assetMap, issues) {
   const inputs = { images: [], videos: [], audios: [], guides: [] },
     seen = new Set();
   for (const ref of references) {
@@ -680,6 +674,10 @@ export function buildPlanPayload(
       entry.include_audio = shot.data.h3?.video_audio?.[ref.entity.id] !== false;
     inputs[{ image: 'images', video: 'videos', audio: 'audios' }[kind]].push(entry);
   }
+  return inputs;
+}
+// Time anchors on the shot, as uploaded media ids.
+function guideInputs(project, shot, assetMap, inputs, issues) {
   for (const [guideIndex, guide] of (shot.data.h3?.guides || []).entries()) {
     const entity = project.entities.find((e) => e.id === guide.media_id),
       assetId =
@@ -694,6 +692,9 @@ export function buildPlanPayload(
       use_audio: entity?.type === 'video' && !!guide.use_audio,
     });
   }
+}
+// Which input roles the chosen recipe accepts, and that all-reference has a reference.
+function inputRoleIssues(recipe, inputs, issues) {
   const extended = recipe.limits?.input_count_semantics === 'native_roles_v2';
   if (extended) {
     for (const [slot, kind] of [
@@ -725,17 +726,38 @@ export function buildPlanPayload(
     !(extended && (inputs.first_frame || inputs.last_frame || inputs.guides.length))
   )
     issues.push('全能参考至少需要一份参考素材；纯文字请选择文生/首尾帧配方。');
-  if (issues.length) throw Error([...new Set(issues)].join(' '));
+}
+// Where the plan belongs: project, chapter, scene and the exact shot version.
+function planClientRef(project, shot, sourceHash) {
   const parents = ancestors(project, shot.id);
   return {
-    client_ref: {
-      project_id: project.id,
-      chapter_id: parents.find((e) => e.type === 'chapter')?.id || null,
-      scene_id: parents.find((e) => e.type === 'scene')?.id || null,
-      shot_id: shot.id,
-      shot_version: shot.version,
-      ...(sourceHash ? { source_hash: sourceHash } : {}),
-    },
+    project_id: project.id,
+    chapter_id: parents.find((e) => e.type === 'chapter')?.id || null,
+    scene_id: parents.find((e) => e.type === 'scene')?.id || null,
+    shot_id: shot.id,
+    shot_version: shot.version,
+    ...(sourceHash ? { source_hash: sourceHash } : {}),
+  };
+}
+export function buildPlanPayload(
+  project,
+  shotId,
+  { recipe, capabilitiesVersion, assetMap = {}, sourceHash } = {},
+) {
+  const shot = project.entities.find((e) => e.id === shotId);
+  if (!shot) throw Error('镜头已被删除。');
+  if (!recipe) throw Error('先选择有明确能力说明的配方。');
+  const { references, issues } = referenceSpecs(project, shotId, { mode: recipe.mode }),
+    controls = controlsForRecipe(recipe, shot.data.h3?.controls, shot.data.seconds);
+  issues.push(...validateControlValues(recipe, controls));
+  const prompt = String(shot.data.prompt ?? shot.description ?? '').trim();
+  if (!prompt) issues.push('先写清这个镜头的画面与动作。');
+  const inputs = referenceInputs(shot, references, assetMap, issues);
+  guideInputs(project, shot, assetMap, inputs, issues);
+  inputRoleIssues(recipe, inputs, issues);
+  if (issues.length) throw Error([...new Set(issues)].join(' '));
+  return {
+    client_ref: planClientRef(project, shot, sourceHash),
     recipe_id: recipe.id,
     ...(recipe.deployment_profile_id
       ? { deployment_profile_id: recipe.deployment_profile_id }
@@ -748,6 +770,93 @@ export function buildPlanPayload(
   };
 }
 
+// A separate sound stem the worker returns next to the video (FLAC).
+function isStemAudio(artifact) {
+  return (
+    artifact.kind === 'audio' &&
+    ['audio/flac', 'audio/x-flac'].includes(
+      artifact.mime || artifact.content_type || artifact.metadata?.mime,
+    )
+  );
+}
+// Guided artifact.adopt may choose its own entity ID. Keep that identity, selection and review
+// data instead of manufacturing a duplicate result; returns whether the shot's takes changed.
+function keepAdopted(shot, attached, artifact, isAudio) {
+  if (
+    !shot ||
+    isAudio ||
+    attached.type !== artifact.kind ||
+    shot.data.candidateIds?.includes(attached.id)
+  )
+    return false;
+  shot.data.candidateIds = [...(shot.data.candidateIds || []), attached.id];
+  return true;
+}
+// The library entity for one generated file; never adopted automatically.
+function resultEntity(project, job, artifact, { id, shot, old, isAudio, now }) {
+  return {
+    id,
+    type: artifact.kind,
+    title: `${(shot?.title || '历史镜头').slice(0, 120)} · ${job.simulation ? '模拟 ' : ''}${old ? '旧版 ' : ''}v${job.client_ref.shot_version} ${isAudio ? '独立声音' : '候选'}`,
+    description: job.simulation
+      ? '模拟任务产物，不代表 H3 真实生成；未自动采用。'
+      : '实际任务结果；未自动采用。',
+    parentId: null,
+    order: project.entities.filter((e) => e.parentId === null).length,
+    version: 1,
+    status: 'draft',
+    data: {
+      fileId: 'cloud_artifact_' + artifact.id,
+      cloudArtifactId: artifact.id,
+      cloudContentPath: artifact.content_url || null,
+      fileName:
+        artifact.filename ||
+        `${artifact.id}.${artifact.kind === 'image' ? 'png' : isAudio ? 'flac' : 'mp4'}`,
+      mime:
+        artifact.mime ||
+        artifact.content_type ||
+        (artifact.kind === 'image' ? 'image/png' : isAudio ? 'audio/flac' : 'video/mp4'),
+      bytes: artifact.size_bytes || artifact.size || 0,
+      metadata: artifact.metadata || {},
+      simulation: !!job.simulation,
+      source: 'generation',
+      sourceJobId: job.id,
+      sourceShotId: job.client_ref.shot_id,
+      sourceShotVersion: job.client_ref.shot_version,
+      sourceHash: job.client_ref.source_hash || null,
+      oldVersion: old,
+      missingFile: false,
+      createdAt: now,
+    },
+  };
+}
+// The take was made from an older version of the shot (or a different storyboard snapshot).
+function staleTake(shot, job, snapshotHash) {
+  return !!(
+    shot &&
+    (shot.version !== job.client_ref.shot_version ||
+      (job.client_ref.source_hash && snapshotHash && job.client_ref.source_hash !== snapshotHash))
+  );
+}
+// Adds one generated file to the library and the shot's takes. Returns the new entity id,
+// 'adopted' when an existing adopted entity was linked instead, or null when nothing changed.
+function importArtifact(project, job, artifact, { shot, old, same, audioSeen, now }) {
+  const isAudio = isStemAudio(artifact);
+  if (!artifact.id || (!['video', 'image'].includes(artifact.kind) && !isAudio)) return null;
+  const id = 'result-' + artifact.id;
+  if (isAudio && audioSeen.has(artifact.id)) return null;
+  if (same && !isAudio) return null;
+  if (isAudio) audioSeen.add(artifact.id);
+  const attached = project.entities.find((e) => e.data?.cloudArtifactId === artifact.id);
+  if (attached) return keepAdopted(shot, attached, artifact, isAudio) ? 'adopted' : null;
+  if (project.entities.some((e) => e.id === id)) return null;
+  project.entities.push(resultEntity(project, job, artifact, { id, shot, old, isAudio, now }));
+  if (shot && !isAudio) {
+    shot.data.candidateIds = [...new Set([...(shot.data.candidateIds || []), id])];
+    if (old) shot.status = 'review';
+  }
+  return id;
+}
 export function mergeJobCandidate(
   project,
   job,
@@ -764,80 +873,13 @@ export function mergeJobCandidate(
     return { changed: !same, added: [], reason: 'chapter-deliverable' };
   if (job.status !== 'succeeded') return { changed: !same, added: [] };
   const shot = project.entities.find((e) => e.id === job.client_ref.shot_id),
-    old = !!(
-      shot &&
-      (shot.version !== job.client_ref.shot_version ||
-        (job.client_ref.source_hash && snapshotHash && job.client_ref.source_hash !== snapshotHash))
-    ),
+    old = staleTake(shot, job, snapshotHash),
     added = [];
   let candidateChanged = false;
   for (const artifact of job.artifacts || []) {
-    const isAudio =
-      artifact.kind === 'audio' &&
-      ['audio/flac', 'audio/x-flac'].includes(
-        artifact.mime || artifact.content_type || artifact.metadata?.mime,
-      );
-    if (!artifact.id || (!['video', 'image'].includes(artifact.kind) && !isAudio)) continue;
-    const id = 'result-' + artifact.id;
-    if (isAudio && audioSeen.has(artifact.id)) continue;
-    if (same && !isAudio) continue;
-    if (isAudio) audioSeen.add(artifact.id);
-    const attached = project.entities.find((e) => e.data?.cloudArtifactId === artifact.id);
-    if (attached) {
-      // Guided artifact.adopt may choose its own entity ID. Keep that identity,
-      // selection and review data instead of manufacturing a duplicate result.
-      if (
-        shot &&
-        !isAudio &&
-        attached.type === artifact.kind &&
-        !shot.data.candidateIds?.includes(attached.id)
-      ) {
-        shot.data.candidateIds = [...(shot.data.candidateIds || []), attached.id];
-        candidateChanged = true;
-      }
-      continue;
-    }
-    if (project.entities.some((e) => e.id === id)) continue;
-    project.entities.push({
-      id,
-      type: artifact.kind,
-      title: `${(shot?.title || '历史镜头').slice(0, 120)} · ${job.simulation ? '模拟 ' : ''}${old ? '旧版 ' : ''}v${job.client_ref.shot_version} ${isAudio ? '独立声音' : '候选'}`,
-      description: job.simulation
-        ? '模拟任务产物，不代表 H3 真实生成；未自动采用。'
-        : '实际任务结果；未自动采用。',
-      parentId: null,
-      order: project.entities.filter((e) => e.parentId === null).length,
-      version: 1,
-      status: 'draft',
-      data: {
-        fileId: 'cloud_artifact_' + artifact.id,
-        cloudArtifactId: artifact.id,
-        cloudContentPath: artifact.content_url || null,
-        fileName:
-          artifact.filename ||
-          `${artifact.id}.${artifact.kind === 'image' ? 'png' : isAudio ? 'flac' : 'mp4'}`,
-        mime:
-          artifact.mime ||
-          artifact.content_type ||
-          (artifact.kind === 'image' ? 'image/png' : isAudio ? 'audio/flac' : 'video/mp4'),
-        bytes: artifact.size_bytes || artifact.size || 0,
-        metadata: artifact.metadata || {},
-        simulation: !!job.simulation,
-        source: 'generation',
-        sourceJobId: job.id,
-        sourceShotId: job.client_ref.shot_id,
-        sourceShotVersion: job.client_ref.shot_version,
-        sourceHash: job.client_ref.source_hash || null,
-        oldVersion: old,
-        missingFile: false,
-        createdAt: now,
-      },
-    });
-    added.push(id);
-    if (shot && !isAudio) {
-      shot.data.candidateIds = [...new Set([...(shot.data.candidateIds || []), id])];
-      if (old) shot.status = 'review';
-    }
+    const outcome = importArtifact(project, job, artifact, { shot, old, same, audioSeen, now });
+    if (outcome === 'adopted') candidateChanged = true;
+    else if (outcome) added.push(outcome);
   }
   const markerChanged = audioSeen.size !== importedAudio.length;
   if (audioSeen.size)
