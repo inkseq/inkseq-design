@@ -249,9 +249,9 @@ export default function OperatorBudgetPanel({ account, compact = false }) {
           <h3>{t('operator.copy5')}</h3>
           <small>{t('operator.copy6')}</small>
         </div>
-        <button type="button" disabled={state.loading} onClick={() => void read()}>
+        <Button disabled={state.loading} onClick={() => void read()}>
           {state.loading ? t('operator.status70') : t('operator.status102')}
-        </button>
+        </Button>
       </header>
       {value ? (
         <>
@@ -259,13 +259,9 @@ export default function OperatorBudgetPanel({ account, compact = false }) {
           <small>{t('operatorPanel.readBudget', { time: time(value.as_of, locale) })}</small>
           {!value.budgets.length && <p>{t('operator.copy7')}</p>}
           {value.next_after_id && (
-            <button
-              type="button"
-              disabled={state.loading}
-              onClick={() => void read(value.next_after_id)}
-            >
+            <Button disabled={state.loading} onClick={() => void read(value.next_after_id)}>
               {t('operator.copy8')}
-            </button>
+            </Button>
           )}
         </>
       ) : (
@@ -315,12 +311,12 @@ function BudgetEditor({ row, busy, onSave }) {
             onChange={(event) => setInput(event.target.value)}
           />
         </label>
-        <button
+        <Button
           type="submit"
           disabled={busy || limit === null || limit < minimum || limit === row.limit_microusd}
         >
           {t('operator.copy10')}
-        </button>
+        </Button>
       </form>
       {limit !== null && limit < minimum && (
         <p role="status">{t('operatorPanel.minimum', { amount: money(minimum) })}</p>
@@ -478,9 +474,9 @@ export function AdminBudgetPanel({ controller, state, busy }) {
           <h3>{t('operator.copy15')}</h3>
           <small>{t('operatorPanel.allBudgetAccounts')}</small>
         </div>
-        <button type="button" disabled={busy || reading} onClick={() => void read()}>
+        <Button disabled={busy || reading} onClick={() => void read()}>
           {t(reading ? 'operator.status70' : 'operator.copy17')}
-        </button>
+        </Button>
       </header>
       {notice && <p role="status">{notice}</p>}
       {budgets ? (
@@ -502,13 +498,9 @@ export function AdminBudgetPanel({ controller, state, busy }) {
             )}
           </p>
           {budgets.next_after_id && (
-            <button
-              type="button"
-              disabled={busy || reading}
-              onClick={() => void read(budgets.next_after_id)}
-            >
+            <Button disabled={busy || reading} onClick={() => void read(budgets.next_after_id)}>
               {t('operatorPanel.loadBudgetAccounts')}
-            </button>
+            </Button>
           )}
         </>
       ) : (

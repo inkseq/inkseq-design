@@ -1,4 +1,5 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
+import { Button } from './ui/Button.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
 import { Activity, RefreshCw, ChevronRight } from 'lucide-react';
@@ -58,9 +59,9 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
       <section className="project-activity">
         <h1>{at('adjunct.projectActivity.copy1')}</h1>
         <p>{at('adjunct.projectActivity.copy2')}</p>
-        <button className="primary" onClick={onOpenCloud}>
+        <Button variant="primary" onClick={onOpenCloud}>
           {at('adjunct.projectActivity.copy3')}
-        </button>
+        </Button>
         <p>{at('adjunct.projectActivity.copy4')}</p>
       </section>
     );
@@ -77,7 +78,7 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
           </h1>
           <p>{at('adjunct.projectActivity.copy9')}</p>
         </div>
-        <button
+        <Button
           disabled={busy}
           onClick={() => {
             read();
@@ -87,12 +88,12 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
         >
           <RefreshCw size={15} />
           {at('adjunct.projectActivity.copy10')}
-        </button>
+        </Button>
       </header>
       <div className="activity-intro">
         <Activity size={22} />
         <span>{at('adjunct.projectActivity.copy11')}</span>
-        <button onClick={onConnect}>{at('adjunct.projectActivity.copy12')}</button>
+        <Button onClick={onConnect}>{at('adjunct.projectActivity.copy12')}</Button>
       </div>
       {state.workspace.dirty && (
         <p className="cloud-warning">{at('adjunct.projectActivity.copy13')}</p>
@@ -111,9 +112,9 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
         </p>
       )}
       {c.moreJobs && (
-        <button disabled={c.busy} onClick={() => cloud.loadMoreJobs().catch(() => {})}>
+        <Button disabled={c.busy} onClick={() => cloud.loadMoreJobs().catch(() => {})}>
           {at('adjunct.projectActivity.copy19')}
-        </button>
+        </Button>
       )}
       <FloatingMessage tone="error" text={c.error ? c.error : null} />
       <h2>{at('adjunct.projectActivity.copy20')}</h2>
@@ -153,10 +154,10 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
                 {(event.target_entity_ids || []).slice(0, 12).map((id) => {
                   const e = p.entities.find((item) => item.id === id);
                   return e ? (
-                    <button key={id} onClick={() => onLocate(id)}>
+                    <Button key={id} onClick={() => onLocate(id)}>
                       {e.title || at('adjunct.projectActivity.copy26')}
                       <ChevronRight size={13} />
-                    </button>
+                    </Button>
                   ) : (
                     <span key={id}>{at('adjunct.projectActivity.copy27')}</span>
                   );
@@ -177,9 +178,9 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
         ))}
       </ol>
       {cursor !== null && (
-        <button disabled={busy} onClick={() => read(true)}>
+        <Button disabled={busy} onClick={() => read(true)}>
           {at('adjunct.projectActivity.copy31')}
-        </button>
+        </Button>
       )}
     </section>
   );

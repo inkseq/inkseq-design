@@ -1,4 +1,5 @@
 import { TrashMenu } from './UniversalTrash.jsx';
+import { Button } from './ui/Button.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import HostedSignIn from './HostedSignIn.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -68,7 +69,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
         {!c.auth ? (
           <>
             <p role="status">{t('account.copy74')}</p>
-            <button onClick={() => run(cloud.initialize())}>{t('account.copy75')}</button>
+            <Button onClick={() => run(cloud.initialize())}>{t('account.copy75')}</Button>
           </>
         ) : (
           <form onSubmit={login}>
@@ -99,9 +100,13 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
             {['username-test', 'username-only-test'].includes(c.auth.authentication) && (
               <p className="cloud-warning">{t('account.copy78')}</p>
             )}
-            <button className="primary" disabled={c.busy || c.auth.auth_ready === false}>
+            <Button
+              variant="primary"
+              type="submit"
+              disabled={c.busy || c.auth.auth_ready === false}
+            >
               {t('account.copy79')}
-            </button>
+            </Button>
             {c.auth.auth_ready === false && <p role="alert">{t('account.copy80')}</p>}
           </form>
         )}
@@ -116,7 +121,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
           {t('account.fragment1')}
           {c.account}
         </b>
-        <button
+        <Button
           disabled={c.busy}
           onClick={() => {
             setPassword('');
@@ -125,13 +130,13 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
         >
           <LogOut size={14} />
           {t('account.copy81')}
-        </button>
+        </Button>
       </div>
       <details open={!!initialGrant} className="cloud-compatibility-access">
         <summary>{t('quickView.accessDetails')}</summary>
-        <button type="button" aria-expanded={showKeys} onClick={() => setShowKeys(!showKeys)}>
+        <Button aria-expanded={showKeys} onClick={() => setShowKeys(!showKeys)}>
           {showKeys ? t('account.interface1') : t('account.interface2')}
-        </button>
+        </Button>
         <a className="account-settings-link" href="/trash">
           {t('trash.title')}
         </a>
@@ -152,9 +157,9 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
           />
         )}
         <ServiceStatus capabilities={c.capabilities} />
-        <button disabled={c.busy} onClick={() => run(cloud.reloadCapabilities())}>
+        <Button disabled={c.busy} onClick={() => run(cloud.reloadCapabilities())}>
           {t('account.copy72')}
-        </button>
+        </Button>
       </details>
       <a className="account-settings-link" href="/">
         {t('quickView.backToWorks')}
@@ -186,11 +191,10 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
             />
           </label>
           <div className="cloud-actions">
-            <button className="primary" disabled={c.busy || !title.trim()}>
+            <Button variant="primary" type="submit" disabled={c.busy || !title.trim()}>
               {t('account.copy84')}
-            </button>
-            <button
-              type="button"
+            </Button>
+            <Button
               disabled={c.busy}
               onClick={() =>
                 run(
@@ -203,16 +207,16 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
               }
             >
               {t('account.copy85')}
-            </button>
+            </Button>
           </div>
         </form>
         <p className="muted">{t('account.copy86')}</p>
         <div className="cloud-section-head">
           <h3>{t('account.copy87')}</h3>
-          <button disabled={c.busy} onClick={() => run(cloud.list())}>
+          <Button disabled={c.busy} onClick={() => run(cloud.list())}>
             <RefreshCw size={14} />
             {t('account.copy88')}
-          </button>
+          </Button>
         </div>
         <label>
           {t('account.copy89')}
@@ -240,7 +244,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
         <div className="cloud-project-list">
           {visibleProjects.map((p) => (
             <div key={p.id}>
-              <button disabled={c.busy} onClick={() => open(p.id)}>
+              <Button disabled={c.busy} onClick={() => open(p.id)}>
                 <span>
                   <b>{p.title?.trim() || t('legacy.visible24')}</b>
                   <small>
@@ -253,7 +257,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
                   </small>
                 </span>
                 <ChevronRight size={16} />
-              </button>
+              </Button>
               <TrashMenu
                 target={{ kind: 'project', project_id: p.id, id: p.id }}
                 onEdit={() => open(p.id)}
@@ -262,9 +266,9 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
           ))}
         </div>
         {c.moreProjects && (
-          <button disabled={c.busy} onClick={() => run(cloud.loadMoreProjects())}>
+          <Button disabled={c.busy} onClick={() => run(cloud.loadMoreProjects())}>
             {t('account.copy92')}
-          </button>
+          </Button>
         )}
       </details>
       {c.draftOffer && (
@@ -279,13 +283,13 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
             })}
           </p>
           <div className="cloud-actions">
-            <button
+            <Button
               disabled={c.busy || c.draftOffer.draft.serverVersion !== c.draftOffer.record.version}
               onClick={() => open(c.draftOffer.record.id, { restoreDraft: true })}
             >
               {t('account.copy95')}
-            </button>
-            <button
+            </Button>
+            <Button
               onClick={() =>
                 download(
                   new Blob([JSON.stringify(c.draftOffer.draft.project, null, 2)], {
@@ -296,14 +300,14 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
               }
             >
               {t('account.copy71')}
-            </button>
-            <button
+            </Button>
+            <Button
               disabled={c.busy}
               onClick={() => open(c.draftOffer.record.id, { keepDraft: true })}
             >
               {t('storyOpen.openCloud')}
-            </button>
-            <button onClick={() => cloud.dismissDraft()}>{t('account.copy97')}</button>
+            </Button>
+            <Button onClick={() => cloud.dismissDraft()}>{t('account.copy97')}</Button>
           </div>
           <small>{t('storyOpen.draftBody')}</small>
         </section>
@@ -344,15 +348,15 @@ export function JobList({ jobs, project, onInspect, onReview }) {
             <GenerationFailure job={job} />
             <div className="cloud-actions">
               {activeJobStatuses.has(job.status) && (
-                <button disabled={c.busy} onClick={() => run(cloud.cancel(job.id))}>
+                <Button disabled={c.busy} onClick={() => run(cloud.cancel(job.id))}>
                   {t('account.copy131')}
-                </button>
+                </Button>
               )}
               {shot && onInspect && ['failed', 'blocked', 'cancelled'].includes(job.status) && (
-                <button onClick={() => onInspect(shot.id)}>{t('account.copy132')}</button>
+                <Button onClick={() => onInspect(shot.id)}>{t('account.copy132')}</Button>
               )}
               {shot && onReview && job.status === 'succeeded' && (
-                <button onClick={() => onReview(shot.id)}>{t('account.copy133')}</button>
+                <Button onClick={() => onReview(shot.id)}>{t('account.copy133')}</Button>
               )}
             </div>
             {job.status === 'succeeded' && <small>{t('account.copy134')}</small>}

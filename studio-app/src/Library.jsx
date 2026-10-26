@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
+import { Button } from './ui/Button.jsx';
+import { Dialog } from './ui/Dialog.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { createCloudClient } from './cloud-client.js';
 import { createLibraryController, libraryKey } from './library-commands.js';
 import { useTrash } from './UniversalTrash.jsx';
-import { ChatDialog } from './QuickChatControls.jsx';
 import { store } from './store.js';
 import { cloudController as cloud } from './cloud-controller.js';
 import { uploadFile } from './media.js';
@@ -479,9 +480,9 @@ export default function Library({ account, active = true }) {
       {error && (
         <p role="alert">
           {error}{' '}
-          <button disabled={loading || busy} onClick={() => load()}>
+          <Button disabled={loading || busy} onClick={() => load()}>
             {t('library.refresh')}
-          </button>
+          </Button>
         </p>
       )}
       {busy && !error && (
@@ -496,12 +497,12 @@ export default function Library({ account, active = true }) {
       {pending && (
         <section role="status">
           <p>{t('library.pending')}</p>
-          <button disabled={busy} onClick={() => run(() => controller.recover())}>
+          <Button disabled={busy} onClick={() => run(() => controller.recover())}>
             {t('library.check')}
-          </button>
-          <button disabled={busy} onClick={() => run(() => controller.resume())}>
+          </Button>
+          <Button disabled={busy} onClick={() => run(() => controller.resume())}>
             {t('library.resume')}
-          </button>
+          </Button>
         </section>
       )}
     </>
@@ -567,15 +568,16 @@ export default function Library({ account, active = true }) {
               {t('library.edit')}
             </a>
           )}
-          <button
+          <Button
             className={'small ' + (managed ? 'primary' : 'ghost')}
             disabled={locked}
             onClick={() => importDialog(row)}
           >
             {t('library.import')}
-          </button>
-          <button
-            className="small ghost danger"
+          </Button>
+          <Button
+            variant="ghost-danger"
+            size="sm"
             disabled={locked}
             onClick={() => {
               dismiss();
@@ -583,7 +585,7 @@ export default function Library({ account, active = true }) {
             }}
           >
             {t('trash.move')}
-          </button>
+          </Button>
         </div>
       </>
     );
@@ -625,20 +627,16 @@ export default function Library({ account, active = true }) {
     >
       {dialog?.kind === 'detail' &&
         (mobile ? (
-          <ChatDialog
-            title={t('library.detail')}
-            onClose={dismiss}
-            className="library-detail-dialog"
-          >
+          <Dialog title={t('library.detail')} onClose={dismiss} className="library-detail-dialog">
             {detailBody(dialog.row)}
-          </ChatDialog>
+          </Dialog>
         ) : (
           <FloatingPanel anchor={anchor} label={t('library.detail')} onClose={dismiss}>
             {detailBody(dialog.row)}
           </FloatingPanel>
         ))}
       {dialog?.kind === 'import' && (
-        <ChatDialog title={t('library.import')} onClose={() => busy || dismiss()}>
+        <Dialog title={t('library.import')} onClose={() => busy || dismiss()}>
           {feedback}
           <p>{displayName(dialog.row, t)}</p>
           <label className="field">
@@ -659,11 +657,11 @@ export default function Library({ account, active = true }) {
             </select>
           </label>
           <div className="dialog-actions">
-            <button disabled={busy} onClick={dismiss}>
+            <Button disabled={busy} onClick={dismiss}>
               {t('library.cancel')}
-            </button>
-            <button
-              className="primary"
+            </Button>
+            <Button
+              variant="primary"
               disabled={locked || !dialog.target}
               onClick={() => {
                 const d = copy(dialog);
@@ -678,9 +676,9 @@ export default function Library({ account, active = true }) {
               }}
             >
               {t('library.copy')}
-            </button>
+            </Button>
           </div>
-        </ChatDialog>
+        </Dialog>
       )}
     </LibraryView>
   );

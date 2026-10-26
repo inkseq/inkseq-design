@@ -167,7 +167,7 @@ function Tile({ asset, used, onClick, onZoom, dragId, children }) {
       )}
       <span className="tile-name">{asset.name}</span>
       {onZoom && asset.kind !== 'audio' && (
-        <button
+        <Button
           className="tile-zoom"
           onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
@@ -177,7 +177,7 @@ function Tile({ asset, used, onClick, onZoom, dragId, children }) {
           aria-label={tr('storyboard.zoomAsset')}
         >
           <Maximize2 size={14} />
-        </button>
+        </Button>
       )}
       {asset.entity?.id && (
         <TrashMenu
@@ -285,7 +285,7 @@ function ProfileCard({ p, used, onOpen, onAdd }) {
         <small className="muted clip">{p.desc}</small>
       </div>
       {onAdd && (
-        <button
+        <Button
           className="pcard-open"
           aria-label={
             used ? tr('storyboard.mixed7', { p0: p.name }) : tr('storyboard.mixed8', { p0: p.name })
@@ -298,7 +298,7 @@ function ProfileCard({ p, used, onOpen, onAdd }) {
           }}
         >
           {used ? <Check size={14} /> : <Plus size={14} />}
-        </button>
+        </Button>
       )}
       <TrashMenu
         target={{ kind: 'entity', project_id: state.project.id, id: p.id }}
@@ -393,16 +393,15 @@ function ChooseFiles({ kind, exclude, title, onPick, onFiles, onClose }) {
         {kind === 'image' ? (
           <div className="pe-choose-grid">
             {list.map((a) => (
-              <button
+              <Button
                 key={a.id}
-                type="button"
                 className="pe-choose-tile"
                 onClick={() => onPick(a.id)}
                 title={a.name}
               >
                 <StoryboardAssetImage asset={a} />
                 <small className="clip">{a.name}</small>
-              </button>
+              </Button>
             ))}
           </div>
         ) : (
@@ -513,37 +512,41 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
           </>
         )}
         {onToggle ? (
-          <button
-            className="small ghost library-toggle"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="library-toggle"
             aria-label={collapsed ? tr('storyboard.detail14') : tr('storyboard.detail15')}
             aria-expanded={!collapsed}
             onClick={onToggle}
             title={collapsed ? tr('storyboard.detail14') : tr('storyboard.detail15')}
           >
             {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
-          </button>
+          </Button>
         ) : (
-          <button className="small ghost" onClick={() => setWide(!wide)}>
+          <Button variant="ghost" size="sm" onClick={() => setWide(!wide)}>
             {wide ? tr('storyboard.detail16') : tr('storyboard.detail17')}
-          </button>
+          </Button>
         )}
       </div>
       <div className="row tight">
-        <button className="small" onClick={() => uploadInput.current.click()} disabled={state.busy}>
+        <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
           <Upload size={14} />
           {tr('storyboard.copy42')}
-        </button>
+        </Button>
         {isProfileTab && (
           // #232 (#8): one "+" that creates whatever category is open.
-          <button
-            className="small ghost lib-new"
+          <Button
+            variant="ghost"
+            size="sm"
+            className="lib-new"
             disabled={state.busy}
             title={tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
             aria-label={tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
             onClick={() => setNewProfileType(tab)}
           >
             <Plus size={14} />
-          </button>
+          </Button>
         )}
         <input
           ref={uploadInput}
@@ -566,9 +569,8 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
       />
       <div className="lib-tabs">
         {LIB_TABS.map(([k, l, Icon]) => (
-          <button
+          <Button
             key={k}
-            type="button"
             className={
               'sb-library-tab' +
               (tab === k ? ' on' : '') +
@@ -586,7 +588,7 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
             <Icon size={13} />
             <span>{l}</span>
             <small className={count(k) ? '' : 'zero'}>{count(k)}</small>
-          </button>
+          </Button>
         ))}
       </div>
 
@@ -606,14 +608,10 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
                 <span className="muted">
                   {tr('storyboard.libEmpty', { kind: TYPE_LABEL[tab] })}
                 </span>
-                <button
-                  className="small"
-                  disabled={state.busy}
-                  onClick={() => setNewProfileType(tab)}
-                >
+                <Button size="sm" disabled={state.busy} onClick={() => setNewProfileType(tab)}>
                   <Plus size={14} />
                   {tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] })}
-                </button>
+                </Button>
               </div>
             )}
             {state.profiles
@@ -657,14 +655,10 @@ export function AssetLibrary({ onPick, selectedShot, compact, collapsed = false,
 
       {tab === 'inbox' && (
         <div className="inbox">
-          <button
-            className="small"
-            onClick={() => uploadInput.current.click()}
-            disabled={state.busy}
-          >
+          <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
             <Upload size={14} />
             {tr('storyboard.copy44')}
-          </button>
+          </Button>
           {!inbox.length && <p className="muted">{tr('storyboard.copy45')}</p>}
           {inbox.map((a) => (
             <InboxRow key={a.id} a={a} />
@@ -738,8 +732,9 @@ function InboxRow({ a }) {
             ))}
         </select>
         <div className="row tight">
-          <button
-            className="small primary"
+          <Button
+            variant="primary"
+            size="sm"
             disabled={!target || !['image', 'audio'].includes(a.kind)}
             onClick={() => {
               const [pid, vid] = target.split('|');
@@ -753,13 +748,14 @@ function InboxRow({ a }) {
             }}
           >
             {tr('storyboard.copy49')}
-          </button>
-          <button
-            className="small ghost"
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={() => dispatch({ type: 'dismissInbox', asset: a.id })}
           >
             {tr('storyboard.copy50')}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -1105,11 +1101,11 @@ export function ProfileEditor() {
                 )
               );
             })}
-            <button type="button" className="pe-photo-add" onClick={() => setChoose(true)}>
+            <Button className="pe-photo-add" onClick={() => setChoose(true)}>
               <Plus size={18} aria-hidden="true" />
               <span>{tr('storyboard.copy63')}</span>
               <small>{tr('storyboard.copy66')}</small>
-            </button>
+            </Button>
           </VariantDrop>
           {p.type === 'character' && !v.images.length && (
             <Note tone="warn">{tr('storyboard.copy67')}</Note>
@@ -1374,9 +1370,9 @@ export function AssetPicker({ shotId, slot, x, y, onClose }) {
       />
       <div className="lib-tabs">
         {tabs.map((k) => (
-          <button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
+          <Button key={k} className={tab === k ? 'on' : ''} onClick={() => setTab(k)}>
             {label(k)}
-          </button>
+          </Button>
         ))}
       </div>
       {(slot === 'start' || slot === 'end') && (
@@ -1388,7 +1384,7 @@ export function AssetPicker({ shotId, slot, x, y, onClose }) {
         {profiles.map((p) => {
           const c = coverOf(db, p, p.def);
           return (
-            <button
+            <Button
               key={p.id}
               className={'tile prof ' + p.type + (usedP.has(p.id) ? ' used' : '')}
               onClick={() => pick({ profile: p })}
@@ -1406,11 +1402,11 @@ export function AssetPicker({ shotId, slot, x, y, onClose }) {
                 </span>
               )}
               <span className="tile-name">{p.name}</span>
-            </button>
+            </Button>
           );
         })}
         {files.map((a) => (
-          <button
+          <Button
             key={a.id}
             className={'tile' + (usedA.has(a.id) ? ' used' : '')}
             onClick={() => pick({ asset: a })}
@@ -1435,7 +1431,7 @@ export function AssetPicker({ shotId, slot, x, y, onClose }) {
               </span>
             )}
             <span className="tile-name">{a.name}</span>
-          </button>
+          </Button>
         ))}
       </div>
       {!results.length && <p className="muted">{tr('storyboard.copy76')}</p>}
@@ -1615,7 +1611,7 @@ export function ShotCard({
     >
       <div className="card-media">
         {onSelect && (
-          <button
+          <Button
             className={'workbench-select' + (checked ? ' checked' : '')}
             aria-label={tr('workbench.select')}
             aria-pressed={checked}
@@ -1626,7 +1622,7 @@ export function ShotCard({
             }}
           >
             {checked ? <CheckCircle2 size={18} /> : <Circle size={18} />}
-          </button>
+          </Button>
         )}
         <ShotThumb shot={shot} />
         <span className="card-no">{String(index + 1).padStart(2, '0')}</span>
@@ -1893,9 +1889,9 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               onChange={(e) => upd({ title: e.target.value })}
               onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
             />
-            <button
-              type="button"
-              className="ghost round ed-rename"
+            <Button
+              variant="ghost"
+              className="round ed-rename"
               title={tr('trash.rename')}
               aria-label={tr('trash.rename')}
               onClick={(e) => {
@@ -1905,21 +1901,21 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               }}
             >
               <Pencil size={13} />
-            </button>
+            </Button>
           </div>
         </div>
         {onWide && (
-          <button
-            type="button"
+          <Button
+            size="sm"
             // #232 (#46): a labelled button, not a bare icon, so the full-window editor is found.
-            className="small ed-expand"
+            className="ed-expand"
             aria-label={tr(wide ? 'workbench.collapse' : 'workbench.expand')}
             title={tr(wide ? 'workbench.collapse' : 'workbench.expand')}
             onClick={onWide}
           >
             {wide ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
             {tr(wide ? 'workbench.collapse' : 'workbench.expand')}
-          </button>
+          </Button>
         )}
         <TrashButton target={{ kind: 'entity', project_id: state.project.id, id: shot.id }} />
         {onClose && (
@@ -1941,12 +1937,13 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           {viewing &&
             viewing.id !== shot.chosen &&
             ['done', 'succeeded'].includes(viewing.status) && (
-              <button
-                className="primary use"
+              <Button
+                variant="primary"
+                className="use"
                 onClick={() => dispatch({ type: 'choose', shot: shot.id, version: viewing.id })}
               >
                 {tr('storyboard.finish20', { number: chosen?.n })}
-              </button>
+              </Button>
             )}
         </div>
         <WorkbenchTakes
@@ -1961,8 +1958,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
             {/* #232 (#53): downloads and "save frame" stay in view as compact buttons. */}
             <div className="take-tools-inline">
               <StoryboardDownloads version={viewing} title={shot.title} />
-              <button
-                className="small"
+              <Button
+                size="sm"
                 disabled={saving}
                 title={tr('storyboard.saveFrameHint')}
                 onClick={() => {
@@ -1994,7 +1991,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               >
                 <Pin size={14} />
                 {tr('storyboard.copy81')}
-              </button>
+              </Button>
             </div>
 
             {msg && <small className="okmsg">{msg}</small>}
@@ -2059,13 +2056,13 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                     <div key={c.id} className="castitem character">
                       <AssetThumb asset={a} size={34} />
                       <div>
-                        <button
+                        <Button
                           className="link"
                           title={tr('storyboard.finish12')}
                           onClick={() => dispatch({ type: 'openProfile', id: p.id })}
                         >
                           {p.name}
-                        </button>
+                        </Button>
                         <select
                           aria-label={p.name + tr('storyboard.detail57')}
                           value={variantOf(p, c.variant)?.id || ''}
@@ -2107,13 +2104,13 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                       <div className="castitem location">
                         <AssetThumb asset={coverOf(db, p, shot.place.variant)} size={34} />
                         <div>
-                          <button
+                          <Button
                             className="link"
                             title={tr('storyboard.finish12')}
                             onClick={() => dispatch({ type: 'openProfile', id: p.id })}
                           >
                             {p.name}
-                          </button>
+                          </Button>
                           <select
                             aria-label={p.name + tr('storyboard.detail59')}
                             value={variantOf(p, shot.place.variant)?.id || ''}
@@ -2152,13 +2149,13 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                       <div key={id} className="castitem prop">
                         <AssetThumb asset={coverOf(db, p)} size={34} />
                         <div>
-                          <button
+                          <Button
                             className="link"
                             title={tr('storyboard.finish12')}
                             onClick={() => dispatch({ type: 'openProfile', id: p.id })}
                           >
                             {p.name}
-                          </button>
+                          </Button>
                           <small>{tr('storyboard.copy88')}</small>
                         </div>
                         <IconButton
@@ -2191,7 +2188,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
         )}
         <div className="modetabs" role="tablist" aria-label={tr('storyboard.finish13')}>
           {['FL', 'REF'].map((k) => (
-            <button
+            <Button
               key={k}
               role="tab"
               title={k === 'FL' ? tr('storyboard.detail60') : tr('storyboard.detail61')}
@@ -2200,7 +2197,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               onClick={() => upd({ mode: k })}
             >
               <b>{MODE_LABEL[k]}</b>
-            </button>
+            </Button>
           ))}
         </div>
         <p className="mode-help muted">
@@ -2467,8 +2464,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                 </Button>
               </Tooltip>
             )}
-            <button
-              className="primary"
+            <Button
+              variant="primary"
               disabled={
                 busy ||
                 !Number.isInteger(Number(copies)) ||
@@ -2481,7 +2478,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
             >
               {shot.versions.length ? tr('storyboard.detail67') : tr('storyboard.detail68')} ·{' '}
               {qualityLabel}
-            </button>
+            </Button>
           </div>
         </div>
         {picker && <AssetPicker shotId={shot.id} {...picker} onClose={() => setPicker(null)} />}
@@ -2615,16 +2612,17 @@ export function Transport({ player }) {
   const { playing, setPlaying, t, total, setT } = player;
   return (
     <div className="transport">
-      <button
-        className="primary round"
+      <Button
+        variant="primary"
+        className="round"
         aria-label={playing ? tr('storyboard.detail69') : tr('storyboard.detail70')}
         disabled={!total}
         onClick={() => setPlaying(!playing)}
       >
         {playing ? <Pause size={16} /> : <Play size={16} />}
-      </button>
-      <button
-        className="ghost"
+      </Button>
+      <Button
+        variant="ghost"
         aria-label={tr('storyboard.restart')}
         onClick={() => {
           setPlaying(false);
@@ -2632,7 +2630,7 @@ export function Transport({ player }) {
         }}
       >
         <SkipBack size={16} />
-      </button>
+      </Button>
       <span className="time">
         {fmt(t)} / {fmt(total)}
       </span>
@@ -2659,8 +2657,7 @@ function Segment({
   const drag = useDraggable({ id: 'seg:' + seg.shot.id }),
     drop = useDroppable({ id: 'segto:' + seg.shot.id });
   return (
-    <button
-      type="button"
+    <Button
       ref={(node) => {
         drag.setNodeRef(node);
         drop.setNodeRef(node);
@@ -2705,7 +2702,7 @@ function Segment({
           <span className={'tseg-dot ' + status.tone} />
         </>
       )}
-    </button>
+    </Button>
   );
 }
 

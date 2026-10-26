@@ -1,4 +1,5 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
+import { Button } from './ui/Button.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import { usePageActive } from './AppRouteCache.jsx';
 import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
@@ -384,20 +385,20 @@ function PolicyReview({ host, selection, current, busy, onClose, onConfirm }) {
             {localizedPolicy(host.policy.manual, t)} → {localizedPolicy(selection, t)}
           </p>
         </div>
-        <button disabled={busy} onClick={onClose}>
+        <Button disabled={busy} onClick={onClose}>
           {t('operator.copy32')}
-        </button>
+        </Button>
       </header>
       <p>{t('operator.copy172')}</p>
       {selection === 'prefer' && <p className="p4-meta">{t('operator.copy173')}</p>}
       {!current && <p role="alert">{t('operator.copy174')}</p>}
       <footer>
-        <button disabled={busy} onClick={onClose}>
+        <Button disabled={busy} onClick={onClose}>
           {t('operator.copy175')}
-        </button>
-        <button className="p4-primary" disabled={busy || !current} onClick={onConfirm}>
+        </Button>
+        <Button className="p4-primary" disabled={busy || !current} onClick={onConfirm}>
           {busy ? t('operator.status83') : t('operator.status84')}
-        </button>
+        </Button>
       </footer>
     </dialog>
   );
@@ -460,9 +461,9 @@ function HostEditor({ host, busy, onSave }) {
             ))}
           </select>
         </label>
-        <button type="submit" disabled={busy || selection === host.policy.manual}>
+        <Button type="submit" disabled={busy || selection === host.policy.manual}>
           {t('operator.copy177')}
-        </button>
+        </Button>
         <small>
           {t('operatorPanel.revision', {
             revision: host.policy.revision,
@@ -534,9 +535,9 @@ function HostLookup({ controller, target, busy }) {
             }}
           />
         </label>
-        <button type="submit" disabled={busy || loading || !valid}>
+        <Button type="submit" disabled={busy || loading || !valid}>
           {loading ? t('operator.status85') : t('operator.status86')}
-        </button>
+        </Button>
       </form>
       <p className="p4-meta">{t('operator.copy179')}</p>
       <FloatingMessage tone="error" text={error ? error : null} />
@@ -594,9 +595,9 @@ export default function OperatorHostsPanel({ controller, state, admin = false, b
             {admin ? t('operator.status90') : t('operator.status91')} {t('operatorPanel.grouping')}
           </p>
         </div>
-        <button disabled={blocked} onClick={() => void read()}>
+        <Button disabled={blocked} onClick={() => void read()}>
           {loading ? t('operator.status70') : t('operator.status92')}
-        </button>
+        </Button>
       </header>
       {error && (
         <p className="p4-error" role="alert">
@@ -630,9 +631,9 @@ export default function OperatorHostsPanel({ controller, state, admin = false, b
             <p className="ui-empty ui-empty-compact">{t('operator.copy180')}</p>
           )}
           {value.has_more && (
-            <button disabled={blocked} onClick={() => void read(value.offset + value.limit)}>
+            <Button disabled={blocked} onClick={() => void read(value.offset + value.limit)}>
               {t('operator.copy181')}
-            </button>
+            </Button>
           )}
           <p className="p4-meta">{t('operator.copy182')}</p>
         </>
@@ -659,7 +660,7 @@ export default function OperatorHostsPanel({ controller, state, admin = false, b
             <p>{t('operator.copy184')}</p>
           )}
           {state.hostAudits?.has_more && (
-            <button
+            <Button
               disabled={blocked}
               onClick={() =>
                 void controller
@@ -668,7 +669,7 @@ export default function OperatorHostsPanel({ controller, state, admin = false, b
               }
             >
               {t('operator.copy185')}
-            </button>
+            </Button>
           )}
         </details>
       )}

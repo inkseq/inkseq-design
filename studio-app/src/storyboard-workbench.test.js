@@ -46,7 +46,7 @@ test('actual workbench renders its initial unread state without generation or de
   );
   assert.match(
     html,
-    /<button class="primary" disabled="">(?:(?!<\/button>).)*Generate 1<\/button>/,
+    /<button[^>]*class="primary" disabled="">(?:(?!<\/button>).)*Generate 1<\/button>/,
   );
   assert.match(html, /No takes yet/);
   assert.doesNotMatch(html, />Delete<|>Move to trash<|workbench\./);
