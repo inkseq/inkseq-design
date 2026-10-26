@@ -713,6 +713,7 @@ function InboxRow({ a }) {
           <small className="muted">{tr('storyboard.copy47')}</small>
         )}
         <select
+          className="field-sm"
           aria-label={a.name + tr('storyboard.detail21')}
           value={target}
           onChange={(e) => setTarget(e.target.value)}
@@ -2065,6 +2066,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                           {p.name}
                         </Button>
                         <select
+                          className="field-sm"
                           aria-label={p.name + tr('storyboard.detail57')}
                           value={variantOf(p, c.variant)?.id || ''}
                           onChange={(e) =>
@@ -2113,6 +2115,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                             {p.name}
                           </Button>
                           <select
+                            className="field-sm"
                             aria-label={p.name + tr('storyboard.detail59')}
                             value={variantOf(p, shot.place.variant)?.id || ''}
                             onChange={(e) =>

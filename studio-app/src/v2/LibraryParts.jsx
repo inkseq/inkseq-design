@@ -1,7 +1,7 @@
 // Small in-place editors for the asset library (owner, 2026-10-22): rename, tag and file a
 // picture where it is, instead of opening a dialog and coming back.
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Button } from '../ui/Button.jsx';
+import { Button, IconButton } from '../ui/Button.jsx';
 import { Check, Pencil, Plus, Upload, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 
@@ -91,14 +91,14 @@ export function TagEditor({ tags, suggestions = [], onChange, disabled }) {
       {tags.map((tag) => (
         <span key={tag} className="tagchip on">
           {tag}
-          <Button
-            className="x"
+          <IconButton
+            size="xs"
             disabled={disabled}
-            aria-label={t('library.removeTag', { tag })}
+            label={t('library.removeTag', { tag })}
             onClick={() => onChange(tags.filter((x) => x !== tag))}
           >
             <X size={11} />
-          </Button>
+          </IconButton>
         </span>
       ))}
       <input
