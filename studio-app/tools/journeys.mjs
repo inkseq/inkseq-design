@@ -177,14 +177,14 @@ await journey(
     const p = await open(QA_USER);
     await p.goto(BASE + '/?view=works');
     await p.waitForSelector('.story-grid', { timeout: 15000 });
-    await p.locator('.hbar details.account-menu > summary').click();
+    await p.locator('.hbar .account-menu-trigger').click();
     await settle(p, 800);
-    const menu = (await p.locator('.hbar .account-menu-panel').innerText()).replace(/\s+/g, ' ');
+    const menu = (await p.locator('.account-menu-panel').innerText()).replace(/\s+/g, ' ');
     expect(!/ZIP/.test(menu), 'Works account menu still shows story actions: ' + menu);
     // Newest first: the browser-only sample can come first and has no multi-select.
     const card = p.locator('.story-wrap:has(.story-pick)').first();
     if (await card.count()) {
-      await p.locator('.hbar details.account-menu > summary').click();
+      await p.locator('.hbar .account-menu-trigger').click();
       await card.hover();
       await card.locator('.story-pick input').check();
       expect(await p.locator('.works-select-bar').count(), 'multi-select bar did not appear');
