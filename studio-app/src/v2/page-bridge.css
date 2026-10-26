@@ -342,9 +342,6 @@ dialog::backdrop {
   .home {
     padding-bottom: calc(74px + env(safe-area-inset-bottom));
   }
-  .hbar nav {
-    transform: none;
-  }
   .hbar > button {
     min-width: 36px;
     min-height: 36px;
@@ -468,18 +465,6 @@ dialog::backdrop {
   min-height: 36px;
 }
 @media (max-width: 760px) {
-  .hbar nav button {
-    font-size: 11px;
-    line-height: 12px;
-    height: 36px;
-    min-height: 36px;
-    padding: 3px 2px;
-    gap: 2px;
-  }
-  .hbar nav .nav-ico {
-    width: 16px;
-    height: 16px;
-  }
   .hbar > button:not(.avatar) {
     height: 36px;
     min-height: 36px;
