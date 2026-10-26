@@ -3,7 +3,7 @@
     "busyDisables": 221,
     "details": 60,
     "rawDialog": 2,
-    "controlRestyle": 125
+    "controlRestyle": 120
   },
   "files": {
     "busyDisables": {
@@ -92,8 +92,8 @@
       "i18n/workspace-language.css": 4,
       "story-chat.css": 18,
       "story-open.css": 1,
-      "v2/library-adapter.css": 8,
-      "v2/ops-adapter.css": 14,
+      "v2/library-adapter.css": 6,
+      "v2/ops-adapter.css": 11,
       "v2/page-bridge.css": 9,
       "v2/story-film.css": 6,
       "v2/story-view.css": 9,
