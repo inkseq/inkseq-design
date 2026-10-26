@@ -73,7 +73,7 @@ export const landingCatalogs = {
     'landing.v2.flowBody7': 'Export, or polish it in your editor',
     'landing.v2.loop': 'Watch · mark · change only that — until you are happy',
     'landing.v2.agents':
-      'There is a built-in assistant, or bring your own Claude, Codex, ChatGPT or Telegram — you all edit the same story.',
+      'There is a built-in assistant, or use it with your own AI agent — you all edit the same story.',
     'landing.v2.agentsLabel': 'Assistants that can work with you',
     'landing.v2.agentBuiltIn': 'Built-in',
     'landing.v2.finalTitle': 'Your story can be made like this too.',
@@ -180,7 +180,7 @@ export const landingCatalogs = {
     'landing.v2.flowBody7': '导出，或交给剪辑软件精修',
     'landing.v2.loop': '看片 · 标注 · 只改那一处 —— 直到满意',
     'landing.v2.agents':
-      '网页里有内置小墨滴；也可以请你自己的 Claude、Codex、ChatGPT 或 Telegram 来帮忙，大家改的是同一个故事。',
+      '网页里有内置小墨滴；也可以接上你自己的 AI 助手一起用，大家改的是同一个故事。',
     'landing.v2.agentsLabel': '能和你一起干活的助手',
     'landing.v2.agentBuiltIn': '小墨滴',
     'landing.v2.finalTitle': '你的故事，也可以这样拍。',
