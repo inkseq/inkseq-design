@@ -161,7 +161,7 @@ export default function Landing() {
         <section className="lp-section lp-agents">
           <p>{t('landing.v2.agents')}</p>
           <ul aria-label={t('landing.v2.agentsLabel')}>
-            {['landing.v2.agentBuiltIn', 'Claude', 'Codex', 'ChatGPT', 'Telegram'].map((name) => (
+            {['landing.v2.agentBuiltIn', 'Claude', 'ChatGPT', 'Telegram'].map((name) => (
               <li key={name}>{name.startsWith('landing.') ? t(name) : name}</li>
             ))}
           </ul>
