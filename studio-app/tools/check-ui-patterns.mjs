@@ -11,7 +11,8 @@ import { join, relative, sep } from 'node:path';
 
 const root = new URL('../src/', import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1');
 const baselineFile = new URL('./ui-pattern-baseline.json', import.meta.url);
-const owners = new Set(['ui/Dialog.jsx', 'ui/Menu.jsx', 'ui/Popover.jsx', 'QuickChatControls.jsx']);
+// The shared primitives in ui/ are where these patterns belong.
+const owners = new Set(['QuickChatControls.jsx']);
 const patterns = {
   busyDisables: /disabled=\{[^}]*\bbusy\b/g,
   details: /<details\b/g,
@@ -32,7 +33,7 @@ walk(root);
 const counts = {};
 for (const file of files) {
   const rel = relative(root, file).split(sep).join('/');
-  if (owners.has(rel)) continue;
+  if (owners.has(rel) || rel.startsWith('ui/')) continue;
   const text = readFileSync(file, 'utf8');
   for (const [name, re] of Object.entries(patterns)) {
     const n = (text.match(re) || []).length;
