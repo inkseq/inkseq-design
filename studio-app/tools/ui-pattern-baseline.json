@@ -3,7 +3,7 @@
     "busyDisables": 221,
     "details": 60,
     "rawDialog": 2,
-    "controlRestyle": 64
+    "controlRestyle": 37
   },
   "files": {
     "busyDisables": {
@@ -85,18 +85,13 @@
     },
     "controlRestyle": {
       "account-menu.css": 1,
-      "cloud-studio.css": 3,
+      "cloud-studio.css": 2,
       "demo-v2.css": 1,
-      "dialogs.css": 5,
-      "film-editor.css": 6,
-      "i18n/workspace-language.css": 4,
-      "story-open.css": 1,
+      "film-editor.css": 4,
       "v2/library-adapter.css": 6,
       "v2/ops-adapter.css": 10,
-      "v2/page-bridge.css": 8,
       "v2/story-film.css": 6,
-      "v2/story-view.css": 9,
-      "v2/works-adapter.css": 4
+      "v2/story-view.css": 7
     }
   }
 }

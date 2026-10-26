@@ -300,7 +300,7 @@ export function UploadMenu({ projects, defaultStory, onFiles, disabled }) {
             <Upload size={20} aria-hidden="true" />
             <span>
               {t('library.uploadDrop')}{' '}
-              <Button className="linkish" onClick={() => input.current?.click()}>
+              <Button variant="link" onClick={() => input.current?.click()}>
                 {t('library.uploadPick')}
               </Button>
             </span>

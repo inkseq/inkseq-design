@@ -127,7 +127,7 @@ export default function Landing() {
             <small className="muted">
               {t('landing.noAccount')}{' '}
               <Button
-                className="linkish"
+                variant="link"
                 onClick={() => {
                   setPasswordFirst(true);
                   setLogin(true);

@@ -1949,7 +1949,8 @@ export default function P4OperatorConsole() {
                 <small>{t('operator.more.totalCost')}</small>
                 <b>{money(totalCost)}</b>
                 <Button
-                  className="linkish keep-label"
+                  variant="link"
+                  className="keep-label"
                   onClick={() => navigateApp('/settings?tab=budget')}
                 >
                   {t('settings.budget')}
@@ -1958,7 +1959,7 @@ export default function P4OperatorConsole() {
             </div>
             {admin && !adminNodes && (
               <p className="p4-fleet-note muted">
-                <Button className="linkish" onClick={showAdmin}>
+                <Button variant="link" onClick={showAdmin}>
                   {t('operator.fleet.load')}
                 </Button>
               </p>
@@ -1969,7 +1970,7 @@ export default function P4OperatorConsole() {
                   count: othersLive.length,
                   owners: otherOwners.join('、'),
                 })}{' '}
-                <Button className="linkish" onClick={showAdmin}>
+                <Button variant="link" onClick={showAdmin}>
                   {t('operator.fleet.view')}
                 </Button>
               </p>

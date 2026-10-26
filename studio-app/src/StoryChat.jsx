@@ -845,7 +845,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                     state.undoTurnId &&
                     message.turnId === state.undoTurnId && (
                       <Button
-                        className="sc-undo linkish"
+                        variant="link"
+                        className="sc-undo"
                         onClick={() =>
                           void chat.current.undo(state.undoTurnId, emit).then((ok) => {
                             setNotice(t(ok ? 'storyChat.undone' : 'storyChat.undoStale'));

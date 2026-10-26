@@ -459,7 +459,6 @@
     .who.small .chip,
     .ruler,
     .ver em,
-    .ver i.x,
     .slot-empty small,
     .sent-prompt em,
     .sent-item small,
@@ -548,12 +547,12 @@
   background: var(--muted);
   opacity: 0.65;
 }
-.sb-workspace .splitter.x > i {
+.sb-workspace .splitter.axis-x > i {
   width: 2px;
   height: 28px;
   margin: auto;
 }
-.sb-workspace .splitter.y > i {
+.sb-workspace .splitter.axis-y > i {
   height: 2px;
   width: 32px;
   margin: auto;
@@ -624,8 +623,8 @@
   max-height: calc(100dvh - 16px);
 }
 /* StoryboardPanels sets these body classes while a splitter is dragged. */
-body.sb-resizing .splitter.x i,
-body.sb-resizing-y .splitter.y i {
+body.sb-resizing .splitter.axis-x i,
+body.sb-resizing-y .splitter.axis-y i {
   background: var(--accent);
 }
 body.sb-resizing,

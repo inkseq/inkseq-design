@@ -288,12 +288,20 @@ export function TrashProvider({ account, children }) {
     </Context.Provider>
   );
 }
-export function TrashMenu({ target, onRename, onEdit, onChat, onTrashSettled, disabled = false }) {
+export function TrashMenu({
+  target,
+  onRename,
+  onEdit,
+  onChat,
+  onTrashSettled,
+  disabled = false,
+  onMedia = false,
+}) {
   const ctx = useTrash(),
     { t } = useI18n();
   if (!ctx?.account) return null;
   return (
-    <ItemMenu disabled={disabled || ctx.busy || !!ctx.pending}>
+    <ItemMenu disabled={disabled || ctx.busy || !!ctx.pending} onMedia={onMedia}>
       {onRename && <MenuItem onSelect={onRename}>{t('trash.rename')}</MenuItem>}
       {onEdit && <MenuItem onSelect={onEdit}>{t('trash.edit')}</MenuItem>}
       {onChat && <MenuItem onSelect={onChat}>{t('trash.editInChat')}</MenuItem>}

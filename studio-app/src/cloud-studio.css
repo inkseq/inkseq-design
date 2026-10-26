@@ -115,12 +115,6 @@
   gap: 7px;
   font-size: 12px;
 }
-.shot-prompt-options input {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  margin: 0;
-}
 .shot-prompt-preview {
   padding: 12px;
   margin-top: 12px;

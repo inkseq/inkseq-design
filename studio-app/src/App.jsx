@@ -940,7 +940,7 @@ function SeriesApp({ sidebarView, onSidebarView }) {
               </div>
               <p>{t('story.helpCapabilities')}</p>
               <p>{t('story.copy123')}</p>
-              <Button className="text-link" onClick={() => open({ type: 'cloud' })}>
+              <Button variant="link" onClick={() => open({ type: 'cloud' })}>
                 {t('story.copy124')}
               </Button>
             </>
