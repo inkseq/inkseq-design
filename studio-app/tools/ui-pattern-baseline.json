@@ -1,51 +1,30 @@
 {
   "totals": {
-    "busyDisables": 219
+    "busyDisables": 80
   },
   "files": {
     "busyDisables": {
-      "AccountPassword.jsx": 5,
-      "AdminConsole.jsx": 4,
-      "AdminHome.jsx": 2,
-      "AgentConnect.jsx": 1,
+      "AdminHome.jsx": 1,
       "AgentLink.jsx": 1,
-      "ApiKeys.jsx": 10,
-      "App.jsx": 18,
-      "AssistantConnections.jsx": 14,
-      "CapacitySettings.jsx": 5,
+      "App.jsx": 7,
       "ChapterRoughCut.jsx": 5,
       "CloudStudio.jsx": 11,
-      "CreationHistory.jsx": 5,
-      "DemandStartPanel.jsx": 1,
-      "DstackCapacity.jsx": 8,
-      "FilmAudioLane.jsx": 2,
-      "FilmEditor.jsx": 6,
-      "Library.jsx": 4,
+      "CreationHistory.jsx": 4,
+      "DstackCapacity.jsx": 2,
       "LoginDialog.jsx": 1,
-      "operator-machine-view.jsx": 1,
-      "OperatorBudgetPanel.jsx": 9,
-      "OperatorConsole.jsx": 16,
-      "OperatorHostsPanel.jsx": 6,
-      "OperatorJobsPanel.jsx": 2,
-      "P4OperatorConsole.jsx": 9,
+      "OperatorConsole.jsx": 2,
+      "P4OperatorConsole.jsx": 2,
       "ProductionQueue.jsx": 15,
-      "ProjectActivity.jsx": 3,
-      "QuickChatPreferences.jsx": 2,
-      "ShotSegments.jsx": 1,
-      "SpendingSettings.jsx": 6,
-      "StoryboardComponents.jsx": 6,
-      "StoryboardConnected.jsx": 3,
-      "StoryboardDialog.jsx": 3,
+      "ProjectActivity.jsx": 1,
+      "StoryboardComponents.jsx": 5,
       "StoryboardWorkbench.jsx": 7,
       "StoryboardWorkspace.jsx": 5,
-      "StoryChat.jsx": 3,
-      "StoryChatAdminSwitch.jsx": 3,
+      "StoryChat.jsx": 1,
       "StoryFilmControl.jsx": 2,
       "StoryFilmView.jsx": 2,
       "StoryNavigation.jsx": 1,
       "StoryOpenNotice.jsx": 3,
-      "UniversalTrash.jsx": 7,
-      "VideoCacheSettings.jsx": 1
+      "UniversalTrash.jsx": 2
     }
   }
 }
