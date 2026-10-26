@@ -1665,17 +1665,6 @@ export function ShotCard({
   );
 }
 
-export function AddCard({ onAdd, label }) {
-  const { t: tr } = useI18n();
-  const { TYPE_LABEL, VARIANT_LABEL, KIND_LABEL, MODE_LABEL, QUALITY_LABEL } = displayLabels(tr);
-  if (label === undefined) label = tr('storyboard.detail42');
-  return (
-    <button className="card add" onClick={onAdd}>
-      {label}
-    </button>
-  );
-}
-
 /* ---------- shot editor ---------- */
 
 // #232 (#50): a small "?" that explains a field on hover or keyboard focus.
