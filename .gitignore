@@ -414,6 +414,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/data/
 !studio-app/src/data/query.js
 !studio-app/src/query-layer.test.js
+!studio-app/src/TakeReview.jsx
+!studio-app/src/take-review.css
+!studio-app/src/take-review-model.js
+!studio-app/src/take-review.test.js
 !studio-app/src/ui/Menu.jsx
 !studio-app/src/ui/menu.css
 !studio-app/src/ui/Tooltip.jsx
