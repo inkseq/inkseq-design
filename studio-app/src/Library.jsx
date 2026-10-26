@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { createCloudClient } from './cloud-client.js';
 import { createLibraryController, libraryKey } from './library-commands.js';
@@ -158,10 +158,12 @@ export default function Library({ account, active = true }) {
   useEffect(() => {
     identity.current = account;
     versions.current = {};
+    const dialogEpochRef = dialogEpoch;
+    const epochRef = epoch;
     return () => {
       if (identity.current === account) identity.current = null;
-      epoch.current++;
-      dialogEpoch.current++;
+      epochRef.current++;
+      dialogEpochRef.current++;
     };
   }, [account]);
   let pending = null;
@@ -208,6 +210,7 @@ export default function Library({ account, active = true }) {
       if (n === epoch.current) setLoading(false);
     }
   }
+  const errorTextEvent = useEffectEvent((...args) => errorText(...args));
   useEffect(() => {
     setRows([]);
     setCounts(null);
@@ -231,17 +234,19 @@ export default function Library({ account, active = true }) {
         }
         if (live) setProjects([...new Map(all.map((p) => [p.id, p])).values()]);
       })().catch((e) => {
-        if (live && identity.current === owner) setError(errorText(e));
+        if (live && identity.current === owner) setError(errorTextEvent(e));
       });
     return () => {
       live = false;
     };
   }, [account, api]);
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
-    if (account && active) void load();
+    if (account && active) void loadEvent();
     else setLoading(false);
+    const epochRef = epoch;
     return () => {
-      epoch.current++;
+      epochRef.current++;
     };
   }, [account, controller, active, filters, revision]);
   useEffect(() => {

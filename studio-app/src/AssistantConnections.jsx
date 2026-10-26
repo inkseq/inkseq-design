@@ -8,7 +8,7 @@ import { microsToDollars } from './money.js';
 import SpendingBreakdown from './SpendingBreakdown.jsx';
 import { Bot } from 'lucide-react';
 import { assistantCatalogs } from './i18n/assistantCatalogs.js';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { createQuickChatClient } from './quick-chat-client.js';
 import {
@@ -127,6 +127,14 @@ export default function AssistantConnections({
         : old;
     });
   }
+  const refreshEvent = useEffectEvent((...args) => refresh(...args));
+  // Defaults for a new connection, read when the scope changes; a later credit-mode change
+  // does not wipe what the person typed.
+  const resetDefaults = useEffectEvent(() => {
+    // The bot makes films, so a Telegram link defaults to generate with a modest daily cap.
+    setName(target === 'telegram' ? 'Telegram' : 'Codex');
+    setCap(target === 'telegram' ? (creditMode ? TELEGRAM_DEFAULT_CAP : '0') : '0');
+  });
   useEffect(() => {
     const at = ++epoch.current;
     setRows([]);
@@ -135,9 +143,7 @@ export default function AssistantConnections({
     connectionsCursor.current = undefined;
     activitySequence.current++;
     setCreated(null);
-    // The bot makes films, so a Telegram link defaults to generate with a modest daily cap.
-    setName(target === 'telegram' ? 'Telegram' : 'Codex');
-    setCap(target === 'telegram' ? (creditMode ? TELEGRAM_DEFAULT_CAP : '0') : '0');
+    resetDefaults();
     setPermission('generate');
     setSettings(null);
     setSettingsDraft(null);
@@ -157,7 +163,7 @@ export default function AssistantConnections({
     let timer;
     if (account) {
       setLoading(true);
-      refresh()
+      refreshEvent()
         .catch(() => {
           if (epoch.current === at) setError(t('assistants.error'));
         })
@@ -169,20 +175,21 @@ export default function AssistantConnections({
         if (visible.current) {
           setNow(Date.now());
           try {
-            await refresh();
+            await refreshEvent();
           } catch {}
         }
         if (epoch.current === at) timer = setTimeout(poll, 5000);
       };
       timer = setTimeout(poll, 5000);
     }
+    const epochRef = epoch;
     return () => {
-      epoch.current++;
+      epochRef.current++;
       current.destroy();
       clearTimeout(timer);
       client.reset();
     };
-  }, [client, account, sessionId, projectId]);
+  }, [client, account, sessionId, projectId, t]);
   const queue = useRef(Promise.resolve());
   function act(fn) {
     const run = queue.current.catch(() => {}).then(() => actNow(fn));

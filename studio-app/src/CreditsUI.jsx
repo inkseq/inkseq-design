@@ -1,6 +1,6 @@
 // Credits chip, Settings → Credits and the not-enough-credits prompt (h3-studio#306/#307).
 // Port of prototype account.jsx. Hidden until GET /v1/credits answers, so it can merge early.
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useEffectEvent, useMemo, useState } from 'react';
 import {
   Check,
   Coins,
@@ -125,24 +125,27 @@ export function CreditsPanel({ account, active }) {
   }, [api, active]);
 
   // Back from Stripe: ?paid=<session>. Credits arrive by webhook, so poll briefly.
+  const waitForPaid = useEffectEvent((isLive, params) => {
+    const before = credits?.balance ?? null;
+    waitForPurchase(() => api.request('/v1/credits').then(creditSummary), before).then((now) => {
+      if (!isLive()) return;
+      setPaid(now ? 'done' : 'slow');
+      if (now) {
+        setCredits(now);
+        window.dispatchEvent(new Event(CREDITS_CHANGED));
+        api.request('/v1/credits/entries').then((body) => isLive() && setLog(entryList(body)));
+      }
+      params.delete('paid');
+      navigateApp('/settings?' + params, { replace: true, scroll: false });
+    });
+  });
   useEffect(() => {
     if (!active) return undefined;
     const params = new URLSearchParams(location.search);
     if (!params.has('paid')) return undefined;
     let live = true;
     setPaid('waiting');
-    const before = credits?.balance ?? null;
-    waitForPurchase(() => api.request('/v1/credits').then(creditSummary), before).then((now) => {
-      if (!live) return;
-      setPaid(now ? 'done' : 'slow');
-      if (now) {
-        setCredits(now);
-        window.dispatchEvent(new Event(CREDITS_CHANGED));
-        api.request('/v1/credits/entries').then((body) => live && setLog(entryList(body)));
-      }
-      params.delete('paid');
-      navigateApp('/settings?' + params, { replace: true, scroll: false });
-    });
+    waitForPaid(() => live, params);
     return () => {
       live = false;
     };

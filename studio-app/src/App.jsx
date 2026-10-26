@@ -19,7 +19,7 @@ import UniversalTrash, {
   TrashButton,
   StoryItemManager,
 } from './UniversalTrash.jsx';
-import React, { useState, useEffect, useRef, useSyncExternalStore } from 'react';
+import React, { useState, useEffect, useEffectEvent, useRef, useSyncExternalStore } from 'react';
 import {
   Plus,
   Workflow,
@@ -161,6 +161,7 @@ function SeriesApp({ sidebarView, onSidebarView }) {
     .filter((e) => mediaKinds.includes(e.type) && e.data.fileId)
     .map((e) => e.id + ':' + e.data.fileId + ':' + !!e.data.missingFile)
     .join('|');
+  const auditFailed = useEffectEvent(() => store.notify(t('story.copy42')));
   useEffect(() => {
     let alive = true,
       checking = false;
@@ -185,7 +186,7 @@ function SeriesApp({ sidebarView, onSidebarView }) {
             );
         }
       } catch {
-        if (alive) store.notify(t('story.copy42'));
+        if (alive) auditFailed();
       } finally {
         checking = false;
       }
@@ -998,7 +999,9 @@ function AddForm({ project: p, state, initialKind, onDone }) {
     ),
     hasUpload = ['character', 'location', ...mediaKinds].includes(kind),
     expected = ['character', 'location'].includes(kind) ? 'image' : kind;
-  useEffect(() => {
+  // Default parent when the kind or selection changes; reads the latest project without
+  // re-running when other entities change.
+  const defaultParent = useEffectEvent(() => {
     let id = '';
     if (kind === 'scene')
       id = state.scopeId || p.entities.find((e) => e.type === 'chapter')?.id || '';
@@ -1016,7 +1019,10 @@ function AddForm({ project: p, state, initialKind, onDone }) {
     else if (['generation', 'note'].includes(kind))
       id =
         selected && ['scene', 'shot'].includes(selected.type) ? selected.id : state.scopeId || '';
-    setParent(id);
+    return id;
+  });
+  useEffect(() => {
+    setParent(defaultParent());
     setFile(null);
   }, [kind, state.selectedId, state.scopeId]);
   const descriptions = {
@@ -1191,14 +1197,16 @@ function AppContent() {
   const target = readAgentLink(location.search),
     routeLoader = useRef(null);
   if (!routeLoader.current) routeLoader.current = createStoryRouteLoader({ cloud, store });
+  const targetProjectId = target?.projectId;
   useEffect(() => {
     void routeLoader.current.update({
       account,
-      projectId: target?.projectId,
+      projectId: targetProjectId,
       active: path === '/',
       busy: c.busy || !c.sessionReady,
     });
-  }, [account, path, location.search, c.busy, c.sessionReady, workspaceKey]);
+    // workspaceKey: re-check when the open story changes underneath the same link.
+  }, [account, path, targetProjectId, c.busy, c.sessionReady, workspaceKey]);
   useEffect(() => () => routeLoader.current.destroy(), []);
   useEffect(() => installAppNavigation(), []);
   useEffect(() => {

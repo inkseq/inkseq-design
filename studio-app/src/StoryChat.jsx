@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef, useState, useEffectEvent } from 'react';
 import { FloatingMessage } from './floating-notice.js';
 import {
   ArrowUp,
@@ -513,6 +513,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
   const fileInput = useRef(null);
 
   // Preview: sample replies. Live: the story-chat server, once it says it is ready.
+  const refreshStoriesEvent = useEffectEvent((...args) => refreshStories(...args));
+  const emitEvent = useEffectEvent((...args) => emit(...args));
   useEffect(() => {
     dispatch({ type: 'reset' });
     setUnavailable('');
@@ -543,7 +545,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       // Keep the address on this story, so a reload reopens it.
       onProject: (ident) => {
         story.current = ident;
-        void refreshStories();
+        void refreshStoriesEvent();
         try {
           window.history.replaceState(window.history.state, '', '/quick-chat?story=' + ident);
         } catch {
@@ -566,12 +568,12 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
         client.picturesEnabled = config.pictures_enabled === true;
         if (!config.enabled || !config.assistant_ready) setUnavailable(t('storyChat.notReady'));
         else {
-          void refreshStories();
-          if (story.current) return client.open(emit);
+          void refreshStoriesEvent();
+          if (story.current) return client.open(emitEvent);
           if (pending.current) {
             const idea = pending.current;
             pending.current = null;
-            return client.send({ text: idea }, emit);
+            return client.send({ text: idea }, emitEvent);
           }
         }
       })
@@ -579,7 +581,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     return () => {
       alive = false;
     };
-  }, [live, locale, api, session]);
+  }, [live, locale, api, session, t]);
 
   const emit = useMemo(() => {
     let clear = null;
@@ -609,7 +611,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
 
   // A new title (the chat names the story) updates the list.
   useEffect(() => {
-    if (live && state.title) void refreshStories();
+    if (live && state.title) void refreshStoriesEvent();
   }, [live, state.title]);
 
   useEffect(() => {

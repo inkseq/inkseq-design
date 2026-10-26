@@ -1696,7 +1696,7 @@ export default function P4OperatorConsole() {
   if (pageActive && location.path === '/operator') ownLocation.current = location;
   useEffect(() => {
     if (pageActive) document.title = t('operator.pageTitle');
-  }, [locale, pageActive]);
+  }, [locale, pageActive, t]);
   const c = useCloud(),
     controller = useMemo(() => createP4OperatorController({ locale: readBrowserLocale }), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
@@ -1734,17 +1734,16 @@ export default function P4OperatorConsole() {
       clearTimeout(timer);
     };
   }, [controller, c.account, view, pageActive, legacyView]);
+  const hasSnapshot = !!state.snapshot,
+    isAdmin = state.snapshot?.operator?.admin === true,
+    adminDialog = !!dialog?.admin;
   useEffect(() => {
-    if (
-      state.denied ||
-      !state.snapshot ||
-      (dialog?.admin && state.snapshot.operator?.admin !== true)
-    ) {
+    if (state.denied || !hasSnapshot || (adminDialog && !isAdmin)) {
       setDialog(null);
-      if (state.denied || state.snapshot?.operator?.admin !== true)
+      if (state.denied || !isAdmin)
         setView((current) => (current === 'admin' ? 'machines' : current));
     }
-  }, [state.denied, state.snapshot?.operator?.admin]);
+  }, [state.denied, hasSnapshot, isAdmin, adminDialog]);
   const snapshot = state.snapshot,
     profiles = state.catalog?.profiles || [],
     groups = snapshot?.groups || [],

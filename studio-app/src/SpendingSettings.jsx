@@ -7,7 +7,7 @@ import SpendingBreakdown from './SpendingBreakdown.jsx';
 import { admissionExposure } from './spending-breakdown.js';
 import { microsToDollars, dollarsToMicros, formatMoneyMicros } from './money.js';
 import AssistantConnections from './AssistantConnections.jsx';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useEffectEvent } from 'react';
 import { createCloudClient } from './cloud-client.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import StudioHeader, { useAccess, useAccountLabel } from './StudioHeader.jsx';
@@ -103,14 +103,15 @@ export default function SpendingSettings({ account }) {
     }
   });
   const tabs = loaded || !rememberedTabs ? liveTabs : rememberedTabs;
+  const liveTabsJson = JSON.stringify(liveTabs);
   useEffect(() => {
     if (!loaded) return;
     try {
-      localStorage.setItem(tabsKey, JSON.stringify(liveTabs));
+      localStorage.setItem(tabsKey, liveTabsJson);
     } catch {
       /* Tabs simply appear after the data on the next visit. */
     }
-  }, [loaded, liveTabs.credits, liveTabs.budget, tabsKey]);
+  }, [loaded, liveTabsJson, tabsKey]);
   const showBudget = tabs.budget;
   // Hosted (WorkOS) sign-ins have no local password to change.
   const hosted = access?.authentication === 'workos';
@@ -157,15 +158,17 @@ export default function SpendingSettings({ account }) {
       if (current === epoch.current) setBusy(false);
     }
   };
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
     epoch.current++;
     setUser(null);
     setAdmin(null);
     setDraft(null);
     setNotice('');
-    void load();
+    void loadEvent();
+    const epochRef = epoch;
     return () => {
-      epoch.current++;
+      epochRef.current++;
       api.reset();
     };
   }, [api]);

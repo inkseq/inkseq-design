@@ -1,5 +1,12 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
-import React, { useCallback, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import React, {
+  useCallback,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useEffectEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 import { Player } from '@remotion/player';
 import { AbsoluteFill, Html5Audio, Html5Video, Sequence } from 'remotion';
@@ -138,8 +145,9 @@ function Cut({ clips, sources, cues = [], audio = [] }) {
 // know the source length yet, reads it from the video's metadata.
 function ClipSource({ asset, needsDuration, onUrl, onDuration }) {
   const { playbackUrl } = useStoryboardMediaUrl({ entity: asset, fileId: asset.data.fileId });
+  const onUrlEvent = useEffectEvent((...args) => onUrl(...args));
   React.useEffect(() => {
-    if (playbackUrl) onUrl(asset.id, playbackUrl);
+    if (playbackUrl) onUrlEvent(asset.id, playbackUrl);
   }, [asset.id, playbackUrl]);
   return needsDuration && playbackUrl ? (
     <video
@@ -386,6 +394,8 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
     end: (c.from + c.frames) / cutFps,
     rate: c.rate,
   }));
+  // Audio blocks follow the cut's content, not the array rebuilt on every render.
+  const cutKey = JSON.stringify(cutTimeline);
   // Render v5 controls show only when the server advertises them (#408).
   const caps = cloudController.getState().capabilities?.chapter_render,
     v5 = caps?.render_contract_version >= 5,
@@ -395,8 +405,8 @@ export default function FilmEditor({ chapterId, initialTrim = null, onClose, onU
     crossfades = (v5 && caps.clip_sound_crossfade_values_s) || null,
     crossfade = crossfades ? clipSoundCrossfade(project, chapterId) : 0;
   const blocks = useMemo(
-    () => audioBlocks(project, chapterId, cutTimeline),
-    [project, chapterId, JSON.stringify(cutTimeline)],
+    () => audioBlocks(project, chapterId, JSON.parse(cutKey)),
+    [project, chapterId, cutKey],
   );
   const audioAssets = project.entities.filter(
     (e) => e.type === 'audio' && e.data.fileId && !e.data.missingFile && !e.data.sourceJobId,

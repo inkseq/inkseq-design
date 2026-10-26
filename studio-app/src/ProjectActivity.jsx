@@ -1,6 +1,6 @@
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { FloatingMessage } from './floating-notice.js';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useEffectEvent } from 'react';
 import { Activity, RefreshCw, ChevronRight } from 'lucide-react';
 import { cloudController as cloud } from './cloud-controller.js';
 import { JobList, useCloud } from './CloudStudio.jsx';
@@ -41,11 +41,12 @@ export default function ProjectActivity({ state, onLocate, onReview, onOpenCloud
       if (alive.current) setBusy(false);
     }
   }
+  const readEvent = useEffectEvent((...args) => read(...args));
   useEffect(() => {
     alive.current = true;
-    read();
+    readEvent();
     const timer = setInterval(() => {
-      if (document.visibilityState !== 'hidden') read();
+      if (document.visibilityState !== 'hidden') readEvent();
     }, 15000);
     return () => {
       alive.current = false;

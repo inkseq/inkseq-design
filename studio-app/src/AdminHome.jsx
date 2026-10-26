@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useMemo, useState, useSyncExternalStore, useEffectEvent } from 'react';
 import {
   Activity,
   BarChart3,
@@ -85,11 +85,12 @@ function useAdminData(api, active, section) {
       : [];
     await Promise.all([jobs, ...extra]);
   };
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
     if (!active || !['overview', 'jobs'].includes(section)) return undefined;
-    void load();
-    const timer = setInterval(load, 60000);
-    const visible = () => globalThis.document?.visibilityState === 'visible' && void load();
+    void loadEvent();
+    const timer = setInterval(loadEvent, 60000);
+    const visible = () => globalThis.document?.visibilityState === 'visible' && void loadEvent();
     globalThis.document?.addEventListener('visibilitychange', visible);
     return () => {
       clearInterval(timer);
@@ -478,7 +479,7 @@ function AdminStats({ api, active }) {
     return () => {
       live = false;
     };
-  }, [api, active, days]);
+  }, [api, active, days, t]);
   return (
     <>
       <div className="ah-toolbar">
@@ -584,8 +585,9 @@ function AdminStats({ api, active }) {
 function Limits({ api, active, account }) {
   const [settings, setSettings] = useState(null);
   const load = async () => setSettings(await api.request(SETTINGS_PATH));
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
-    if (active) void load().catch(() => setSettings(null));
+    if (active) void loadEvent().catch(() => setSettings(null));
   }, [api, active]);
   const { t } = useI18n();
   if (!settings) return <Spinner />;

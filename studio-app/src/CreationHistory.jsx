@@ -132,11 +132,12 @@ function Receipt({ state, controller, returnToActive = false, showPending = true
     blocked = receipt?.items.filter((item) => item.state === 'blocked').length || 0;
   const receiptKey = receipt?.action_id + ':' + receipt?.state,
     [dismissed, setDismissed] = useState(null);
+  const receiptCompleted = receipt?.state === 'completed';
   useEffect(() => {
-    if (!returnToActive || !receipt || receipt.state !== 'completed' || blocked) return;
+    if (!returnToActive || !receiptCompleted || blocked) return;
     const timer = setTimeout(() => setDismissed(receiptKey), 12000);
     return () => clearTimeout(timer);
-  }, [returnToActive, receiptKey, blocked]);
+  }, [returnToActive, receiptCompleted, receiptKey, blocked]);
   async function undo() {
     const owner = state.account,
       ids = receipt.items

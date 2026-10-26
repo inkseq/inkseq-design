@@ -1,7 +1,7 @@
 // Admin panels for /admin (h3-studio#304, #537): users, pricing and the audit log.
 // The backend enforces require_admin on every route; a panel whose endpoint is not deployed
 // yet says so instead of failing.
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useEffectEvent } from 'react';
 import { ChevronDown, History } from 'lucide-react';
 import { createCloudClient } from './cloud-client.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -39,8 +39,9 @@ function usePaged(api, path, active) {
       setError(failure.message);
     }
   };
+  const loadEvent = useEffectEvent((...args) => load(...args));
   useEffect(() => {
-    if (active) void load();
+    if (active) void loadEvent();
   }, [api, path, active]);
   return { rows, setRows, next, state, error, load };
 }

@@ -953,7 +953,7 @@ export default function OperatorConsole() {
   }, [controller]);
   useEffect(() => {
     if (pageActive) document.title = lo('legacyOp.copy153');
-  }, [pageActive, locale]);
+  }, [pageActive, locale, lo]);
   useEffect(() => {
     setDialog(null);
     setActionError('');
