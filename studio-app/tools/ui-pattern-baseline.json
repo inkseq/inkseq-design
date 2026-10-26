@@ -1,7 +1,6 @@
 {
   "totals": {
-    "busyDisables": 221,
-    "rawDialog": 2
+    "busyDisables": 219
   },
   "files": {
     "busyDisables": {
@@ -26,8 +25,8 @@
       "operator-machine-view.jsx": 1,
       "OperatorBudgetPanel.jsx": 9,
       "OperatorConsole.jsx": 16,
-      "OperatorHostsPanel.jsx": 7,
-      "OperatorJobsPanel.jsx": 3,
+      "OperatorHostsPanel.jsx": 6,
+      "OperatorJobsPanel.jsx": 2,
       "P4OperatorConsole.jsx": 9,
       "ProductionQueue.jsx": 15,
       "ProjectActivity.jsx": 3,
@@ -47,10 +46,6 @@
       "StoryOpenNotice.jsx": 3,
       "UniversalTrash.jsx": 7,
       "VideoCacheSettings.jsx": 1
-    },
-    "rawDialog": {
-      "OperatorHostsPanel.jsx": 1,
-      "OperatorJobsPanel.jsx": 1
     }
   }
 }
