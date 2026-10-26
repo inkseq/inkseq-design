@@ -25,7 +25,7 @@ jobs:
         env:
           FORMAT_BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
       # #514 guards: raw colours and hand-rolled UI patterns may only go down.
-      - run: npm run check:tokens && npm run check:ui
+      - run: npm run check:tokens && npm run check:ui && npm run check:lint
         working-directory: studio-app
       - run: npm test
         working-directory: studio-app
