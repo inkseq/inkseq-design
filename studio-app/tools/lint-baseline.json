@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 99,
+    "complexity": 96,
     "max-lines-per-function": 51
   },
   "files": {
@@ -34,7 +34,6 @@
       "src/OperatorBillingPanel.jsx": 1,
       "src/OperatorConsole.jsx": 3,
       "src/p4-operator-controller.js": 5,
-      "src/p4-operator-model.js": 3,
       "src/P4OperatorConsole.jsx": 4,
       "src/production-model.js": 1,
       "src/ProductionQueue.jsx": 1,
