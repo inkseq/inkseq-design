@@ -1626,28 +1626,6 @@ small {
   border-radius: 5px;
   background: var(--accent);
 }
-.hbar nav {
-  display: flex;
-  gap: 2px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 3px;
-}
-.hbar nav button {
-  background: transparent;
-  border: 0;
-  color: var(--ink-2);
-  padding: 5px 14px;
-  border-radius: 7px;
-}
-.hbar nav button.on {
-  background: var(--surface-4);
-  color: var(--ink);
-}
-.hbar nav .nav-ico {
-  display: none;
-}
 .home-main {
   padding: 34px 28px 60px;
   max-width: 1360px;
@@ -3397,33 +3375,6 @@ h4,
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
-  .hbar nav {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(255, 255, 255, 0.045);
-    border-color: var(--line);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 2px;
-  }
-  .hbar nav button {
-    min-height: 28px;
-    padding: 4px 14px;
-    font-size: 13px;
-    border-radius: 7px;
-  }
-  .hbar nav button:hover {
-    color: var(--ink);
-    background: transparent;
-    border-color: transparent;
-  }
-  .hbar nav button.on {
-    background: var(--surface-4);
-    box-shadow:
-      0 1px 2px rgba(0, 0, 0, 0.35),
-      0 0 0 0.5px rgba(255, 255, 255, 0.08) inset;
-  }
   .wbar {
     height: 56px;
     padding: 0 16px;
@@ -3564,48 +3515,6 @@ h4,
     backdrop-filter: none;
     background: var(--bg);
   } /* a filter would trap the fixed tab bar inside the header */
-  .hbar nav {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 60;
-    border-radius: 0;
-    border-width: 1px 0 0;
-    padding: 4px 4px calc(4px + env(safe-area-inset-bottom));
-    display: grid;
-    /* One equal column per tab (4 for users, 5 with the admin GPU tab), so the bar stays centred. */
-    grid-auto-flow: column;
-    grid-auto-columns: minmax(0, 1fr);
-    background: rgba(20, 22, 21, 0.96);
-    backdrop-filter: blur(10px);
-  }
-  .hbar nav {
-    background: rgba(16, 18, 17, 0.94);
-    backdrop-filter: blur(16px) saturate(1.4);
-    border-color: var(--line);
-  }
-  .hbar nav button {
-    position: relative;
-    flex-direction: column;
-    gap: 3px;
-    padding: 6px 2px 4px;
-    min-height: 50px;
-    font-size: 10.5px;
-    font-weight: 500;
-    letter-spacing: 0.01em;
-    white-space: nowrap;
-    justify-content: center;
-    color: var(--muted);
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-  .hbar nav button.on {
-    color: var(--accent);
-  }
-  .hbar nav .nav-ico {
-    display: block;
-  }
 
   .home {
     padding-bottom: calc(74px + env(safe-area-inset-bottom));
@@ -3859,7 +3768,7 @@ h4,
           [role='menu'],
           .account-menu,
           .story-recent-menu,
-          .hbar nav,
+          .app-nav,
           .libp-side,
           .chapter-menu
         )
@@ -3927,7 +3836,6 @@ h4,
 }
 
 /* ================= polish pass ================= */
-.hbar nav button,
 .lib-tabs button,
 .snav button {
   white-space: nowrap;
