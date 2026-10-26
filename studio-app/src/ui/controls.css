@@ -89,6 +89,30 @@ button.ghost.danger:hover {
   background: var(--bad-soft);
 }
 
+button.option {
+  justify-content: flex-start;
+  padding: 12px 14px;
+  text-align: left;
+  white-space: normal;
+  background: var(--surface);
+  border-color: var(--line-2);
+  border-radius: 12px;
+}
+button.option:hover {
+  background: var(--surface);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+button.on-media {
+  color: var(--white);
+  background: var(--media-scrim-strong);
+  border: 0;
+  border-radius: 50%;
+}
+button.on-media:hover {
+  background: var(--media-scrim-strong);
+  filter: brightness(1.2);
+}
+
 /* Sizes */
 button.small {
   min-height: var(--control-sm-h, var(--h-sm));
@@ -149,6 +173,16 @@ textarea {
   border-radius: 10px;
   resize: vertical;
   line-height: 1.55;
+}
+/* A field that sits inside its own frame (the chat composer): no box of its own. */
+:is(input, textarea).field-bare,
+:is(input, textarea).field-bare:focus,
+:is(input, textarea).field-bare:focus-visible {
+  padding-inline: 4px;
+  background: none;
+  border: 0;
+  outline: none;
+  box-shadow: none;
 }
 input:focus,
 textarea:focus,

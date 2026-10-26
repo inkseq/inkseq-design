@@ -28,7 +28,8 @@ const patterns = {
   customOverlay: /className="[^"]*\b[\w-]*(?:overlay|backdrop)\b[^"]*"/g,
 };
 const controlSelector = /(^|[\s>,+~(])(button|input|select|textarea)\b|\.x\b|-btn\b|\.play\b/;
-const controlLook = /(background|border|padding|height|border-radius|font-size|color)\s*:/;
+// max-height only limits growth (a composer), so it is not counted as a look.
+const controlLook = /(background|border|padding|(?<!max-)height|border-radius|font-size|color)\s*:/;
 const files = [];
 const cssFiles = [];
 const walk = (dir) => {

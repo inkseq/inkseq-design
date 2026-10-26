@@ -32,12 +32,12 @@ const prefixes = [
   ...[...text.matchAll(/([A-Za-z][\w-]*)['"`]\s*\+/g)].map((m) => m[1]),
   ...[...text.matchAll(/([A-Za-z][\w-]*)\$\{/g)].map((m) => m[1]),
 ];
-// A short fragment ('c' + n) only builds numbered classes (c20, t1).
+// A fragment builds classes only as 'prefix-' + x or a numbered class ('c' + n → c20).
 const used = (name) =>
   words.has(name) ||
   prefixes.some(
     (prefix) =>
-      name.startsWith(prefix) && (prefix.length >= 3 || /^\d+$/.test(name.slice(prefix.length))),
+      name.startsWith(prefix) && (prefix.endsWith('-') || /^\d+$/.test(name.slice(prefix.length))),
   );
 const unused = [];
 for (const file of css) {
