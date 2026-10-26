@@ -18,11 +18,16 @@ const walk = (dir) => {
 };
 walk(src);
 const text = code.map((path) => readFileSync(path, 'utf8')).join('\n');
-// Only text inside string and template literals (and HTML) can become a class name.
-const literals = [...text.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g)]
-  .map((m) => m[0])
-  .join('\n');
-const words = new Set(literals.match(/[A-Za-z_][\w-]*/g));
+// Only string and template literals made of class-like tokens can be class names; copy such
+// as 'Edit as a new proposal' does not keep .proposal alive.
+const classLike = /^([a-z][a-z0-9_-]*|[A-Z])$/;
+const words = new Set(
+  [...text.matchAll(/'(?:[^'\\\n]|\\.)*'|"(?:[^"\\\n]|\\.)*"|`(?:[^`\\]|\\.)*`/g)]
+    .flatMap((m) => m[0].slice(1, -1).split(/\$\{[^}]*\}/))
+    .map((part) => part.trim().split(/\s+/).filter(Boolean))
+    .filter((tokens) => tokens.length && tokens.every((token) => classLike.test(token)))
+    .flat(),
+);
 const prefixes = [
   ...[...text.matchAll(/([A-Za-z][\w-]*)['"`]\s*\+/g)].map((m) => m[1]),
   ...[...text.matchAll(/([A-Za-z][\w-]*)\$\{/g)].map((m) => m[1]),
