@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 107,
+    "complexity": 104,
     "max-lines-per-function": 51
   },
   "files": {
@@ -41,7 +41,6 @@
       "src/ProductionQueue.jsx": 1,
       "src/quick-chat-controller.js": 3,
       "src/quick-chat-history.js": 1,
-      "src/quick-chat-model.js": 3,
       "src/QuickChatControls.jsx": 1,
       "src/recipe-execution-model.js": 2,
       "src/service-model.js": 1,
