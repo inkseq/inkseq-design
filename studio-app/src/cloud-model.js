@@ -362,6 +362,56 @@ export function checkedProjectRecord(record) {
   return { ...record, project: checked.project };
 }
 
+// A chosen clip range belongs to the current file and runs forward from zero or later.
+function validRange(range, asset) {
+  return (
+    range.fileId === asset.data.fileId &&
+    Number.isFinite(range.start) &&
+    Number.isFinite(range.end) &&
+    range.start >= 0 &&
+    range.end > range.start
+  );
+}
+// All-reference shots also send each cast member's look gallery and each place's references.
+function identityReferences(project, shot, { find, references, issues, add, at }) {
+  const shotId = shot.id;
+  const scene = find(shot.parentId),
+    characters = new Set(
+      [...(scene?.data.cast || []), ...(shot.data.cast || [])].map((c) => c.characterId),
+    );
+  for (const link of project.links.filter(
+    (l) => l.target === shotId && l.role === 'identity' && find(l.source)?.type === 'character',
+  ))
+    characters.add(link.source);
+  for (const id of characters) {
+    const character = find(id),
+      binding = effectiveLook(project, shot, id),
+      look = character?.data.looks?.find((l) => l.id === binding?.lookId);
+    if (!look) {
+      issues.push(
+        at('adjunct.referenceSpecs.copy64', {
+          v0: character?.title || at('adjunct.referenceSpecs.copy63'),
+        }),
+      );
+      continue;
+    }
+    const gallery = Object.values(look.gallery || {}).filter(Boolean);
+    if (!gallery.length) issues.push(at('adjunct.referenceSpecs.copy66', { v0: look.name }));
+    for (const assetId of gallery) {
+      const asset = find(assetId);
+      if (!references.some((r) => r.entity.id === assetId)) add(asset, 'identity');
+    }
+  }
+  for (const id of shotLocationIds(project, shot)) {
+    const location = find(id);
+    if (location?.type !== 'location') {
+      issues.push(at('adjunct.referenceSpecs.copy67'));
+      continue;
+    }
+    for (const assetId of location.data.referenceAssetIds || [])
+      if (!references.some((ref) => ref.entity.id === assetId)) add(find(assetId), 'reference');
+  }
+}
 export function referenceSpecs(project, shotId, { mode, locale = 'zh' } = {}) {
   const at = (key, values) => translate(locale, key, values);
   const shot = project.entities.find((e) => e.id === shotId);
@@ -379,14 +429,7 @@ export function referenceSpecs(project, shotId, { mode, locale = 'zh' } = {}) {
       issues.push(at('adjunct.referenceSpecs.copy60', { v0: asset.title }));
       return;
     }
-    if (
-      range &&
-      (range.fileId !== asset.data.fileId ||
-        !Number.isFinite(range.start) ||
-        !Number.isFinite(range.end) ||
-        range.start < 0 ||
-        range.end <= range.start)
-    ) {
+    if (range && !validRange(range, asset)) {
       issues.push(at('adjunct.referenceSpecs.copy61', { v0: asset.title }));
       return;
     }
@@ -411,44 +454,8 @@ export function referenceSpecs(project, shotId, { mode, locale = 'zh' } = {}) {
   }
   // Shared visual identity is an ordinary REF input. FL retains the story's
   // cast/location assignments but only sends explicitly chosen frame inputs.
-  if ((mode ?? shot.data.h3?.inputMode) !== 'fl') {
-    const scene = find(shot.parentId),
-      characters = new Set(
-        [...(scene?.data.cast || []), ...(shot.data.cast || [])].map((c) => c.characterId),
-      );
-    for (const link of project.links.filter(
-      (l) => l.target === shotId && l.role === 'identity' && find(l.source)?.type === 'character',
-    ))
-      characters.add(link.source);
-    for (const id of characters) {
-      const character = find(id),
-        binding = effectiveLook(project, shot, id),
-        look = character?.data.looks?.find((l) => l.id === binding?.lookId);
-      if (!look) {
-        issues.push(
-          at('adjunct.referenceSpecs.copy64', {
-            v0: character?.title || at('adjunct.referenceSpecs.copy63'),
-          }),
-        );
-        continue;
-      }
-      const gallery = Object.values(look.gallery || {}).filter(Boolean);
-      if (!gallery.length) issues.push(at('adjunct.referenceSpecs.copy66', { v0: look.name }));
-      for (const assetId of gallery) {
-        const asset = find(assetId);
-        if (!references.some((r) => r.entity.id === assetId)) add(asset, 'identity');
-      }
-    }
-    for (const id of shotLocationIds(project, shot)) {
-      const location = find(id);
-      if (location?.type !== 'location') {
-        issues.push(at('adjunct.referenceSpecs.copy67'));
-        continue;
-      }
-      for (const assetId of location.data.referenceAssetIds || [])
-        if (!references.some((ref) => ref.entity.id === assetId)) add(find(assetId), 'reference');
-    }
-  }
+  if ((mode ?? shot.data.h3?.inputMode) !== 'fl')
+    identityReferences(project, shot, { find, references, issues, add, at });
   return { references, issues: [...new Set(issues)] };
 }
 export function selectedRecipe(recipes, h3 = {}) {
@@ -529,55 +536,65 @@ export function shotSnapshot(project, shotId) {
 }
 // UI staleness checks cover this shot's source closure. An unrelated upload or
 // another shot's completed candidate must not invalidate a confirmed batch.
+// The shot just before this one in reading order across its chapter's scenes.
+function previousShotInChapter(project, scene, shotId) {
+  const chapter = project.entities.find(
+      (c) =>
+        c.type === 'chapter' &&
+        project.entities.some((s) => s.parentId === c.id && s.id === scene?.id),
+    ),
+    scenes = project.entities
+      .filter((e) => e.parentId === chapter?.id && e.type === 'scene')
+      .sort((a, b) => a.order - b.order),
+    shots = scenes.flatMap((s) =>
+      project.entities
+        .filter((e) => e.parentId === s.id && e.type === 'shot')
+        .sort((a, b) => a.order - b.order),
+    );
+  return shots[shots.findIndex((e) => e.id === shotId) - 1];
+}
+// Media an entity points at: images, references, look galleries, versions, voices, ambience.
+function entitySources(d) {
+  return [
+    ...(d.imageIds || []),
+    ...(d.referenceAssetIds || []),
+    ...(d.looks || []).flatMap((v) => v.imageIds ?? Object.values(v.gallery || {})),
+    ...(d.versions || []).flatMap((v) => v.imageIds || []),
+    ...(d.voices || []).map((v) => v.assetId),
+    d.ambient?.assetId,
+  ];
+}
+// What the shot names itself: cast, place, props, frames, extra refs and time anchors.
+function directSources(shot, scene, b) {
+  return [
+    ...(Object.hasOwn(shot?.data || {}, 'cast') ? shot.data.cast : scene?.data.cast || []).map(
+      (c) => c.characterId,
+    ),
+    b.place?.locationId,
+    ...(b.propIds || []),
+    b.firstFrameId,
+    b.lastFrameId,
+    ...(b.extraRefs || []).map((r) => r.entityId),
+    b.previousFrame?.frameAssetId,
+    ...(shot?.data.h3?.guides || []).map((g) => g.media_id),
+  ];
+}
 export function storyboardSources(project, shotId) {
   const lookup = new Map(project.entities.map((e) => [e.id, e])),
     shot = lookup.get(shotId),
     scene = lookup.get(shot?.parentId),
     b = shot?.data.storyboard || {},
     ids = new Set(),
-    pending = [
-      ...(Object.hasOwn(shot?.data || {}, 'cast') ? shot.data.cast : scene?.data.cast || []).map(
-        (c) => c.characterId,
-      ),
-      b.place?.locationId,
-      ...(b.propIds || []),
-      b.firstFrameId,
-      b.lastFrameId,
-      ...(b.extraRefs || []).map((r) => r.entityId),
-      b.previousFrame?.frameAssetId,
-      ...(shot?.data.h3?.guides || []).map((g) => g.media_id),
-    ];
+    pending = directSources(shot, scene, b);
   if (!Object.hasOwn(b, 'place')) pending.push(shot?.data.locationId || scene?.data.locationId);
-  if (b.continuePrevious) {
-    const chapters = project.entities.filter((e) => e.type === 'chapter'),
-      chapter = chapters.find((c) =>
-        project.entities.some((s) => s.parentId === c.id && s.id === scene?.id),
-      ),
-      scenes = project.entities
-        .filter((e) => e.parentId === chapter?.id && e.type === 'scene')
-        .sort((a, b) => a.order - b.order),
-      shots = scenes.flatMap((s) =>
-        project.entities
-          .filter((e) => e.parentId === s.id && e.type === 'shot')
-          .sort((a, b) => a.order - b.order),
-      ),
-      previous = shots[shots.findIndex((e) => e.id === shotId) - 1];
-    if (previous) pending.push(previous.data.selectedAssetId);
-  }
+  if (b.continuePrevious)
+    pending.push(previousShotInChapter(project, scene, shotId)?.data.selectedAssetId);
   while (pending.length) {
     const id = pending.pop(),
       e = lookup.get(id);
     if (!e || ids.has(id)) continue;
     ids.add(id);
-    const d = e.data || {};
-    pending.push(
-      ...(d.imageIds || []),
-      ...(d.referenceAssetIds || []),
-      ...(d.looks || []).flatMap((v) => v.imageIds ?? Object.values(v.gallery || {})),
-      ...(d.versions || []).flatMap((v) => v.imageIds || []),
-      ...(d.voices || []).map((v) => v.assetId),
-      d.ambient?.assetId,
-    );
+    pending.push(...entitySources(e.data || {}));
   }
   return [...ids].sort().map((id) => lookup.get(id));
 }
