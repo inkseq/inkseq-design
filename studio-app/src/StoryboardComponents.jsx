@@ -1,3 +1,4 @@
+import { Disclosure } from './ui/Disclosure.jsx';
 import {
   UserRound,
   MapPin,
@@ -2340,8 +2341,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           )}
         </div>
 
-        <details className="sent">
-          <summary>{tr('storyboard.details')}</summary>
+        <Disclosure className="sent" summary={tr('storyboard.details')}>
           <div className="sent-head">
             <b>{tr('storyboard.copy90')}</b>
             <ModeChip info={info} />
@@ -2385,7 +2385,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
               · {w}
             </div>
           ))}
-        </details>
+        </Disclosure>
 
         {/* No model parameters in the shot editor, for anyone (owner, 2026-10-27): quality,
             shape, sound, seed and copies below are the creator's; raw values belong in admin. */}

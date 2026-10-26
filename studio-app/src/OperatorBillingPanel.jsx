@@ -1,4 +1,5 @@
 import { Note } from './ui/Note.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import React, { useEffect, useState } from 'react';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -203,8 +204,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
           {t(reading ? 'billing.loading' : 'billing.load')}
         </Button>
       </form>
-      <details className="billing-date-filter">
-        <summary>{t('billing.dateFilter')}</summary>
+      <Disclosure className="billing-date-filter" summary={t('billing.dateFilter')}>
         <Note>{t('billing.dateFilterHelp')}</Note>
         <label>
           {t('billing.createdAfter')}
@@ -233,7 +233,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
           />
         </label>
         {!bounds && <p role="alert">{t('billing.dateInvalid')}</p>}
-      </details>
+      </Disclosure>
       {shown && (
         <>
           <label>
@@ -371,8 +371,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
                       )}
                     </div>
                   )}
-                  <details>
-                    <summary>{t('billing.details')}</summary>
+                  <Disclosure summary={t('billing.details')}>
                     <dl>
                       <div>
                         <dt>{t('billing.reference')}</dt>
@@ -397,7 +396,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
                         </div>
                       )}
                     </dl>
-                  </details>
+                  </Disclosure>
                 </section>
               );
             })}
@@ -409,8 +408,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
           )}
           <div className="billing-action-form">
             {action === 'settle' && (
-              <details>
-                <summary>{t('billing.importAllocations')}</summary>
+              <Disclosure summary={t('billing.importAllocations')}>
                 <Note>{t('billing.importHelp')}</Note>
                 <label>
                   {t('billing.allocationJson')}
@@ -427,7 +425,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
                 >
                   {t('billing.applyAllocations')}
                 </Button>
-              </details>
+              </Disclosure>
             )}
             <label>
               {t('billing.reason')}

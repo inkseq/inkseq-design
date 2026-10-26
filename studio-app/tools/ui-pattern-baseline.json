@@ -1,7 +1,6 @@
 {
   "totals": {
     "busyDisables": 221,
-    "details": 60,
     "rawDialog": 2
   },
   "files": {
@@ -48,35 +47,6 @@
       "StoryOpenNotice.jsx": 3,
       "UniversalTrash.jsx": 7,
       "VideoCacheSettings.jsx": 1
-    },
-    "details": {
-      "AdminHome.jsx": 2,
-      "ApiKeys.jsx": 1,
-      "AssistantConnections.jsx": 3,
-      "CapacitySettings.jsx": 2,
-      "ChapterRoughCut.jsx": 3,
-      "CloudStudio.jsx": 2,
-      "DstackCapacity.jsx": 1,
-      "GenerationAvailability.jsx": 1,
-      "GenerationFailure.jsx": 1,
-      "operator-machine-view.jsx": 4,
-      "OperatorBillingPanel.jsx": 3,
-      "OperatorBudgetPanel.jsx": 5,
-      "OperatorConsole.jsx": 8,
-      "OperatorHostsPanel.jsx": 4,
-      "P4OperatorConsole.jsx": 4,
-      "ProductionQueue.jsx": 2,
-      "QuickChatTakeRecipe.jsx": 2,
-      "ScriptWindows.jsx": 1,
-      "ServiceStatus.jsx": 2,
-      "SpendingBreakdown.jsx": 1,
-      "StoryboardComponents.jsx": 1,
-      "StoryboardWorkbench.jsx": 1,
-      "StoryFilmView.jsx": 1,
-      "StoryNavigation.jsx": 1,
-      "StoryOpenNotice.jsx": 1,
-      "UniversalTrash.jsx": 1,
-      "v2/LibraryParts.jsx": 2
     },
     "rawDialog": {
       "OperatorHostsPanel.jsx": 1,

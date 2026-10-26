@@ -2,6 +2,7 @@
 // picture where it is, instead of opening a dialog and coming back.
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Button, IconButton } from '../ui/Button.jsx';
+import { Popover, closePopover } from '../ui/Popover.jsx';
 import { Check, Pencil, Plus, Upload, X } from 'lucide-react';
 import { useI18n } from '../i18n/I18nProvider.jsx';
 
@@ -25,8 +26,6 @@ export function displayName(row, t) {
 // Quick-create files live in a workspace the service manages; they are copied into a story
 // before they can be renamed, tagged or used as a reference.
 export const managedRow = (row) => row.target.project_id.startsWith('chat-workspace-');
-
-const closeDetails = (node) => node?.closest('details')?.removeAttribute('open');
 
 /** Click the name to edit it; Enter or leaving the field saves, Escape cancels. */
 export function InlineName({ value, onSave, disabled, className = '' }) {
@@ -128,31 +127,35 @@ export function TagEditor({ tags, suggestions = [], onChange, disabled }) {
   );
 }
 
-/** A floating menu: <details> closes on outside click and Escape (popover-dismiss.js). */
+/** A floating panel opened from a button (ui/Popover). `look` is the trigger's look. */
 export function PopMenu({
   label,
   className = '',
-  summaryClass = '',
+  look,
+  align = 'start',
   disabled,
   title,
   onOpen,
   children,
 }) {
   return (
-    <details
-      className={'lib-pop ' + className}
-      onToggle={(e) => e.currentTarget.open && onOpen?.()}
+    <Popover
+      align={align}
+      className={('lib-pop-panel ' + className).trim()}
+      onOpenChange={(open) => open && onOpen?.()}
+      trigger={
+        <Button
+          variant={look === 'primary' ? 'primary' : undefined}
+          size={look === 'small' ? 'sm' : undefined}
+          disabled={disabled}
+          title={title}
+        >
+          {label}
+        </Button>
+      }
     >
-      <summary
-        className={summaryClass + (disabled ? ' disabled' : '')}
-        title={title}
-        aria-disabled={disabled || undefined}
-        onClick={(e) => disabled && e.preventDefault()}
-      >
-        {label}
-      </summary>
-      <div className="lib-pop-panel">{children}</div>
-    </details>
+      {children}
+    </Popover>
   );
 }
 
@@ -178,7 +181,7 @@ export function ReferencePicker({ items, loadProfiles, onFile, onCreate, disable
   return (
     <PopMenu
       label={label || t('library.setReference')}
-      summaryClass="small"
+      look="small"
       disabled={disabled || mixed || !items.length}
       title={
         mixed
@@ -201,7 +204,7 @@ export function ReferencePicker({ items, loadProfiles, onFile, onCreate, disable
                   className="lib-pop-item"
                   key={p.target.id}
                   onClick={(e) => {
-                    closeDetails(e.currentTarget);
+                    closePopover(e.currentTarget);
                     onFile(items, p);
                   }}
                 >
@@ -219,7 +222,7 @@ export function ReferencePicker({ items, loadProfiles, onFile, onCreate, disable
                 onSubmit={(e) => {
                   e.preventDefault();
                   if (!name.trim()) return;
-                  closeDetails(e.currentTarget);
+                  closePopover(e.currentTarget);
                   onCreate(items, making, name.trim());
                   setName('');
                 }}
@@ -238,7 +241,13 @@ export function ReferencePicker({ items, loadProfiles, onFile, onCreate, disable
               </form>
             ) : (
               types.map((type) => (
-                <Button variant="ghost" size="sm" key={type} onClick={() => setMaking(type)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  key={type}
+                  data-keep-open
+                  onClick={() => setMaking(type)}
+                >
                   <Plus size={13} />
                   {t('library.new.' + type)}
                 </Button>
@@ -262,13 +271,14 @@ export function UploadMenu({ projects, defaultStory, onFiles, disabled }) {
   const target = story || projects[0]?.id || '';
   const send = (files, node) => {
     if (!files.length || !target) return;
-    closeDetails(node);
+    closePopover(node);
     onFiles(files, target);
   };
   return (
     <PopMenu
       className="lib-upload"
-      summaryClass="primary"
+      align="end"
+      look="primary"
       disabled={disabled}
       label={
         <>
@@ -303,7 +313,7 @@ export function UploadMenu({ projects, defaultStory, onFiles, disabled }) {
             <Upload size={20} aria-hidden="true" />
             <span>
               {t('library.uploadDrop')}{' '}
-              <Button variant="link" onClick={() => input.current?.click()}>
+              <Button variant="link" data-keep-open onClick={() => input.current?.click()}>
                 {t('library.uploadPick')}
               </Button>
             </span>
@@ -335,7 +345,8 @@ export function CreateProfileMenu({ type, projects, defaultStory, onCreate, disa
   return (
     <PopMenu
       className="lib-upload"
-      summaryClass="primary"
+      align="end"
+      look="primary"
       disabled={disabled}
       label={
         <>
@@ -351,7 +362,7 @@ export function CreateProfileMenu({ type, projects, defaultStory, onCreate, disa
           onSubmit={(e) => {
             e.preventDefault();
             if (!name.trim() || !target) return;
-            closeDetails(e.currentTarget);
+            closePopover(e.currentTarget);
             onCreate(type, name.trim(), target);
             setName('');
           }}

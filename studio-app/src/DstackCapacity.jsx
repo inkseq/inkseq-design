@@ -1,4 +1,5 @@
 import { Note } from './ui/Note.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { dstackNodeStatus as rawDstackNodeStatus } from './dstack-presentation.js';
 import { Dialog as SharedDialog } from './ui/Dialog.jsx';
@@ -322,10 +323,9 @@ function NodeDialog({ node, controller, busy, now, onClose }) {
           : lo('legacyOp.copy284')}
       </Note>
       {node.reason_code && (
-        <details className="op-details">
-          <summary>{lo('legacyOp.copy285')}</summary>
+        <Disclosure className="op-details" summary={lo('legacyOp.copy285')}>
           <code>{node.reason_code}</code>
-        </details>
+        </Disclosure>
       )}
       {canHold && (
         <div className="op-dstack-hold">

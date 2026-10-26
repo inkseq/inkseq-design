@@ -1,4 +1,5 @@
 import { SettingRow, SettingsSection } from './ui/Settings.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { Dialog, DialogActions } from './ui/Dialog.jsx';
 import TelegramLink, { telegramUserLabel, validTelegramNonce } from './TelegramLink.jsx';
@@ -472,10 +473,9 @@ export default function AssistantConnections({
                 {t('assistants.paste')}
                 <textarea readOnly value={paragraph} rows={5} />
               </label>
-              <details>
-                <summary>{t('assistants.technical')}</summary>
+              <Disclosure summary={t('assistants.technical')}>
                 <pre>{metadata}</pre>
-              </details>
+              </Disclosure>
               <div className="assistant-actions">
                 <Button
                   onClick={async () => {
@@ -561,8 +561,7 @@ export default function AssistantConnections({
             </article>
           )}
           {settings && settingsDraft && (
-            <details className="assistant-defaults">
-              <summary>{t('assistants.settings')}</summary>
+            <Disclosure className="assistant-defaults" summary={t('assistants.settings')}>
               <form onSubmit={defaults} className="ui-form">
                 <SettingsSection
                   help={t('assistants.settingsHelp')}
@@ -588,7 +587,7 @@ export default function AssistantConnections({
                   ))}
                 </SettingsSection>
               </form>
-            </details>
+            </Disclosure>
           )}
           <Button
             size="sm"
@@ -733,8 +732,7 @@ function ConnectionRow({
           </Button>
         </div>
       </div>
-      <details className="assistant-row-details">
-        <summary>{t('assistants.details')}</summary>
+      <Disclosure className="assistant-row-details" summary={t('assistants.details')}>
         <p className="assistant-connection-created">
           {t('assistants.created', {
             date: assistantDate(row.created_at, locale, t('assistants.dateUnavailable')),
@@ -780,7 +778,7 @@ function ConnectionRow({
         <Button size="sm" disabled={busy} onClick={onActivity}>
           {t('assistants.activity')}
         </Button>
-      </details>
+      </Disclosure>
     </article>
   );
 }

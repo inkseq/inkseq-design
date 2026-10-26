@@ -1,5 +1,6 @@
 import { Badge, EmptyState, Note } from './ui/Note.jsx';
 import { Button } from './ui/Button.jsx';
+import { Popover } from './ui/Popover.jsx';
 import { Dialog } from './ui/Dialog.jsx';
 import { currentSupportView } from './support-view.js';
 import { Spinner } from './ui/Field.jsx';
@@ -1005,7 +1006,6 @@ export function StoryLibraryHome({ state, onOpenCloud, onOpenLocal, onSelect }) 
 export function RecentStoriesDropdown({ state, onOpenCloud, onOpenLocal, onSelect }) {
   const { t } = useI18n();
   const library = useStoryLibrary(state),
-    details = useRef(),
     stories = [...library.stories]
       .sort(
         (a, b) =>
@@ -1014,22 +1014,22 @@ export function RecentStoriesDropdown({ state, onOpenCloud, onOpenLocal, onSelec
       )
       .slice(0, 8);
   return (
-    <details
-      className="story-recent"
-      ref={details}
-      onKeyDown={(event) => {
-        if (event.key === 'Escape') {
-          details.current.open = false;
-          details.current.querySelector('summary')?.focus();
-        }
-      }}
+    <Popover
+      align="start"
+      className="story-recent-menu"
+      trigger={
+        <Button
+          variant="ghost"
+          className="story-recent"
+          aria-label={t('legacy.recentStory', { title: state.project.title })}
+        >
+          <span className="story-recent-title">{state.project.title}</span>
+          <StoryLocation mode={state.workspace.mode} />
+          <ChevronDown size={14} />
+        </Button>
+      }
     >
-      <summary aria-label={t('legacy.recentStory', { title: state.project.title })}>
-        <span className="story-recent-title">{state.project.title}</span>
-        <StoryLocation mode={state.workspace.mode} />
-        <ChevronDown size={14} />
-      </summary>
-      <div className="story-recent-menu" data-keep-labels>
+      <div data-keep-labels>
         <b>{t('account.copy30')}</b>
         {stories.map((story) => (
           <Button
@@ -1040,20 +1040,7 @@ export function RecentStoriesDropdown({ state, onOpenCloud, onOpenLocal, onSelec
                 ? 'page'
                 : undefined
             }
-            onClick={() =>
-              void library
-                .openStory(
-                  story,
-                  (selection) => {
-                    details.current.open = false;
-                    onSelect?.(selection);
-                  },
-                  onOpenCloud,
-                )
-                .finally(() => {
-                  if (details.current) details.current.open = false;
-                })
-            }
+            onClick={() => void library.openStory(story, (selection) => onSelect?.(selection))}
           >
             <span>{storyTitle(story.project, t('legacy.visible24'))}</span>
             <StoryLocation mode={story.mode} />
@@ -1064,6 +1051,6 @@ export function RecentStoriesDropdown({ state, onOpenCloud, onOpenLocal, onSelec
         {library.pending && <small role="status">{library.pending}</small>}
         {library.error && <small role="alert">{library.error}</small>}
       </div>
-    </details>
+    </Popover>
   );
 }

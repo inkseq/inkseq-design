@@ -1,4 +1,5 @@
 import { TrashMenu } from './UniversalTrash.jsx';
+import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { FloatingMessage } from './floating-notice.js';
 import HostedSignIn from './HostedSignIn.jsx';
@@ -130,8 +131,11 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
           {t('account.copy81')}
         </Button>
       </div>
-      <details open={!!initialGrant} className="cloud-compatibility-access">
-        <summary>{t('quickView.accessDetails')}</summary>
+      <Disclosure
+        open={!!initialGrant}
+        className="cloud-compatibility-access"
+        summary={t('quickView.accessDetails')}
+      >
         <Button aria-expanded={showKeys} onClick={() => setShowKeys(!showKeys)}>
           {showKeys ? t('account.interface1') : t('account.interface2')}
         </Button>
@@ -158,12 +162,14 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
         <Button disabled={c.busy} onClick={() => run(cloud.reloadCapabilities())}>
           {t('account.copy72')}
         </Button>
-      </details>
+      </Disclosure>
       <a className="account-settings-link" href="/">
         {t('quickView.backToWorks')}
       </a>
-      <details className="cloud-compatibility-stories">
-        <summary>{t('quickView.compatibilityStories')}</summary>
+      <Disclosure
+        className="cloud-compatibility-stories"
+        summary={t('quickView.compatibilityStories')}
+      >
         <p>{t('account.copy82')}</p>
         <form
           onSubmit={(e) => {
@@ -268,7 +274,7 @@ export function CloudProjects({ onClose, quick = false, initialGrant = null }) {
             {t('account.copy92')}
           </Button>
         )}
-      </details>
+      </Disclosure>
       {c.draftOffer && (
         <section className="cloud-warning">
           <h4>{t('account.copy93')}</h4>
