@@ -483,30 +483,6 @@
   left: 0;
   right: 0;
 }
-.sb-workspace button:not(:is(.tile, .ver, .card, .sb-library-scrim, [data-ui-surface])),
-.sb-portal button:not(:is(.tile, [data-ui-surface])) {
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  border-radius: 7px;
-  padding: 5px 9px;
-  font-size: 12px;
-  line-height: 1.3;
-}
-.sb-workspace button.small,
-.sb-workspace button.x,
-.sb-portal button.small,
-.sb-portal button.x {
-  min-height: 28px;
-  height: 28px;
-  padding: 3px 7px;
-}
-.sb-workspace button.primary,
-.sb-portal button.primary {
-  min-height: 36px;
-}
 .sb-workspace .modetabs .mt {
   min-height: 36px;
   height: 36px;

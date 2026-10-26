@@ -1085,7 +1085,11 @@ function StoryboardShell({ onLegacyGuide, onCanvas, onNewScene, filmControl }) {
       onDragEnd={onDragEnd}
       onDragCancel={() => setDragging(null)}
     >
-      <section ref={container} className="sb-workspace" aria-label={t('storyboard.copy30')}>
+      <section
+        ref={container}
+        className="sb-workspace density-compact"
+        aria-label={t('storyboard.copy30')}
+      >
         <FloatingMessage
           tone="error"
           // The pending warning below already says this, with its recover action.
