@@ -3447,7 +3447,6 @@ h4,
 .editor textarea {
   resize: none;
   overflow-y: auto;
-  min-height: 56px;
 }
 /* Shot panel footer: a plain checkbox on the text's first line, and a one-line copies field. */
 .check {

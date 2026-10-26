@@ -415,6 +415,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
                 <label>
                   {t('billing.allocationJson')}
                   <textarea
+                    rows={3}
                     value={allocationInput}
                     disabled={locked}
                     onChange={(event) => setAllocationInput(event.target.value)}
@@ -431,6 +432,7 @@ export default function OperatorBillingPanel({ controller, state, busy }) {
             <label>
               {t('billing.reason')}
               <textarea
+                rows={3}
                 value={reason}
                 maxLength={1000}
                 disabled={locked}

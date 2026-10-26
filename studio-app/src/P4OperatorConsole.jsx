@@ -1,5 +1,6 @@
 import { EmptyState, Note } from './ui/Note.jsx';
 import { Button } from './ui/Button.jsx';
+import { Chip } from './ui/Chip.jsx';
 import StudioHeader from './StudioHeader.jsx';
 import { Dialog as SharedDialog } from './ui/Dialog.jsx';
 import { FloatingMessage } from './floating-notice.js';
@@ -757,7 +758,7 @@ function StartDialog({
                     </label>
                     <div className="p4-field">
                       <span className="p4-field-label">{t('operator.copy72')}</span>
-                      <div className="p4-seg" role="group">
+                      <div className="seg p4-seg" role="group">
                         {['fl', 'ref'].map((mode) => {
                           const target = sameEngineInMode(choices, row.profile_id, mode);
                           return (
@@ -818,9 +819,9 @@ function StartDialog({
                       </summary>
                       <div className="p4-engine-list">
                         {engines.map((profile, position) => (
-                          <Button
+                          <Chip
                             key={profile.id}
-                            aria-pressed={profile.id === row.profile_id}
+                            pressed={profile.id === row.profile_id}
                             onClick={() => edit(row.id, { profile_id: profile.id })}
                           >
                             v{engineVersion(profile) || '?'}
@@ -829,7 +830,7 @@ function StartDialog({
                                 {t('operator.more.engineNewest')}
                               </small>
                             )}
-                          </Button>
+                          </Chip>
                         ))}
                       </div>
                       <small>{t('operator.more.engineHelp')}</small>

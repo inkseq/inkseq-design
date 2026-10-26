@@ -377,6 +377,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
                 )}
                 <div className="spacer" />
                 <Button
+                  size="sm"
                   className={'take-star' + (row.starred ? ' on' : '')}
                   aria-label={t(row.starred ? 'takes.unstar' : 'takes.star')}
                   aria-pressed={row.starred}

@@ -765,11 +765,11 @@ function ConnectionRow({
               disabled={busy || !editable}
             />
           </label>
-          <Button type="submit" disabled={busy || !editable}>
+          <Button size="sm" type="submit" disabled={busy || !editable}>
             {t('assistants.saveCap')}
           </Button>
           {draft && (
-            <Button disabled={busy} onClick={() => setDraft(null)}>
+            <Button size="sm" disabled={busy} onClick={() => setDraft(null)}>
               {t('assistants.reloadCap')}
             </Button>
           )}

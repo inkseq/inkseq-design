@@ -582,7 +582,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                 })}
               </small>
             </div>
-            <div className="row tight chapter-actions">
+            <div className="row tight chapter-actions" data-icon-only={headCompact || undefined}>
               <QueueSummary />
               {!multi && <FilmEditorButton chapterId={state.project.chapterId} />}
               {!groups.length && (
