@@ -72,6 +72,8 @@
 !studio-app/tools/token-baseline.json
 !studio-app/tools/check-ui-patterns.mjs
 !studio-app/tools/ui-pattern-baseline.json
+!studio-app/tools/check-lint.mjs
+!studio-app/tools/lint-baseline.json
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
@@ -395,6 +397,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/.prettierrc.json
 !studio-app/.prettierignore
 !studio-app/eslint.config.js
+!studio-app/eslint.ratchet.config.js
 !studio-app/tools/
 !studio-app/tools/check-changed.mjs
 !studio-app/tools/layout-audit.mjs
