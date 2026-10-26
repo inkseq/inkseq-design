@@ -487,6 +487,84 @@ await journey(
   },
 );
 
+// Fields the studio reads from each API response (h3-studio#665). A backend change that drops
+// one fails here after the staging deploy, before promotion. Keep in step with the readers in
+// cloud-controller.js, StoryboardWorkbench.jsx, TakeReview.jsx, CreditsUI.jsx and settings.
+const CONTRACT = [
+  ['/api/auth/me', null, ['username', 'role', 'credits', 'features', 'operator_capacity']],
+  ['/v1/credits', null, ['balance', 'available', 'today_used', 'daily_limit']],
+  ['/v1/projects?limit=5', 'projects', ['id', 'title', 'version', 'updated_at']],
+  [
+    '/v1/capabilities',
+    null,
+    ['capabilities_version', 'recipes', 'deployment_profiles', 'upload_max_bytes'],
+  ],
+  ['/v1/capabilities', 'deployment_profiles', ['id', 'tier', 'generation_support']],
+  ['/v1/generation-availability', 'profiles', ['deployment_profile_id', 'tier', 'modes']],
+  ['/v1/feedback/settings', null, ['revision', 'enabled']],
+  ['SHOT/generation-draft', null, ['project_version', 'draft', 'issues', 'defaults']],
+  ['SHOT/versions?limit=5', null, ['project_version', 'versions', 'next_offset', 'defaults']],
+  [
+    'SHOT/versions?limit=5',
+    'versions',
+    [
+      'id',
+      'selected',
+      'aliased',
+      'starred',
+      'title',
+      'created_at',
+      'kind',
+      'recipe',
+      'preview_url',
+      'thumbnail_url',
+    ],
+  ],
+  ['SHOT/take-reviews', '', ['artifact_id', 'revision', 'verdict', 'mark_count']],
+];
+
+await journey(
+  'API contract: fields the studio reads are present',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    const where = await qaShot(p);
+    const shotPath = `/v1/projects/${encodeURIComponent(where.project)}/shots/${encodeURIComponent(where.shot)}`;
+    const missing = [];
+    const cache = new Map();
+    for (const [route, rows, fields] of CONTRACT) {
+      const path = route.replace(/^SHOT/, shotPath);
+      if (!cache.has(path)) cache.set(path, await api(p, path));
+      const res = cache.get(path);
+      if (res.status !== 200) {
+        missing.push(`${route} → HTTP ${res.status}`);
+        continue;
+      }
+      const target = rows === null ? res.body : rows === '' ? res.body?.[0] : res.body?.[rows]?.[0];
+      if (!target) continue; // an empty list cannot be checked; other journeys need data anyway
+      for (const field of fields)
+        if (!(field in target)) missing.push(`${route}${rows ? ' ' + rows + '[]' : ''}.${field}`);
+    }
+    const plan = await send(p, 'POST', shotPath + '/generation-plans', {
+      expected_version: (await shotControls(p, where)).version,
+    });
+    for (const field of [
+      'plan_id',
+      'status',
+      'effective_request',
+      'estimate',
+      'blockers',
+      'warnings',
+    ])
+      if (!(field in (plan.body || {}))) missing.push('generation-plans.' + field);
+    for (const field of ['aspect_ratio', 'generate_audio', 'resolution', 'seed'])
+      if (!(field in (plan.body?.effective_request || {})))
+        missing.push('generation-plans.effective_request.' + field);
+    expect(!missing.length, 'API fields the studio reads are missing: ' + missing.join(', '));
+    return p;
+  },
+);
+
 await browser.close();
 const width = Math.max(...results.map((r) => r.name.length));
 for (const r of results) console.log(`${r.status.padEnd(4)}  ${r.name.padEnd(width)}  ${r.detail}`);
