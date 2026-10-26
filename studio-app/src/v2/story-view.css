@@ -1543,7 +1543,7 @@ body.sb-resizing-y video {
 /* Unsorted items: a readable count on the warn pill, open or collapsed. */
 .sb-workspace .library .lib-tabs .sb-library-tab.alert > small {
   background: var(--warn);
-  color: #1a1205;
+  color: var(--accent-ink);
 }
 /* Shot panel header (owner, 2026-10-26): the actions centre on the title block, and the
    title field hugs its text so the pencil sits right after it. */
@@ -1632,7 +1632,7 @@ body.sb-resizing-y video {
   bottom: -2px;
   width: 3px;
   margin-left: -1px;
-  background: #fff;
+  background: var(--white);
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.55),
     0 0 6px rgba(0, 0, 0, 0.35);
@@ -1656,7 +1656,7 @@ body.sb-resizing-y video {
   transform: translateX(-50%);
   border-radius: 50%;
   background: var(--accent);
-  border: 2px solid #fff;
+  border: 2px solid var(--white);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.45);
 }
 .timeline .track.video .playhead:active {

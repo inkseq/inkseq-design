@@ -70,6 +70,8 @@
 !studio-app/src/ui/tokens.css
 !studio-app/tools/check-tokens.mjs
 !studio-app/tools/token-baseline.json
+!studio-app/tools/check-ui-patterns.mjs
+!studio-app/tools/ui-pattern-baseline.json
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
