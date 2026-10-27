@@ -254,25 +254,8 @@ export function storyboardView(
     ),
   };
 }
-export function expandStoryboard(
-  shot,
-  state,
-  { forSync = false, locale = 'zh', effectiveProfile = null, effectiveRecipe = null } = {},
-) {
-  const t = (key, values) => translate(locale, key, values);
-  const asset = (id) => state.assets.find((a) => a.id === id),
-    profile = (id) => state.profiles.find((p) => p.id === id);
-  // Explicit saved look/version IDs are exact. Missing IDs are not a request
-  // to silently supply another look's image; only an unset ID uses defaults.
-  const variant = (p, id) =>
-    id
-      ? p?.variants.find((v) => v.id === id)
-      : p?.variants.find((v) => v.id === p.def) || p?.variants[0];
-  const parts = [],
-    items = [],
-    notes = [],
-    warnings = [],
-    inputMode = shot.mode.toLowerCase();
+// The recipe this shot will run with and what it accepts.
+function shotSupport(shot, state, { effectiveProfile, effectiveRecipe, inputMode }) {
   const chosen =
       effectiveProfile ||
       (effectiveRecipe
@@ -292,10 +275,19 @@ export function expandStoryboard(
   const advertised = support
     ? { ...support, mode: inputMode, execution_support: { ...support, constraints } }
     : null;
-  const schema = effectiveControlSchema(advertised),
-    limits = support ? effectiveLimits(advertised) : null,
-    nativeRoles = support?.limits?.input_count_semantics === 'native_roles_v2';
-  if (!support) warnings.push(t('projection.noCapabilities'));
+  return {
+    chosen,
+    support,
+    advertised,
+    schema: effectiveControlSchema(advertised),
+    limits: support ? effectiveLimits(advertised) : null,
+    nativeRoles: support?.limits?.input_count_semantics === 'native_roles_v2',
+  };
+}
+
+// The text parts of the prompt: style, place, cast, props and action.
+function describeShot(shot, state, ctx) {
+  const { t, parts, warnings, profile, variant } = ctx;
   if (state.project.style.trim())
     parts.push({ label: '全片风格', text: state.project.style.trim() });
   const place = profile(shot.place?.id),
@@ -328,240 +320,317 @@ export function expandStoryboard(
   props.forEach((p) => parts.push({ label: '道具', text: `${p.name}：${p.desc}` }));
   if (shot.prompt.trim()) parts.push({ label: '动作', text: shot.prompt.trim() });
   else warnings.push('还没写这一镜的动作描述。');
-  const kinds = { image: '图片', video: '视频', audio: '声音' };
-  const add = (id, kind, why, start) => {
-    if (!id) return;
-    const a = asset(id),
-      expected = ['开头画面', '结尾画面', '图片'].includes(kind)
-        ? 'image'
-        : kind === '视频'
-          ? 'video'
-          : 'audio';
-    let reason = !a
-      ? '参考素材不存在，请重新选择'
-      : a.kind !== expected
-        ? '素材类型不符合这个输入位置'
-        : !a.fileId || a.entity?.data.missingFile
-          ? '素材文件缺失，请补传'
-          : !forSync && !a.entity?.data.cloudAssetId
-            ? '素材尚未同步为可用的云端输入'
-            : '';
-    items.push({
-      a: a || { id, name: '已失效参考' },
-      kind,
-      why,
-      sent: !reason,
-      reason,
-      clipStart: start,
-    });
-  };
-  const addFrames = () => {
-    if (shot.continuePrev) {
-      // "Continue from previous" never crosses a chapter boundary (generation is per chapter).
-      const before = state.shots[state.shots.findIndex((s) => s.id === shot.id) - 1],
-        previous = before?.chapterId === shot.chapterId ? before : undefined,
-        selected = previous?.versions.find((v) => v.id === previous.chosen),
-        frame = asset(shot.previousFrame),
-        binding = shot.entity?.data.storyboard?.previousFrame,
-        selection = frame?.entity?.data.sourceSelection;
-      const currentFrame =
-        frame &&
-        selected &&
-        binding?.shotId === previous.id &&
-        binding.selectedAssetId === previous.chosen &&
-        selection?.kind === 'artifact_frame' &&
-        selection.position === 'last' &&
-        selection.artifact_id === selected.artifactId;
-      if (!selected) warnings.push('请先选定上一镜的成片版本。');
-      if (currentFrame) add(frame.id, '开头画面', '接上一镜');
-      else
-        items.push({
-          a: { name: '上一镜选定版本的最后一帧' },
-          kind: '开头画面',
-          why: '接上一镜',
-          sent: false,
-          reason: !selected ? '上一镜尚未选定版本' : '预检前从上一镜当前选定版本提取最后一帧',
-        });
-    } else add(shot.start, '开头画面', '首帧');
-    add(shot.end, '结尾画面', '尾帧');
-  };
-  if (shot.mode === 'REF') {
-    // Same ordering as the saved-draft compiler: each character's main image
-    // and voice, then place, props, authored extras, and ambient sound.
-    cast
-      .filter((c) => c.p)
-      .forEach(({ p, v }) => {
-        add(v?.images[0], '图片', p.name + ' · ' + (v?.name || ''));
-        const voice = p.voices.find((vo) => vo.asset === (v?.voice || p.voice));
-        if (voice) add(voice.asset, '声音', t('projection.voice', { name: p.name }), voice.start);
+  return { place, pv, cast, props };
+}
+
+const INPUT_KINDS = { image: '图片', video: '视频', audio: '声音' };
+
+// Why a reference cannot be sent as this input, or '' when it can.
+function inputProblem(a, kind, forSync) {
+  const expected = ['开头画面', '结尾画面', '图片'].includes(kind)
+    ? 'image'
+    : kind === '视频'
+      ? 'video'
+      : 'audio';
+  if (!a) return '参考素材不存在，请重新选择';
+  if (a.kind !== expected) return '素材类型不符合这个输入位置';
+  if (!a.fileId || a.entity?.data.missingFile) return '素材文件缺失，请补传';
+  if (!forSync && !a.entity?.data.cloudAssetId) return '素材尚未同步为可用的云端输入';
+  return '';
+}
+
+function addInput(ctx, id, kind, why, start) {
+  if (!id) return;
+  const a = ctx.asset(id),
+    reason = inputProblem(a, kind, ctx.forSync);
+  ctx.items.push({
+    a: a || { id, name: '已失效参考' },
+    kind,
+    why,
+    sent: !reason,
+    reason,
+    clipStart: start,
+  });
+}
+
+// First and last frames; "continue from previous" never crosses a chapter boundary
+// (generation is per chapter).
+function addFrames(shot, state, ctx) {
+  if (shot.continuePrev) {
+    const before = state.shots[state.shots.findIndex((s) => s.id === shot.id) - 1],
+      previous = before?.chapterId === shot.chapterId ? before : undefined,
+      selected = previous?.versions.find((v) => v.id === previous.chosen),
+      frame = ctx.asset(shot.previousFrame),
+      binding = shot.entity?.data.storyboard?.previousFrame,
+      selection = frame?.entity?.data.sourceSelection;
+    const currentFrame =
+      frame &&
+      selected &&
+      binding?.shotId === previous.id &&
+      binding.selectedAssetId === previous.chosen &&
+      selection?.kind === 'artifact_frame' &&
+      selection.position === 'last' &&
+      selection.artifact_id === selected.artifactId;
+    if (!selected) ctx.warnings.push('请先选定上一镜的成片版本。');
+    if (currentFrame) addInput(ctx, frame.id, '开头画面', '接上一镜');
+    else
+      ctx.items.push({
+        a: { name: '上一镜选定版本的最后一帧' },
+        kind: '开头画面',
+        why: '接上一镜',
+        sent: false,
+        reason: !selected ? '上一镜尚未选定版本' : '预检前从上一镜当前选定版本提取最后一帧',
       });
-    if (place) add(pv?.images[0], '图片', '场景');
-    props.forEach((p) =>
-      add(p.variants[0]?.images[0], '图片', t('projection.prop', { name: p.name })),
-    );
-    shot.refs.forEach((id) => {
-      const a = asset(id),
-        range = shot.entity?.data.storyboard?.extraRefs?.find((ref) => ref.entityId === id);
-      add(
-        id,
-        kinds[a?.kind] || '图片',
-        '附加素材',
-        a && a.kind !== 'image' ? (range?.clipStart ?? 0) : undefined,
-      );
+  } else addInput(ctx, shot.start, '开头画面', '首帧');
+  addInput(ctx, shot.end, '结尾画面', '尾帧');
+}
+
+// Same ordering as the saved-draft compiler: each character's main image and voice, then
+// place, props, authored extras, and ambient sound.
+function addReferenceInputs(shot, ctx, { cast, place, pv, props }) {
+  const { t, asset } = ctx;
+  cast
+    .filter((c) => c.p)
+    .forEach(({ p, v }) => {
+      addInput(ctx, v?.images[0], '图片', p.name + ' · ' + (v?.name || ''));
+      const voice = p.voices.find((vo) => vo.asset === (v?.voice || p.voice));
+      if (voice)
+        addInput(ctx, voice.asset, '声音', t('projection.voice', { name: p.name }), voice.start);
     });
-    if (place?.ambient) add(place.ambient, '声音', '场景环境声', place.ambientStart ?? 0);
-    const seen = new Set(),
-      counts = { 图片: 0, 视频: 0, 声音: 0 },
-      durations = { 视频: 0, 声音: 0 },
-      keys = { 图片: 'max_images', 视频: 'max_videos', 声音: 'max_audios' };
-    let sent = 0;
-    for (const item of items) {
-      const identity = JSON.stringify([
-          item.kind,
-          item.a.entity?.data.cloudAssetId || item.a.id,
-          item.clipStart ?? null,
-        ]),
-        max = limits?.[keys[item.kind]],
-        total = limits?.max_total_files;
-      const duration = Object.hasOwn(durations, item.kind) ? 3 : 0,
-        maximumSeconds =
-          limits?.[item.kind === '视频' ? 'max_total_video_duration' : 'max_total_audio_duration'];
-      if (seen.has(identity)) item.reason = '同一输入区域的素材已发送，不重复发送';
-      else if (!Number.isInteger(max) || !Number.isInteger(total))
-        item.reason = '当前参考输入范围尚未读取';
-      else if (counts[item.kind] >= max || sent >= total)
-        item.reason = t('projection.countLimit', {
-          kind:
-            {
-              图片: t('legacy.projection6'),
-              视频: t('legacy.projection7'),
-              声音: t('legacy.projection8'),
-            }[item.kind] || item.kind,
-          max,
-          total,
-        });
-      else if (
-        duration &&
-        Number.isFinite(maximumSeconds) &&
-        durations[item.kind] + duration > maximumSeconds + 0.01
+  if (place) addInput(ctx, pv?.images[0], '图片', '场景');
+  props.forEach((p) =>
+    addInput(ctx, p.variants[0]?.images[0], '图片', t('projection.prop', { name: p.name })),
+  );
+  shot.refs.forEach((id) => {
+    const a = asset(id),
+      range = shot.entity?.data.storyboard?.extraRefs?.find((ref) => ref.entityId === id);
+    addInput(
+      ctx,
+      id,
+      INPUT_KINDS[a?.kind] || '图片',
+      '附加素材',
+      a && a.kind !== 'image' ? (range?.clipStart ?? 0) : undefined,
+    );
+  });
+  if (place?.ambient) addInput(ctx, place.ambient, '声音', '场景环境声', place.ambientStart ?? 0);
+}
+
+// Why one more reference of this kind would exceed the recipe's limits, or ''.
+function referenceLimitReason(item, limits, used, t) {
+  const max = limits?.[{ 图片: 'max_images', 视频: 'max_videos', 声音: 'max_audios' }[item.kind]],
+    total = limits?.max_total_files;
+  if (used.seen.has(used.identity)) return '同一输入区域的素材已发送，不重复发送';
+  if (!Number.isInteger(max) || !Number.isInteger(total)) return '当前参考输入范围尚未读取';
+  if (used.counts[item.kind] >= max || used.sent >= total)
+    return t('projection.countLimit', {
+      kind:
+        {
+          图片: t('legacy.projection6'),
+          视频: t('legacy.projection7'),
+          声音: t('legacy.projection8'),
+        }[item.kind] || item.kind,
+      max,
+      total,
+    });
+  const maximumSeconds =
+    limits?.[item.kind === '视频' ? 'max_total_video_duration' : 'max_total_audio_duration'];
+  if (
+    used.duration &&
+    Number.isFinite(maximumSeconds) &&
+    used.durations[item.kind] + used.duration > maximumSeconds + 0.01
+  )
+    return '当前能力总参考时长上限；按优先级未发送';
+  return '';
+}
+
+// REF sends references in priority order until a count, total or duration limit is reached.
+function applyReferenceLimits(items, limits, t) {
+  const used = {
+    seen: new Set(),
+    counts: { 图片: 0, 视频: 0, 声音: 0 },
+    durations: { 视频: 0, 声音: 0 },
+    sent: 0,
+  };
+  for (const item of items) {
+    used.identity = JSON.stringify([
+      item.kind,
+      item.a.entity?.data.cloudAssetId || item.a.id,
+      item.clipStart ?? null,
+    ]);
+    used.duration = Object.hasOwn(used.durations, item.kind) ? 3 : 0;
+    item.reason = referenceLimitReason(item, limits, used, t) || item.reason;
+    item.sent = !item.reason;
+    if (!item.sent) continue;
+    used.seen.add(used.identity);
+    used.counts[item.kind]++;
+    used.sent++;
+    if (used.duration) used.durations[item.kind] += used.duration;
+  }
+}
+
+function addReferenceMode(shot, state, ctx, described, { advertised, limits }) {
+  addReferenceInputs(shot, ctx, described);
+  applyReferenceLimits(ctx.items, limits, ctx.t);
+  if (
+    roleSupported(advertised, 'first_frame', 'image') ||
+    roleSupported(advertised, 'last_frame', 'image')
+  )
+    addFrames(shot, state, ctx);
+  else if (shot.start || shot.end || shot.continuePrev)
+    ctx.notes.push('首尾帧设置保留，此旧配方的全能参考中不发送。');
+}
+
+// Extra control media an FL recipe with native roles accepts; others are listed as not sent.
+function addControlRefs(shot, ctx, advertised) {
+  const { asset, items } = ctx;
+  for (const id of shot.refs) {
+    const a = asset(id),
+      slot = { image: 'images', video: 'videos', audio: 'audios' }[a?.kind],
+      range = shot.entity?.data.storyboard?.extraRefs?.find((ref) => ref.entityId === id);
+    if (a && roleSupported(advertised, slot, a.kind)) {
+      addInput(
+        ctx,
+        id,
+        INPUT_KINDS[a.kind],
+        '附加控制素材',
+        a.kind !== 'image' ? (range?.clipStart ?? 0) : undefined,
+      );
+      if (
+        a.kind === 'video' &&
+        ['denoise', 'in_context'].includes(shot.entity?.data.h3?.controls?.video_conditioning)
       )
-        item.reason = '当前能力总参考时长上限；按优先级未发送';
-      item.sent = !item.reason;
-      if (!item.sent) continue;
-      seen.add(identity);
-      counts[item.kind]++;
-      sent++;
-      if (duration) durations[item.kind] += duration;
-    }
-    if (
-      roleSupported(advertised, 'first_frame', 'image') ||
-      roleSupported(advertised, 'last_frame', 'image')
-    )
-      addFrames();
-    else if (shot.start || shot.end || shot.continuePrev)
-      notes.push('首尾帧设置保留，此旧配方的全能参考中不发送。');
-  } else {
-    addFrames();
-    if (nativeRoles) {
-      for (const id of shot.refs) {
-        const a = asset(id),
-          slot = { image: 'images', video: 'videos', audio: 'audios' }[a?.kind],
-          range = shot.entity?.data.storyboard?.extraRefs?.find((ref) => ref.entityId === id);
-        if (a && roleSupported(advertised, slot, a.kind)) {
-          add(
-            id,
-            kinds[a.kind],
-            '附加控制素材',
-            a.kind !== 'image' ? (range?.clipStart ?? 0) : undefined,
-          );
-          if (
-            a.kind === 'video' &&
-            ['denoise', 'in_context'].includes(shot.entity?.data.h3?.controls?.video_conditioning)
-          )
-            items.at(-1).clipDuration = shot.entity?.data.h3?.controls?.duration || shot.duration;
-        } else if (a)
-          items.push({
-            a,
-            kind: kinds[a.kind],
-            why: '附加素材',
-            sent: false,
-            reason: '当前FL配方不接收普通参考图片；需要时请设为时间锚点或改用REF。',
-          });
-      }
-    } else if (shot.refs.length) notes.push('附加参考保留，切回全能参考时使用。');
-    if (cast.length || place || shot.props.length)
-      notes.push('人物、场景和道具在首尾帧模式中使用文字描述。');
+        items.at(-1).clipDuration = shot.entity?.data.h3?.controls?.duration || shot.duration;
+    } else if (a)
+      items.push({
+        a,
+        kind: INPUT_KINDS[a.kind],
+        why: '附加素材',
+        sent: false,
+        reason: '当前FL配方不接收普通参考图片；需要时请设为时间锚点或改用REF。',
+      });
   }
-  if (nativeRoles) {
-    const guides = shot.entity?.data.h3?.guides || [];
-    for (const guide of guides) {
-      const a = asset(guide.media_id),
-        before = items.length;
-      add(guide.media_id, kinds[a?.kind] || '图片', '时间锚点');
-      if (items.length > before) {
-        const item = items.at(-1);
-        Object.assign(item, {
-          slot: 'guides',
-          time_seconds: guide.time_seconds,
-          use_audio: a?.kind === 'video' && guide.use_audio === true,
-          ...(guide.source_range ? { source_range: guide.source_range } : {}),
-        });
-        if (!limits || (Number.isInteger(limits.max_guides) && guides.length > limits.max_guides)) {
-          item.sent = false;
-          item.reason = '当前能力的时间锚点数量上限';
-          warnings.push(item.reason);
-        }
-      }
+}
+
+// FL: frames, then (native roles only) extra control media the recipe accepts.
+function addFrameMode(shot, state, ctx, described, { advertised, nativeRoles }) {
+  const { notes } = ctx;
+  addFrames(shot, state, ctx);
+  if (nativeRoles) addControlRefs(shot, ctx, advertised);
+  else if (shot.refs.length) notes.push('附加参考保留，切回全能参考时使用。');
+  if (described.cast.length || described.place || shot.props.length)
+    notes.push('人物、场景和道具在首尾帧模式中使用文字描述。');
+}
+
+// Time anchors (guides), within the recipe's guide limit.
+function addGuides(shot, ctx, limits) {
+  const guides = shot.entity?.data.h3?.guides || [];
+  for (const guide of guides) {
+    const a = ctx.asset(guide.media_id),
+      before = ctx.items.length;
+    addInput(ctx, guide.media_id, INPUT_KINDS[a?.kind] || '图片', '时间锚点');
+    if (ctx.items.length === before) continue;
+    const item = ctx.items.at(-1);
+    Object.assign(item, {
+      slot: 'guides',
+      time_seconds: guide.time_seconds,
+      use_audio: a?.kind === 'video' && guide.use_audio === true,
+      ...(guide.source_range ? { source_range: guide.source_range } : {}),
+    });
+    if (!limits || (Number.isInteger(limits.max_guides) && guides.length > limits.max_guides)) {
+      item.sent = false;
+      item.reason = '当前能力的时间锚点数量上限';
+      ctx.warnings.push(item.reason);
     }
   }
-  if (shot.mode === 'REF' && !items.some((i) => i.sent))
-    warnings.push('全能参考至少需要一份可用参考。');
+}
+
+function generationKind(shot) {
+  if (shot.mode === 'REF') return '全能参考';
+  if (shot.continuePrev) return '接上一镜';
+  if (shot.start && shot.end) return '首尾帧';
+  if (shot.start) return '首帧生成';
+  if (shot.end) return '尾帧生成';
+  return '文字生成';
+}
+
+function limitsLabel(limits, t) {
+  if (!limits) return '能力尚未读取';
   const known = (value) => (Number.isFinite(value) ? value : '—');
+  return t('projection.limits', {
+    images: known(limits.max_images),
+    videos: known(limits.max_videos),
+    audios: known(limits.max_audios),
+    total: known(limits.max_total_files),
+  });
+}
+
+// Which input areas the editor shows for this recipe.
+function inputFlags(support, inputMode) {
+  const accepts = support?.input_support || {};
   return {
-    mode: shot.mode,
-    frameInputs:
-      inputMode === 'fl' ||
-      support?.input_support?.first_frame === true ||
-      support?.input_support?.last_frame === true,
+    frameInputs: inputMode === 'fl' || accepts.first_frame === true || accepts.last_frame === true,
     controlInputs:
       inputMode === 'fl' &&
-      (support?.input_support?.video_conditioning === true ||
-        support?.input_support?.kept_soundtrack === true),
-    kind:
-      shot.mode === 'REF'
-        ? '全能参考'
-        : shot.continuePrev
-          ? '接上一镜'
-          : shot.start && shot.end
-            ? '首尾帧'
-            : shot.start
-              ? '首帧生成'
-              : shot.end
-                ? '尾帧生成'
-                : '文字生成',
+      (accepts.video_conditioning === true || accepts.kept_soundtrack === true),
+  };
+}
+
+const shotResolution = (shot, schema, t) =>
+  shot.entity?.data.h3?.controls?.resolution ||
+  schema.resolution?.default ||
+  t('projection.unconfirmed');
+
+const durationRange = (schema) => ({
+  minimum: schema.duration?.minimum,
+  maximum: schema.duration?.maximum,
+  step: schema.duration?.multipleOf || 1,
+});
+
+export function expandStoryboard(
+  shot,
+  state,
+  { forSync = false, locale = 'zh', effectiveProfile = null, effectiveRecipe = null } = {},
+) {
+  const t = (key, values) => translate(locale, key, values);
+  const inputMode = shot.mode.toLowerCase();
+  const ctx = {
+    t,
+    forSync,
+    parts: [],
+    items: [],
+    notes: [],
+    warnings: [],
+    asset: (id) => state.assets.find((a) => a.id === id),
+    profile: (id) => state.profiles.find((p) => p.id === id),
+    // Explicit saved look/version IDs are exact. Missing IDs are not a request
+    // to silently supply another look's image; only an unset ID uses defaults.
+    variant: (p, id) =>
+      id
+        ? p?.variants.find((v) => v.id === id)
+        : p?.variants.find((v) => v.id === p.def) || p?.variants[0],
+  };
+  const recipe = shotSupport(shot, state, { effectiveProfile, effectiveRecipe, inputMode });
+  const { chosen, support, schema, limits, nativeRoles } = recipe;
+  if (!support) ctx.warnings.push(t('projection.noCapabilities'));
+  const described = describeShot(shot, state, ctx);
+  if (shot.mode === 'REF') addReferenceMode(shot, state, ctx, described, recipe);
+  else addFrameMode(shot, state, ctx, described, recipe);
+  if (nativeRoles) addGuides(shot, ctx, limits);
+  if (shot.mode === 'REF' && !ctx.items.some((i) => i.sent))
+    ctx.warnings.push('全能参考至少需要一份可用参考。');
+  return {
+    mode: shot.mode,
+    ...inputFlags(support, inputMode),
+    kind: generationKind(shot),
     machine: chosen?.label || t('projection.noModel'),
     sec: shot.duration,
-    res:
-      shot.entity?.data.h3?.controls?.resolution ||
-      schema.resolution?.default ||
-      t('projection.unconfirmed'),
-    parts,
-    items,
-    warnings,
-    notes,
-    durationRange: {
-      minimum: schema.duration?.minimum,
-      maximum: schema.duration?.maximum,
-      step: schema.duration?.multipleOf || 1,
-    },
-    limitsLabel: limits
-      ? t('projection.limits', {
-          images: known(limits.max_images),
-          videos: known(limits.max_videos),
-          audios: known(limits.max_audios),
-          total: known(limits.max_total_files),
-        })
-      : '能力尚未读取',
+    res: shotResolution(shot, schema, t),
+    parts: ctx.parts,
+    items: ctx.items,
+    warnings: ctx.warnings,
+    notes: ctx.notes,
+    durationRange: durationRange(schema),
+    limitsLabel: limitsLabel(limits, t),
   };
 }
 export function storyboardDrop(shot, item, slot, state) {
