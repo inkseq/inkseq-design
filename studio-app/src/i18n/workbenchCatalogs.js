@@ -62,7 +62,8 @@ export const workbenchCatalogs = {
     'workbench.estimate': 'Estimated cost: {amount}',
     'workbench.costCredits': 'Cost: {credits} credits',
     'workbench.balance': 'You have {credits} credits',
-    'workbench.costUnknown': "We couldn't read the price yet. Nothing is charged until you confirm.",
+    'workbench.costUnknown':
+      "We couldn't read the price yet. Nothing is charged until you confirm.",
     'workbench.timing':
       'A 5-second shot usually takes a few minutes. The first one can take up to 15 minutes while a machine starts.',
     'workbench.shotN': 'Shot {number}',
