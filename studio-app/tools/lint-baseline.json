@@ -1,7 +1,7 @@
 {
   "totals": {
-    "complexity": 86,
-    "max-lines-per-function": 50
+    "complexity": 83,
+    "max-lines-per-function": 49
   },
   "files": {
     "complexity": {
@@ -43,7 +43,6 @@
       "src/story-chat-model.js": 1,
       "src/story-film.js": 1,
       "src/storyboard-commands.js": 1,
-      "src/storyboard-domain.js": 3,
       "src/StoryboardComponents.jsx": 5,
       "src/StoryboardConnected.jsx": 1,
       "src/StoryboardMedia.jsx": 1,
@@ -86,7 +85,6 @@
       "src/story-chat-client.js": 1,
       "src/story-chat-preview.js": 1,
       "src/story-film.js": 1,
-      "src/storyboard-domain.js": 1,
       "src/StoryboardComponents.jsx": 3,
       "src/StoryboardConnected.jsx": 2,
       "src/StoryboardWorkbench.jsx": 2,
