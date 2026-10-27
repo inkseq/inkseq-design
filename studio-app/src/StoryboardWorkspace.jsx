@@ -28,6 +28,7 @@ import { usePageActive, useAppLocation } from './AppRouteCache.jsx';
 import { navigateApp } from './app-navigation.js';
 import { guideField, highlightGuideField } from './guide.js';
 import './guide.css';
+import { InkyForStory } from './inky/InkyForStory.jsx';
 import { store } from './store.js';
 import {
   DndContext,
@@ -585,6 +586,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
               </small>
             </div>
             <div className="row tight chapter-actions" data-icon-only={headCompact || undefined}>
+              <InkyForStory />
               <QueueSummary />
               {!multi && <FilmEditorButton chapterId={state.project.chapterId} />}
               {!groups.length && (
