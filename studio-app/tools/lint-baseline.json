@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 96,
+    "complexity": 90,
     "max-lines-per-function": 51
   },
   "files": {
@@ -15,10 +15,8 @@
       "src/cloud-client.js": 1,
       "src/cloud-controller.js": 7,
       "src/CloudStudio.jsx": 1,
-      "src/delivery-model.js": 1,
       "src/dstack-presentation.js": 2,
       "src/DstackCapacity.jsx": 3,
-      "src/entity-references.js": 1,
       "src/FilmEditor.jsx": 1,
       "src/generated-sound-model.js": 1,
       "src/generation-availability.js": 1,
@@ -40,12 +38,9 @@
       "src/quick-chat-controller.js": 3,
       "src/quick-chat-history.js": 1,
       "src/QuickChatControls.jsx": 1,
-      "src/recipe-execution-model.js": 2,
-      "src/service-model.js": 1,
       "src/SpendingBreakdown.jsx": 1,
       "src/SpendingSettings.jsx": 1,
       "src/store.js": 3,
-      "src/story-chat-client.js": 1,
       "src/story-chat-model.js": 1,
       "src/story-film.js": 1,
       "src/storyboard-commands.js": 1,
