@@ -120,8 +120,14 @@ await journey('anonymous landing offers password sign-in', null, async (open) =>
     await link.click();
     await p.locator('input[autocomplete=username]').waitFor({ timeout: 5000 });
   } else {
-    // Hosted sign-in off: the landing opens the username dialog from its main button.
-    expect(await p.locator('.landing').count(), 'landing page did not render');
+    // Hosted sign-in off: the landing opens the username dialog from its main button. Wait for
+    // it rather than counting after the fixed settle: the US runner reaches staging slowly.
+    const shown = await p
+      .locator('.landing')
+      .waitFor({ timeout: 15000 })
+      .then(() => true)
+      .catch(() => false);
+    expect(shown, 'landing page did not render');
   }
   return p;
 });
