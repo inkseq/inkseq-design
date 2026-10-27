@@ -36,21 +36,9 @@ export function storyboardGenerationProfile(capabilities, shot, { quality, sourc
     sourceRequest?.deployment_profile_id || shot.entity?.data.h3?.deploymentProfileId,
   );
 }
-export function storyboardView(
-  project,
-  {
-    chapterId,
-    capabilities,
-    jobs = [],
-    queue = null,
-    busy = false,
-    error = '',
-    allChapters = false,
-  } = {},
-) {
-  const chapter =
-    find(project, chapterId) || children(project, null).find((e) => e.type === 'chapter');
-  const assets = project.entities
+// Media the storyboard library shows, with the inbox flag for media no profile uses.
+function storyboardAssets(project) {
+  return project.entities
     .filter((e) => ['image', 'video', 'audio'].includes(e.type))
     .map((e) => ({
       id: e.id,
@@ -75,7 +63,10 @@ export function storyboardView(
         ),
       source: e.data.source || 'upload',
     }));
-  const profiles = project.entities
+}
+
+function storyboardProfiles(project) {
+  return project.entities
     .filter((e) => ['character', 'location', 'prop'].includes(e.type))
     .map((e) => {
       const variants =
@@ -112,6 +103,10 @@ export function storyboardView(
         })),
       };
     });
+}
+
+// Suggest the one profile whose name appears in an asset's file name.
+function suggestProfiles(assets, profiles) {
   for (const a of assets) {
     const stem = (a.entity.data.fileName || a.name).replace(/\.[^.]+$/, '').toLocaleLowerCase();
     const matches = profiles.filter(
@@ -120,110 +115,141 @@ export function storyboardView(
     if (matches.length === 1)
       a.suggest = { pid: matches[0].id, vid: matches[0].def, label: matches[0].name };
   }
-  const shots = (
-    allChapters ? storyShots(project) : chapter ? chapterShots(project, chapter.id) : []
-  ).map((s) => {
-    const b = s.data.storyboard || {},
-      shotJobs = [
-        ...new Map(
-          [...project.jobs, ...jobs]
-            .filter((j) => j.client_ref?.shot_id === s.id)
-            .map((j) => [j.id, j]),
-        ).values(),
-      ].sort((a, b) => Number(a.created_at) - Number(b.created_at));
-    const versions = shotJobs.map((j, n) => {
-      const artifact = j.artifacts?.find((a) => a.kind === 'video'),
-        entity = project.entities.find(
-          (e) => e.data.cloudArtifactId === artifact?.id && e.type === 'video',
-        );
-      return {
-        id: entity?.id || j.id,
-        n: n + 1,
-        quality: j.effective_request?.model?.includes('Pruned') ? 'draft' : 'final',
-        seed: j.effective_request?.seed,
-        mode: j.effective_request?.mode === 'ref' ? 'REF' : 'FL',
-        status: j.status === 'succeeded' ? 'done' : j.status,
-        jobId: j.id,
-        artifactId: artifact?.id,
-        asset: entity ? { fileId: entity.data.fileId, entity, kind: 'video' } : null,
-        duration: artifact?.metadata?.duration ?? artifact?.metadata?.duration_seconds,
-        error: j.error_code || j.message || '',
-        audio: j.artifacts?.find((a) => a.kind === 'audio'),
-        effectiveRequest: j.effective_request,
-      };
-    });
-    for (const id of list(s.data.candidateIds)) {
-      if (versions.some((v) => v.id === id)) continue;
-      const e = find(project, id);
-      if (e?.type === 'video')
-        versions.push({
-          id: e.id,
-          n: versions.length + 1,
-          status: 'done',
-          quality: 'draft',
-          mode: mode(s) === 'ref' ? 'REF' : 'FL',
-          artifactId: e.data.cloudArtifactId,
-          jobId: e.data.sourceJobId,
-          asset: { fileId: e.data.fileId, entity: e, kind: 'video' },
-          duration: e.data.metadata?.duration,
-        });
-    }
-    const scene = find(project, s.parentId),
-      cast = new Map(
-        (s.data.storyboard && Object.hasOwn(s.data, 'cast')
-          ? list(s.data.cast)
-          : [...list(scene?.data.cast), ...list(s.data.cast)]
-        ).map((c) => [c.characterId, { id: c.characterId, variant: c.lookId }]),
+}
+
+// Every take of a shot: its jobs (local and server) in order, then imported candidates.
+function shotVersions(project, s, jobs) {
+  const shotJobs = [
+    ...new Map(
+      [...project.jobs, ...jobs]
+        .filter((j) => j.client_ref?.shot_id === s.id)
+        .map((j) => [j.id, j]),
+    ).values(),
+  ].sort((a, b) => Number(a.created_at) - Number(b.created_at));
+  const versions = shotJobs.map((j, n) => {
+    const artifact = j.artifacts?.find((a) => a.kind === 'video'),
+      entity = project.entities.find(
+        (e) => e.data.cloudArtifactId === artifact?.id && e.type === 'video',
       );
     return {
-      id: s.id,
-      title: s.title,
-      script: s.data.script || '',
-      prompt: s.data.prompt ?? s.description,
-      mode: mode(s) === 'ref' ? 'REF' : 'FL',
-      duration: s.data.seconds ?? 5,
-      start: Object.hasOwn(b, 'firstFrameId')
-        ? b.firstFrameId
-        : project.links.find((l) => l.target === s.id && l.role === 'firstFrame')?.source || '',
-      end: Object.hasOwn(b, 'lastFrameId')
-        ? b.lastFrameId
-        : project.links.find((l) => l.target === s.id && l.role === 'lastFrame')?.source || '',
-      refs:
-        b.extraRefs?.map((r) => r.entityId) ||
-        project.links
-          .filter(
-            (l) =>
-              l.target === s.id &&
-              ['reference', 'identity', 'motion', 'audio'].includes(l.role) &&
-              assets.some((a) => a.id === l.source),
-          )
-          .map((l) => l.source),
-      cast: [...cast.values()],
-      place: Object.hasOwn(b, 'place')
-        ? b.place
-          ? { id: b.place.locationId, variant: b.place.versionId }
-          : null
-        : s.data.locationId
-          ? { id: s.data.locationId, variant: '' }
-          : scene?.data.locationId
-            ? { id: scene.data.locationId, variant: '' }
-            : null,
-      props: b.propIds || [],
-      continuePrev: !!b.continuePrevious,
-      previousFrame: b.previousFrame?.frameAssetId,
-      quality: b.quality ?? s.data.qualityIntent ?? 'draft',
-      seedLock: !!s.data.h3?.controls?.seed,
-      // Creator generation choices (owner spec 2026-10-26); the tier fixes everything else.
-      aspect: s.data.h3?.controls?.aspect_ratio || '16:9',
-      keepAudio: s.data.h3?.controls?.generate_audio !== false,
-      versions,
-      chosen: s.data.selectedAssetId || '',
-      // Kept parts of the chosen take, in playback order (#512); empty = the whole take.
-      segments: shotSegments(s.data.videoSegments),
-      chapterId: find(project, s.parentId)?.parentId || null,
-      entity: s,
+      id: entity?.id || j.id,
+      n: n + 1,
+      quality: j.effective_request?.model?.includes('Pruned') ? 'draft' : 'final',
+      seed: j.effective_request?.seed,
+      mode: j.effective_request?.mode === 'ref' ? 'REF' : 'FL',
+      status: j.status === 'succeeded' ? 'done' : j.status,
+      jobId: j.id,
+      artifactId: artifact?.id,
+      asset: entity ? { fileId: entity.data.fileId, entity, kind: 'video' } : null,
+      duration: artifact?.metadata?.duration ?? artifact?.metadata?.duration_seconds,
+      error: j.error_code || j.message || '',
+      audio: j.artifacts?.find((a) => a.kind === 'audio'),
+      effectiveRequest: j.effective_request,
     };
   });
+  for (const id of list(s.data.candidateIds)) {
+    if (versions.some((v) => v.id === id)) continue;
+    const e = find(project, id);
+    if (e?.type === 'video')
+      versions.push({
+        id: e.id,
+        n: versions.length + 1,
+        status: 'done',
+        quality: 'draft',
+        mode: mode(s) === 'ref' ? 'REF' : 'FL',
+        artifactId: e.data.cloudArtifactId,
+        jobId: e.data.sourceJobId,
+        asset: { fileId: e.data.fileId, entity: e, kind: 'video' },
+        duration: e.data.metadata?.duration,
+      });
+  }
+  return versions;
+}
+
+// A storyboard field wins; a legacy shot falls back to its project link.
+const shotFrame = (project, s, b, field, role) =>
+  Object.hasOwn(b, field)
+    ? b[field]
+    : project.links.find((l) => l.target === s.id && l.role === role)?.source || '';
+
+function shotRefs(project, s, b, assets) {
+  if (b.extraRefs) return b.extraRefs.map((r) => r.entityId);
+  return project.links
+    .filter(
+      (l) =>
+        l.target === s.id &&
+        ['reference', 'identity', 'motion', 'audio'].includes(l.role) &&
+        assets.some((a) => a.id === l.source),
+    )
+    .map((l) => l.source);
+}
+
+function shotPlace(s, b, scene) {
+  if (Object.hasOwn(b, 'place'))
+    return b.place ? { id: b.place.locationId, variant: b.place.versionId } : null;
+  if (s.data.locationId) return { id: s.data.locationId, variant: '' };
+  return scene?.data.locationId ? { id: scene.data.locationId, variant: '' } : null;
+}
+
+function shotView(project, s, { jobs, assets }) {
+  const b = s.data.storyboard || {},
+    versions = shotVersions(project, s, jobs);
+  const scene = find(project, s.parentId),
+    cast = new Map(
+      (s.data.storyboard && Object.hasOwn(s.data, 'cast')
+        ? list(s.data.cast)
+        : [...list(scene?.data.cast), ...list(s.data.cast)]
+      ).map((c) => [c.characterId, { id: c.characterId, variant: c.lookId }]),
+    );
+  return {
+    id: s.id,
+    title: s.title,
+    script: s.data.script || '',
+    prompt: s.data.prompt ?? s.description,
+    mode: mode(s) === 'ref' ? 'REF' : 'FL',
+    duration: s.data.seconds ?? 5,
+    start: shotFrame(project, s, b, 'firstFrameId', 'firstFrame'),
+    end: shotFrame(project, s, b, 'lastFrameId', 'lastFrame'),
+    refs: shotRefs(project, s, b, assets),
+    cast: [...cast.values()],
+    place: shotPlace(s, b, scene),
+    props: b.propIds || [],
+    continuePrev: !!b.continuePrevious,
+    previousFrame: b.previousFrame?.frameAssetId,
+    quality: b.quality ?? s.data.qualityIntent ?? 'draft',
+    seedLock: !!s.data.h3?.controls?.seed,
+    // Creator generation choices (owner spec 2026-10-26); the tier fixes everything else.
+    aspect: s.data.h3?.controls?.aspect_ratio || '16:9',
+    keepAudio: s.data.h3?.controls?.generate_audio !== false,
+    versions,
+    chosen: s.data.selectedAssetId || '',
+    // Kept parts of the chosen take, in playback order (#512); empty = the whole take.
+    segments: shotSegments(s.data.videoSegments),
+    chapterId: find(project, s.parentId)?.parentId || null,
+    entity: s,
+  };
+}
+
+export function storyboardView(
+  project,
+  {
+    chapterId,
+    capabilities,
+    jobs = [],
+    queue = null,
+    busy = false,
+    error = '',
+    allChapters = false,
+  } = {},
+) {
+  const chapter =
+    find(project, chapterId) || children(project, null).find((e) => e.type === 'chapter');
+  const assets = storyboardAssets(project),
+    profiles = storyboardProfiles(project);
+  suggestProfiles(assets, profiles);
+  const shots = (
+    allChapters ? storyShots(project) : chapter ? chapterShots(project, chapter.id) : []
+  ).map((s) => shotView(project, s, { jobs, assets }));
   return {
     project: {
       id: project.id,
@@ -633,52 +659,39 @@ export function expandStoryboard(
     limitsLabel: limitsLabel(limits, t),
   };
 }
-export function storyboardDrop(shot, item, slot, state) {
-  if (item.profile) {
-    const p = item.profile,
-      v = p.variants.find((v) => v.id === p.def) || p.variants[0];
-    if (['start', 'end'].includes(slot) && p.type !== 'character') {
-      if (!v?.images[0]) return { patch: null, msg: '档案还没有主图。' };
-      return {
-        patch: { [slot]: v.images[0], ...(slot === 'start' ? { continuePrev: false } : {}) },
-        msg: '已使用档案主图。',
-      };
-    }
-    if (p.type === 'character')
-      return shot.cast.some((c) => c.id === p.id)
-        ? { patch: null, msg: '人物已经在这一镜中。' }
-        : {
-            patch: { cast: [...shot.cast, { id: p.id, variant: p.def }] },
-            msg: '已加入出场人物。',
-            hint: '松开：加入人物',
-          };
-    if (p.type === 'location')
-      return {
-        patch: { place: { id: p.id, variant: p.def } },
-        msg: '已设置场景。',
-        hint: '松开：设置场景',
-      };
+// Dropping a profile: its main image as a frame, or the person, place or prop in the cast.
+function dropProfile(shot, p, slot) {
+  const v = p.variants.find((v) => v.id === p.def) || p.variants[0];
+  if (['start', 'end'].includes(slot) && p.type !== 'character') {
+    if (!v?.images[0]) return { patch: null, msg: '档案还没有主图。' };
     return {
-      patch: { props: [...new Set([...shot.props, p.id])] },
-      msg: '已加入道具。',
-      hint: '松开：加入道具',
+      patch: { [slot]: v.images[0], ...(slot === 'start' ? { continuePrev: false } : {}) },
+      msg: '已使用档案主图。',
     };
   }
-  const a = item.asset;
-  if (!a) return { patch: null, msg: '素材不存在。' };
-  if (['start', 'end'].includes(slot)) {
-    if (a.kind !== 'image') return { patch: null, msg: '首尾帧需要图片。' };
+  if (p.type === 'character')
+    return shot.cast.some((c) => c.id === p.id)
+      ? { patch: null, msg: '人物已经在这一镜中。' }
+      : {
+          patch: { cast: [...shot.cast, { id: p.id, variant: p.def }] },
+          msg: '已加入出场人物。',
+          hint: '松开：加入人物',
+        };
+  if (p.type === 'location')
     return {
-      patch: { [slot]: a.id, ...(slot === 'start' ? { continuePrev: false } : {}) },
-      msg: '已设置' + (slot === 'start' ? '首帧' : '尾帧') + '。',
+      patch: { place: { id: p.id, variant: p.def } },
+      msg: '已设置场景。',
+      hint: '松开：设置场景',
     };
-  }
-  if (slot !== 'refs' && shot.mode === 'FL' && a.kind === 'image')
-    return {
-      patch: { [!shot.start && !shot.continuePrev ? 'start' : 'end']: a.id },
-      msg: '已设置画面。',
-      hint: '松开：设置画面',
-    };
+  return {
+    patch: { props: [...new Set([...shot.props, p.id])] },
+    msg: '已加入道具。',
+    hint: '松开：加入道具',
+  };
+}
+
+// Any other asset becomes an extra reference; the recipe decides whether it is sent.
+function dropReference(shot, a, state) {
   const selected = storyboardProfile(
       state.capabilities,
       shot.quality,
@@ -702,6 +715,26 @@ export function storyboardDrop(shot, item, slot, state) {
     hint: '松开：加入参考',
   };
 }
+
+export function storyboardDrop(shot, item, slot, state) {
+  if (item.profile) return dropProfile(shot, item.profile, slot);
+  const a = item.asset;
+  if (!a) return { patch: null, msg: '素材不存在。' };
+  if (['start', 'end'].includes(slot)) {
+    if (a.kind !== 'image') return { patch: null, msg: '首尾帧需要图片。' };
+    return {
+      patch: { [slot]: a.id, ...(slot === 'start' ? { continuePrev: false } : {}) },
+      msg: '已设置' + (slot === 'start' ? '首帧' : '尾帧') + '。',
+    };
+  }
+  if (slot !== 'refs' && shot.mode === 'FL' && a.kind === 'image')
+    return {
+      patch: { [!shot.start && !shot.continuePrev ? 'start' : 'end']: a.id },
+      msg: '已设置画面。',
+      hint: '松开：设置画面',
+    };
+  return dropReference(shot, a, state);
+}
 // Aspect, "keep sound" and a fresh seed for "another version" (owner spec 2026-10-26).
 // generate_audio defaults to on, so only "off" is stored.
 const CREATOR_KEYS = ['aspect', 'keepAudio', 'newSeed'];
@@ -717,72 +750,89 @@ function patchCreatorControls(shot, patch) {
     controls.seed = String(1 + Math.floor(Math.random() * 2147483646));
   shot.data.h3 = { ...shot.data.h3, controls };
 }
-export function patchStoryboardShot(project, id, patch) {
-  const shot = find(project, id);
-  if (!shot) throw Error('镜头不存在。');
-  if (
-    !shot.data.storyboard &&
-    !Object.keys(patch).some((key) => ['cast', 'place', 'props', 'continuePrev'].includes(key)) &&
-    (!Object.hasOwn(patch, 'mode') || shot.data.h3?.explicitReferences)
-  ) {
-    for (const key of ['script', 'prompt'])
-      if (Object.hasOwn(patch, key)) shot.data[key] = patch[key];
-    if (Object.hasOwn(patch, 'title')) shot.title = patch.title;
-    if (Object.hasOwn(patch, 'quality')) shot.data.qualityIntent = patch.quality;
-    if (Object.hasOwn(patch, 'duration')) {
-      shot.data.seconds = patch.duration;
-      shot.data.h3 = {
-        ...shot.data.h3,
-        controls: { ...shot.data.h3?.controls, duration: patch.duration },
-      };
+// A legacy shot (no storyboard block) stays legacy unless the patch needs storyboard fields.
+const STORYBOARD_ONLY = ['cast', 'place', 'props', 'continuePrev'];
+const staysLegacy = (shot, patch) =>
+  !shot.data.storyboard &&
+  !Object.keys(patch).some((key) => STORYBOARD_ONLY.includes(key)) &&
+  (!Object.hasOwn(patch, 'mode') || shot.data.h3?.explicitReferences);
+const lastSeed = (project, id) =>
+  project.jobs.findLast((j) => j.client_ref?.shot_id === id)?.effective_request?.seed;
+
+function patchDuration(shot, patch) {
+  if (!Object.hasOwn(patch, 'duration')) return;
+  shot.data.seconds = patch.duration;
+  shot.data.h3 = {
+    ...shot.data.h3,
+    controls: { ...shot.data.h3?.controls, duration: patch.duration },
+  };
+}
+
+function setSeed(shot, seed) {
+  shot.data.h3 = { ...shot.data.h3, controls: { ...shot.data.h3?.controls, seed } };
+}
+
+function setMode(shot, inputMode) {
+  shot.data.h3 = {
+    ...shot.data.h3,
+    inputMode,
+    recipeId: inputMode === 'ref' ? 'h3-base-ref2va-v1' : 'h3-base-fl2va-v1',
+  };
+}
+
+// Legacy frames and references are project links.
+function patchLegacyLinks(project, id, patch) {
+  for (const [field, role] of [
+    ['start', 'firstFrame'],
+    ['end', 'lastFrame'],
+  ])
+    if (Object.hasOwn(patch, field)) {
+      project.links = project.links.filter((l) => !(l.target === id && l.role === role));
+      if (patch[field])
+        project.links.push({ id: uid('link'), source: patch[field], target: id, role });
     }
-    if (Object.hasOwn(patch, 'seedLock'))
-      shot.data.h3 = {
-        ...shot.data.h3,
-        controls: {
-          ...shot.data.h3?.controls,
-          seed: patch.seedLock
-            ? (shot.data.h3?.controls?.seed ??
-              project.jobs.findLast((j) => j.client_ref?.shot_id === id)?.effective_request?.seed ??
-              '1')
-            : null,
-        },
-      };
-    if (Object.hasOwn(patch, 'mode'))
-      shot.data.h3 = {
-        ...shot.data.h3,
-        inputMode: patch.mode.toLowerCase(),
-        recipeId: patch.mode.toLowerCase() === 'ref' ? 'h3-base-ref2va-v1' : 'h3-base-fl2va-v1',
-      };
-    for (const [field, role] of [
-      ['start', 'firstFrame'],
-      ['end', 'lastFrame'],
-    ])
-      if (Object.hasOwn(patch, field)) {
-        project.links = project.links.filter((l) => !(l.target === id && l.role === role));
-        if (patch[field])
-          project.links.push({ id: uid('link'), source: patch[field], target: id, role });
-      }
-    if (Object.hasOwn(patch, 'refs')) {
-      const roles = ['reference', 'identity', 'motion', 'audio'],
-        old = project.links.filter((l) => l.target === id && roles.includes(l.role));
-      project.links = project.links.filter(
-        (l) => !(l.target === id && roles.includes(l.role)) || patch.refs.includes(l.source),
-      );
-      for (const source of patch.refs)
-        if (!old.some((l) => l.source === source))
-          project.links.push({
-            id: uid('link'),
-            source,
-            target: id,
-            role: find(project, source)?.type === 'audio' ? 'audio' : 'reference',
-          });
-    }
-    patchCreatorControls(shot, patch);
-    shot.version++;
-    if (shot.data.selectedAssetId) shot.status = 'review';
-    return;
-  }
+  if (!Object.hasOwn(patch, 'refs')) return;
+  const roles = ['reference', 'identity', 'motion', 'audio'],
+    old = project.links.filter((l) => l.target === id && roles.includes(l.role));
+  project.links = project.links.filter(
+    (l) => !(l.target === id && roles.includes(l.role)) || patch.refs.includes(l.source),
+  );
+  for (const source of patch.refs)
+    if (!old.some((l) => l.source === source))
+      project.links.push({
+        id: uid('link'),
+        source,
+        target: id,
+        role: find(project, source)?.type === 'audio' ? 'audio' : 'reference',
+      });
+}
+
+function patchLegacyShot(project, shot, id, patch) {
+  for (const key of ['script', 'prompt'])
+    if (Object.hasOwn(patch, key)) shot.data[key] = patch[key];
+  if (Object.hasOwn(patch, 'title')) shot.title = patch.title;
+  if (Object.hasOwn(patch, 'quality')) shot.data.qualityIntent = patch.quality;
+  patchDuration(shot, patch);
+  if (Object.hasOwn(patch, 'seedLock'))
+    setSeed(
+      shot,
+      patch.seedLock ? (shot.data.h3?.controls?.seed ?? lastSeed(project, id) ?? '1') : null,
+    );
+  if (Object.hasOwn(patch, 'mode')) setMode(shot, patch.mode.toLowerCase());
+  patchLegacyLinks(project, id, patch);
+}
+
+const STORYBOARD_FIELDS = {
+  mode: 'mode',
+  quality: 'quality',
+  start: 'firstFrameId',
+  end: 'lastFrameId',
+  continuePrev: 'continuePrevious',
+  props: 'propIds',
+};
+
+// The storyboard block, cast and extra references for a storyboard shot.
+function storyboardBlock(shot, patch) {
   const b = {
     version: 1,
     mode: mode(shot),
@@ -795,24 +845,7 @@ export function patchStoryboardShot(project, id, patch) {
     extraRefs: [],
     ...shot.data.storyboard,
   };
-  if (Object.hasOwn(patch, 'title')) shot.title = patch.title;
-  if (Object.hasOwn(patch, 'script')) shot.data.script = patch.script;
-  if (Object.hasOwn(patch, 'prompt')) shot.data.prompt = patch.prompt;
-  if (Object.hasOwn(patch, 'duration')) {
-    shot.data.seconds = patch.duration;
-    shot.data.h3 = {
-      ...shot.data.h3,
-      controls: { ...shot.data.h3?.controls, duration: patch.duration },
-    };
-  }
-  for (const [from, to] of Object.entries({
-    mode: 'mode',
-    quality: 'quality',
-    start: 'firstFrameId',
-    end: 'lastFrameId',
-    continuePrev: 'continuePrevious',
-    props: 'propIds',
-  }))
+  for (const [from, to] of Object.entries(STORYBOARD_FIELDS))
     if (Object.hasOwn(patch, from))
       b[to] = from === 'mode' ? patch[from].toLowerCase() : patch[from];
   if (Object.hasOwn(patch, 'cast'))
@@ -825,25 +858,27 @@ export function patchStoryboardShot(project, id, patch) {
     b.extraRefs = patch.refs.map(
       (entityId) => b.extraRefs.find((r) => r.entityId === entityId) || { entityId },
     );
+  return b;
+}
+
+function patchStoryboardBlockShot(project, shot, id, patch) {
+  if (Object.hasOwn(patch, 'title')) shot.title = patch.title;
+  if (Object.hasOwn(patch, 'script')) shot.data.script = patch.script;
+  if (Object.hasOwn(patch, 'prompt')) shot.data.prompt = patch.prompt;
+  patchDuration(shot, patch);
+  const b = storyboardBlock(shot, patch);
   if (Object.hasOwn(patch, 'seedLock'))
-    shot.data.h3 = {
-      ...shot.data.h3,
-      controls: {
-        ...shot.data.h3?.controls,
-        seed: patch.seedLock
-          ? project.jobs.findLast((j) => j.client_ref?.shot_id === id)?.effective_request?.seed ||
-            '1'
-          : null,
-      },
-    };
-  if (Object.hasOwn(patch, 'mode'))
-    shot.data.h3 = {
-      ...shot.data.h3,
-      inputMode: b.mode,
-      recipeId: b.mode === 'ref' ? 'h3-base-ref2va-v1' : 'h3-base-fl2va-v1',
-    };
+    setSeed(shot, patch.seedLock ? lastSeed(project, id) || '1' : null);
+  if (Object.hasOwn(patch, 'mode')) setMode(shot, b.mode);
+  return b;
+}
+
+export function patchStoryboardShot(project, id, patch) {
+  const shot = find(project, id);
+  if (!shot) throw Error('镜头不存在。');
+  if (staysLegacy(shot, patch)) patchLegacyShot(project, shot, id, patch);
+  else shot.data.storyboard = patchStoryboardBlockShot(project, shot, id, patch);
   patchCreatorControls(shot, patch);
-  shot.data.storyboard = b;
   shot.version++;
   if (shot.data.selectedAssetId) shot.status = 'review';
 }
