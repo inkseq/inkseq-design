@@ -1,6 +1,6 @@
 // Inky on the storyboard page: suggestions come from the server's Jev judgements
-// (adapter.readInkySuggestions, h3-studio#679). Without that reader Inky stays hidden. A local
-// development preview can use ?inky=demo, which shows one sample item per kind on the first shots.
+// (adapter.readInkySuggestions → GET /v1/inky/suggestions, h3-studio#685). With no reader,
+// an error or no items, Inky stays hidden. A local development preview can use ?inky=demo, which shows one sample item per kind on the first shots.
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useStoryboardUI } from '../storyboard-ui-context.jsx';
@@ -34,6 +34,8 @@ export function InkyForStory() {
     queryFn: () => read(),
     enabled: !!read && !demo && state.workspaceMode === 'cloud',
     staleTime: 60000,
+    // Not deployed yet or switched off: stay hidden rather than retrying.
+    retry: false,
   });
   const items = demo ? demoItems(state.shots) : query.data?.items || [];
   const shotIds = new Set(state.shots.map((shot) => shot.id));
