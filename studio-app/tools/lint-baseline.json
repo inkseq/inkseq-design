@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 83,
+    "complexity": 81,
     "max-lines-per-function": 49
   },
   "files": {
@@ -40,14 +40,13 @@
       "src/SpendingBreakdown.jsx": 1,
       "src/SpendingSettings.jsx": 1,
       "src/store.js": 2,
-      "src/story-chat-model.js": 1,
       "src/story-film.js": 1,
       "src/storyboard-commands.js": 1,
       "src/StoryboardComponents.jsx": 5,
       "src/StoryboardConnected.jsx": 1,
       "src/StoryboardMedia.jsx": 1,
       "src/StoryboardWorkbench.jsx": 1,
-      "src/StoryboardWorkspace.jsx": 2,
+      "src/StoryboardWorkspace.jsx": 1,
       "src/StoryChat.jsx": 1,
       "src/StoryFilmControl.jsx": 1,
       "src/StoryFilmView.jsx": 1,
