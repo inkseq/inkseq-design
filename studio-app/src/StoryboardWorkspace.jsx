@@ -18,8 +18,8 @@ import {
   ChevronUp,
   ChevronsDownUp,
   ChevronsUpDown,
-  AlertTriangle,
   CheckCheck,
+  Clapperboard,
 } from 'lucide-react';
 import { RenameDialog, useTrash } from './UniversalTrash.jsx';
 import ItemMenu from './ItemMenu.jsx';
@@ -612,9 +612,11 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                   <span className="label">{t('v2.newScene')}</span>
                 </Button>
               )}
+              {/* Making the missing shots is the next step, not a warning; it leads until the
+                  first video exists, then Export film takes over (owner, 2026-10-28). */}
               {pending.length > 0 && (
                 <Button
-                  className="sb-pending-chip"
+                  variant={count === 0 ? 'primary' : undefined}
                   disabled={state.busy || !state.copiesMax}
                   title={t('storyboard.pendingHint')}
                   onClick={() =>
@@ -625,8 +627,17 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                     })
                   }
                 >
-                  <AlertTriangle size={14} />
-                  <span className="label">{t('storyboard.copy35', { count: pending.length })}</span>
+                  <Clapperboard size={14} />
+                  <span className="label">
+                    {t(
+                      pending.length === 1
+                        ? 'storyboard.makePending.one'
+                        : 'storyboard.makePending',
+                      {
+                        count: pending.length,
+                      },
+                    )}
+                  </span>
                 </Button>
               )}
               {unpicked.length > 0 && (
@@ -643,7 +654,9 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                   </span>
                 </Button>
               )}
-              <span className="sb-film-primary">{filmControl}</span>
+              <span className="sb-film-primary">
+                {filmControl && React.cloneElement(filmControl, { primary: count > 0 })}
+              </span>
               <Button
                 variant="ghost"
                 className="sb-head-toggle"
