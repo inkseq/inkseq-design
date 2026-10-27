@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 90,
+    "complexity": 88,
     "max-lines-per-function": 51
   },
   "files": {
@@ -33,9 +33,8 @@
       "src/OperatorConsole.jsx": 3,
       "src/p4-operator-controller.js": 5,
       "src/P4OperatorConsole.jsx": 4,
-      "src/production-model.js": 1,
       "src/ProductionQueue.jsx": 1,
-      "src/quick-chat-controller.js": 3,
+      "src/quick-chat-controller.js": 2,
       "src/quick-chat-history.js": 1,
       "src/QuickChatControls.jsx": 1,
       "src/SpendingBreakdown.jsx": 1,
