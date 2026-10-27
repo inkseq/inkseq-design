@@ -1,6 +1,6 @@
 {
   "totals": {
-    "complexity": 88,
+    "complexity": 87,
     "max-lines-per-function": 51
   },
   "files": {
@@ -39,7 +39,7 @@
       "src/QuickChatControls.jsx": 1,
       "src/SpendingBreakdown.jsx": 1,
       "src/SpendingSettings.jsx": 1,
-      "src/store.js": 3,
+      "src/store.js": 2,
       "src/story-chat-model.js": 1,
       "src/story-film.js": 1,
       "src/storyboard-commands.js": 1,
