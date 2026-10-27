@@ -468,3 +468,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/inky/inky.css
 !studio-app/src/inky/inkyCatalogs.js
 !studio-app/src/inky-model.test.js
+!studio-app/src/StartRulesPanel.jsx
+!studio-app/src/start-rules-model.js
+!studio-app/src/start-rules.test.js
