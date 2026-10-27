@@ -28,6 +28,8 @@ test('each kind points at its editor field', () => {
     '/?view=workspace&project=p1&entity=s1&field=frames',
   );
   assert.equal(itemHref(item('c', 'upload_card'), 'p1').endsWith('field=cast'), true);
+  for (const kind of ['emotion_not_shown', 'multiple_camera_moves', 'action_too_long'])
+    assert.equal(itemHref(item('x', kind), 'p1').endsWith('field=action'), true);
 });
 
 test('corner state: quiet while typing, notify only for unseen items', () => {

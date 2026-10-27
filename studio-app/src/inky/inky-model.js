@@ -4,6 +4,9 @@ import { guideHref } from '../guide.js';
 
 export const INKY_KINDS = Object.freeze({
   vague_action: 'action',
+  emotion_not_shown: 'action',
+  multiple_camera_moves: 'action',
+  action_too_long: 'action',
   needs_keyframe: 'frames',
   upload_card: 'cast',
 });

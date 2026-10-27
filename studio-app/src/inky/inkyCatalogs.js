@@ -15,9 +15,17 @@ export const inkyCatalogs = {
     'inky.tip.needs_keyframe':
       'Several people interact here. Make a keyframe first to settle who stands where.',
     'inky.tip.upload_card': 'This picture looks like it belongs to {card}.',
+    'inky.tip.emotion_not_shown':
+      'Feelings do not show on camera. Show them through the body: a lowered head, a tight grip.',
+    'inky.tip.multiple_camera_moves':
+      'One shot can follow one camera move. Keep one and move the rest to another shot.',
+    'inky.tip.action_too_long': 'This is more than the shot has time for. Keep one or two actions.',
     'inky.perch.vague_action': 'Write who does what here.',
     'inky.perch.needs_keyframe': 'Set a first frame here before making the video.',
     'inky.perch.upload_card': 'Add the picture to this card here.',
+    'inky.perch.emotion_not_shown': 'Write what the body does here.',
+    'inky.perch.multiple_camera_moves': 'Keep one camera move here.',
+    'inky.perch.action_too_long': 'Trim this to what fits the shot.',
   },
   zh: {
     'inky.name': '小墨',
@@ -34,8 +42,14 @@ export const inkyCatalogs = {
     'inky.tip.vague_action': '这里写清楚在做什么，画出来才不会随意。',
     'inky.tip.needs_keyframe': '这个镜头人物有互动，先出一张关键帧确认站位更稳。',
     'inky.tip.upload_card': '这张图看起来属于「{card}」。',
+    'inky.tip.emotion_not_shown': '情绪拍不出来，要写成身体动作，比如低头、攥紧衣角。',
+    'inky.tip.multiple_camera_moves': '一个镜头只能做一个运镜，留一个，其余的拆到别的镜头。',
+    'inky.tip.action_too_long': '动作太多，这个镜头的时长装不下，留一两个就好。',
     'inky.perch.vague_action': '在这里写清楚谁在做什么。',
     'inky.perch.needs_keyframe': '先在这里定一张开头画面，再生成视频。',
     'inky.perch.upload_card': '在这里把图片加到这张卡上。',
+    'inky.perch.emotion_not_shown': '在这里写身体在做什么。',
+    'inky.perch.multiple_camera_moves': '这里只留一个运镜。',
+    'inky.perch.action_too_long': '在这里删到时长装得下。',
   },
 };
