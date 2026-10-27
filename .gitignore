@@ -460,3 +460,11 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/guide.js
 !studio-app/src/guide.test.js
 !studio-app/src/guide.css
+!studio-app/src/inky/
+!studio-app/src/inky/Inky.jsx
+!studio-app/src/inky/InkyMark.jsx
+!studio-app/src/inky/InkyForStory.jsx
+!studio-app/src/inky/inky-model.js
+!studio-app/src/inky/inky.css
+!studio-app/src/inky/inkyCatalogs.js
+!studio-app/src/inky-model.test.js
