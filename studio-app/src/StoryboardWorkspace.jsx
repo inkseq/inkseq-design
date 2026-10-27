@@ -26,6 +26,8 @@ import ItemMenu from './ItemMenu.jsx';
 import { MenuItem } from './ui/Menu.jsx';
 import { usePageActive, useAppLocation } from './AppRouteCache.jsx';
 import { navigateApp } from './app-navigation.js';
+import { guideField, highlightGuideField } from './guide.js';
+import './guide.css';
 import { store } from './store.js';
 import {
   DndContext,
@@ -972,6 +974,26 @@ function StoryboardShell({ onNewScene, filmControl }) {
     if (id && shotIdsKey.split('|').includes(id)) setSelected(id);
     else if (!id) setSelected(null);
   }, [pageActive, location.path, location.search, state.project.id, shotIdsKey]);
+  // 小墨's "去修改" link (h3-studio#679): once the shot editor shows, focus and pulse the field,
+  // then drop it from the address so a refresh does not pulse again.
+  const guide = guideField(location.search);
+  useEffect(() => {
+    if (!pageActive || !guide || !selected) return;
+    const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    let frame = 0,
+      tries = 0;
+    const attempt = () => {
+      if (!highlightGuideField(document, guide, { reducedMotion }) && ++tries < 30) {
+        frame = requestAnimationFrame(attempt);
+        return;
+      }
+      const url = new URL(window.location.href);
+      url.searchParams.delete('field');
+      navigateApp(url.pathname + url.search, { replace: true, restore: false });
+    };
+    frame = requestAnimationFrame(attempt);
+    return () => cancelAnimationFrame(frame);
+  }, [pageActive, guide, selected]);
   const container = useRef(),
     sensors = useSensors(
       useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
