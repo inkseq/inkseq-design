@@ -71,6 +71,18 @@ async function page(as) {
       await context.close();
       throw Error(refused.get(as.username));
     }
+    // QA accounts accept the current reviewed Terms once, as a person would in the dialog
+    // (h3-studio#374); otherwise paid previews refuse with terms_acceptance_required.
+    await p.evaluate(async () => {
+      const account = await (await fetch('/v1/account')).json().catch(() => null);
+      const terms = account?.terms;
+      if (terms?.status === 'reviewed' && terms.acceptance_required)
+        await fetch('/v1/account/terms', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ version: terms.version }),
+        });
+    });
     sessions.set(as.username, await context.storageState());
   }
   return p;
