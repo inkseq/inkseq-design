@@ -13,7 +13,8 @@ export const creditsCatalogs = {
     'pricing.point.quote': 'You see the exact number of credits before you submit.',
     'pricing.point.failed': 'Failed generations are returned to your balance automatically.',
     'pricing.point.expiry': 'Credits never expire. No subscription.',
-    'pricing.point.refund': 'Unused credits can be refunded within 14 days of purchase.',
+    'pricing.point.refund':
+      'Purchases are final; credits are not refundable except where the law requires.',
     'pricing.point.caps': 'Set a daily limit for yourself and for each connected AI assistant.',
     'pricing.point.stripe':
       'Secure checkout by Stripe; tax is shown at checkout. Payments from mainland China are not supported yet.',
@@ -78,8 +79,7 @@ export const creditsCatalogs = {
     'credits.status.disputed': 'Under review',
     'credits.print': 'Print or save as PDF',
     'credits.close': 'Close',
-    'credits.support':
-      'For refunds or questions, email support@inkseq.com. Receipts are under Purchases.',
+    'credits.support': 'Questions? Email support@inkseq.com. Receipts are under Purchases.',
     'credits.kind.grant': 'Gift',
     'credits.kind.purchase': 'Top-up',
     'credits.kind.hold': 'Held',
@@ -109,7 +109,7 @@ export const creditsCatalogs = {
     'pricing.point.quote': '提交前就告诉你要用多少积分。',
     'pricing.point.failed': '生成失败，积分自动退回。',
     'pricing.point.expiry': '积分不会过期，不用订阅。',
-    'pricing.point.refund': '购买后 14 天内，未使用的积分可以退款。',
+    'pricing.point.refund': '购买后不退款，法律另有规定的除外。',
     'pricing.point.caps': '可以给自己和每个 AI 助手设每日上限。',
     'pricing.point.stripe': '通过 Stripe 安全付款，税费在付款页显示。暂时不支持中国大陆的付款。',
     'legal.footer': '网站链接',
@@ -171,7 +171,7 @@ export const creditsCatalogs = {
     'credits.status.disputed': '处理中',
     'credits.print': '打印或存为 PDF',
     'credits.close': '关闭',
-    'credits.support': '需要退款或有疑问，写信到 support@inkseq.com。收据在充值记录里。',
+    'credits.support': '有疑问请写信到 support@inkseq.com。收据在充值记录里。',
     'credits.kind.grant': '赠送',
     'credits.kind.purchase': '充值',
     'credits.kind.hold': '预留',
