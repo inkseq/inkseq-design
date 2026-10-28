@@ -226,7 +226,15 @@ await journey(
   },
 );
 
-const SECTION_INDEX = { overview: 0, jobs: 1, limits: 2, users: 3, pricing: 4, log: 5 };
+const SECTION_INDEX = {
+  overview: 0,
+  jobs: 1,
+  limits: 2,
+  settings: 3,
+  users: 4,
+  pricing: 5,
+  log: 6,
+};
 await journey(
   'Admin console sections load with data',
   () => QA_ADMIN,
@@ -238,6 +246,7 @@ await journey(
     await p.waitForSelector('.admin-home .cap .ui-setting-row', { timeout: 15000 });
     for (const [section, selector] of [
       ['overview', '.admin-home .ah-kpis'],
+      ['settings', '.admin-home .all-settings .ui-setting-row'],
       ['users', '.admin-home .user-row:not(.head)'],
       ['pricing', '.admin-home .margin-table'],
       ['log', '.admin-home .audit-log > div'],
