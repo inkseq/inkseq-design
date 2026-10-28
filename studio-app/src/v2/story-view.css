@@ -1196,10 +1196,11 @@ body.sb-resizing-y video {
   height: 100%;
   object-fit: cover;
 }
-/* #232 (#46, #56): the expanded editor covers the window; the picture keeps 16:9 at about
+/* #232 (#46, #56): the expanded editor covers the window beside the story library (owner
+   2026-10-28: keep the library so material can be dragged into the shot); the picture keeps 16:9 at about
    40% of the height (no black band), so takes, parts and tools fit beside the form. */
 .drawer.workbench-expanded {
-  left: 0 !important;
+  left: calc(var(--libw, 260px) + 8px) !important;
   z-index: 30;
 }
 .drawer.wide .editor.wide {
