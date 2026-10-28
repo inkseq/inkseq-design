@@ -480,6 +480,10 @@
   flex-direction: row;
   flex-wrap: nowrap;
   padding-block: 0;
+  /* The base .modetabs .mt stacks label and note at the top; one-line tabs centre it. */
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .sb-workspace .mode-help {
   font-size: 11px;
