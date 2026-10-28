@@ -433,6 +433,9 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/TakeReview.jsx
 !studio-app/src/take-review.css
 !studio-app/src/take-review-model.js
+!studio-app/src/TermsGate.jsx
+!studio-app/src/terms-gate.js
+!studio-app/src/terms-gate.test.js
 !studio-app/src/take-review.test.js
 !studio-app/src/LandingParts.jsx
 !studio-app/src/landing-parts.css
