@@ -1,15 +1,14 @@
-// Terms, Privacy and Content Policy (h3-studio#308). DRAFT text written by an agent for the
-// owner to review, ideally with a lawyer. While LEGAL_STATUS is 'draft', every page shows a
-// banner saying it is not yet in effect. Bump `version` on any material change; the backend
+// Terms, Privacy and Content Policy (h3-studio#308), owner-reviewed 2026-10-28 (h3-studio#374).
+// While LEGAL_STATUS is 'draft', every page shows a banner saying it is not yet in effect. Bump `version` on any material change; the backend
 // asks users to accept the new Terms version once (#305 terms_required).
 // Blocks: ['h', text] heading · ['p', text] paragraph · ['ul', [items]] list.
 
-export const LEGAL_STATUS = 'draft';
+export const LEGAL_STATUS = 'reviewed';
 export const SUPPORT_EMAIL = 'support@inkseq.com';
 
 export const LEGAL = {
   terms: {
-    version: '2026-10-draft',
+    version: '2026-10-28',
     en: {
       title: 'Terms of Service',
       blocks: [
@@ -32,6 +31,7 @@ export const LEGAL = {
           'ul',
           [
             'Generation is paid with prepaid credits. We show the number of credits before you submit, and the price you were quoted is the price you pay.',
+            'Credit pack prices are in US dollars and exclude tax. Any sales tax, VAT or GST that applies where you live is added at checkout.',
             'Purchased credits do not expire. Credits have no cash value outside the service and cannot be transferred or resold.',
             'Promotional credits, such as welcome credits, the bonus credits included in a pack or credits from a campaign, are free. They may come with their own conditions or expiry, which we show when you receive them, and they can be removed if they were obtained in breach of these terms.',
             'Generations that fail on our side are returned to your balance automatically.',
@@ -108,6 +108,7 @@ export const LEGAL = {
           'ul',
           [
             '生成使用预付积分。提交前我们会告诉你要用多少积分，按报价扣，不会多扣。',
+            '积分包价格以美元计，不含税。你所在地适用的销售税、增值税或 GST 会在结账时另加。',
             '购买的积分不会过期。积分不能在本服务以外兑现，也不能转让或转卖。',
             '赠送积分（例如新用户积分、积分包附赠的积分、活动积分）是免费的，可能有各自的使用条件或有效期，会在发放时告诉你；以违反本条款的方式获得的赠送积分可以被收回。',
             '因我们这边原因失败的生成，积分自动退回。',
@@ -164,7 +165,7 @@ export const LEGAL = {
     },
   },
   privacy: {
-    version: '2026-10-draft',
+    version: '2026-10-28',
     en: {
       title: 'Privacy Policy',
       blocks: [
@@ -311,7 +312,7 @@ export const LEGAL = {
     },
   },
   content: {
-    version: '2026-10-draft',
+    version: '2026-10-28',
     en: {
       title: 'Content Policy',
       blocks: [
