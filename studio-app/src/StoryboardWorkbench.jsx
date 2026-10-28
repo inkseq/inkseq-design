@@ -46,6 +46,68 @@ const hasSubtitles = (row) =>
 
 // Usable/redo verdict and mark count from the batch review summary (#630); shown on both the
 // narrow and the wide take cards.
+// Kept parts belong to the chosen take (#512): choosing another clears them, after this confirm.
+function ChangeTakeDialog({ shot, row, onClose, onConfirm }) {
+  const { t } = useI18n();
+  if (!row) return null;
+  return (
+    <Dialog title={t('segments.changeTitle')} onClose={onClose}>
+      <p>{t('segments.changeBody', { count: shot.segments.length })}</p>
+      <DialogActions>
+        <Button onClick={onClose}>{t('segments.changeCancel')}</Button>
+        <Button
+          variant="primary"
+          onClick={() => {
+            onClose();
+            onConfirm(row);
+          }}
+        >
+          {t('segments.changeConfirm')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+// Take actions wait while the story is saving or another take action is pending.
+function isLocked(state) {
+  return state.busy || !!state.workbenchPending;
+}
+
+// The shot's take ids and chosen take: the only shot fields the takes list depends on.
+function takesKeyOf(shot) {
+  return (
+    (shot.versions || []).map((v) => v.artifactId || v.id).join(',') + '|' + (shot.chosen || '')
+  );
+}
+
+// Asks before a take moves to Trash (owner 2026-10-28: delete shows on hover, then confirms).
+function DeleteTakeDialog({ project, row, onClose }) {
+  const { t } = useI18n(),
+    trash = useTrash();
+  if (!row) return null;
+  const target = { kind: 'artifact', project_id: project.id, id: row.id },
+    waiting = !trash || trash.busy || !!trash.pending;
+  return (
+    <Dialog title={t('workbench.deleteTitle')} onClose={onClose}>
+      <p>{t('workbench.deleteBody')}</p>
+      <DialogActions>
+        <Button onClick={onClose}>{t('segments.changeCancel')}</Button>
+        <Button
+          variant="danger"
+          disabled={waiting}
+          onClick={async () => {
+            onClose();
+            await trash.request('trash', [target]);
+          }}
+        >
+          {t('trash.move')}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function ReviewBadges({ review }) {
   const { t } = useI18n();
   if (!review || (!review.verdict && !review.mark_count)) return null;
@@ -78,8 +140,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
   // Takes change only when this shot gains/loses a take or its chosen take changes. Other saves
   // (trim, quality, aspect, text) don't touch the list, so they don't read it again (owner
   // 2026-10-28).
-  const takesKey =
-    (shot.versions || []).map((v) => v.artifactId || v.id).join(',') + '|' + (shot.chosen || '');
+  const takesKey = takesKeyOf(shot);
   // Whole-take verdicts and mark counts for every take in one read (h3-studio#631).
   const reviews = useQuery({
     queryKey: ['take-review-summaries', state.contextId, shot.id],
@@ -120,16 +181,14 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
   });
   // A new shot starts empty; a new take on the same shot keeps the current list on screen while
   // it is read again, so the list never flashes "Reading".
-  const shownScope = useRef(scope);
   useEffect(() => {
-    if (shownScope.current !== scope) {
-      shownScope.current = scope;
-      setRenaming(null);
-      setData(null);
-      setCompare([]);
-      setOnlyStar(false);
-      setComparing(false);
-    }
+    setRenaming(null);
+    setData(null);
+    setCompare([]);
+    setOnlyStar(false);
+    setComparing(false);
+  }, [scope]);
+  useEffect(() => {
     reload();
     // Bump on leave so an answer for the previous shot is ignored.
     const counter = generation;
@@ -165,9 +224,7 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
   // in the same story edit as the choice.
   const [confirmTake, setConfirmTake] = useState(null);
   const [deleting, setDeleting] = useState(null);
-  // Take actions wait while the story is saving or another take action is pending.
-  const locked = state.busy || !!state.workbenchPending;
-  const takeTrash = useTrash();
+  const locked = isLocked(state);
   function choose(row) {
     const select = { op: 'storyboard.select', artifact_id: row.id, shot_id: shot.id };
     if (shot.segments?.length && row.id !== shot.chosen) setConfirmTake(row);
@@ -178,48 +235,18 @@ export function WorkbenchTakes({ shot, wide = false, onPreview, previewId }) {
       className={'storyboard-takes' + (comparing ? ' comparing' : '')}
       aria-label={t('takes.title')}
     >
-      {deleting && (
-        <Dialog title={t('workbench.deleteTitle')} onClose={() => setDeleting(null)}>
-          <p>{t('workbench.deleteBody')}</p>
-          <DialogActions>
-            <Button onClick={() => setDeleting(null)}>{t('segments.changeCancel')}</Button>
-            <Button
-              variant="danger"
-              disabled={takeTrash?.busy || !!takeTrash?.pending}
-              onClick={async () => {
-                const row = deleting;
-                setDeleting(null);
-                await takeTrash?.request('trash', [
-                  { kind: 'artifact', project_id: state.project.id, id: row.id },
-                ]);
-              }}
-            >
-              {t('trash.move')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
-      {confirmTake && (
-        <Dialog title={t('segments.changeTitle')} onClose={() => setConfirmTake(null)}>
-          <p>{t('segments.changeBody', { count: shot.segments.length })}</p>
-          <DialogActions>
-            <Button onClick={() => setConfirmTake(null)}>{t('segments.changeCancel')}</Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                const row = confirmTake;
-                setConfirmTake(null);
-                action([
-                  segmentsAction(shot.id, []),
-                  { op: 'storyboard.select', artifact_id: row.id, shot_id: shot.id },
-                ]);
-              }}
-            >
-              {t('segments.changeConfirm')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      )}
+      <DeleteTakeDialog project={state.project} row={deleting} onClose={() => setDeleting(null)} />
+      <ChangeTakeDialog
+        shot={shot}
+        row={confirmTake}
+        onClose={() => setConfirmTake(null)}
+        onConfirm={(row) =>
+          action([
+            segmentsAction(shot.id, []),
+            { op: 'storyboard.select', artifact_id: row.id, shot_id: shot.id },
+          ])
+        }
+      />
       <div className="takes-head">
         <b>{t('takes.title')}</b>
         <small className="muted">{versions.length}</small>
@@ -575,7 +602,7 @@ export function WorkbenchBulk({ ids, onClear, onSelectAll, onSelectPending, pend
   }, [ids.length]);
   const valid =
     Number.isInteger(Number(copies)) && Number(copies) >= 1 && Number(copies) <= state.copiesMax;
-  const locked = state.busy || !!state.workbenchPending;
+  const locked = isLocked(state);
   if (!ids.length) return null;
   return (
     <div
