@@ -1,5 +1,7 @@
 export const clientCatalogs = {
   en: {
+    'client.refVideoTooLong':
+      'Sharp with a reference video is limited to 5 seconds for now. Shorten the shot to 5 s or use Standard.',
     'client.newVersion': 'A newer version of Inkseq is available.',
     'client.supportViewReadOnly': 'Read-only support view: changes are not allowed.',
     'client.supportViewPathBlocked': 'Not available in a support view.',
@@ -46,6 +48,8 @@ export const clientCatalogs = {
     'client.versionChanged':
       'The cloud version changed. Your draft is retained; compare the latest version first.',
     'client.notFound': 'This cloud feature is not connected, or the content does not exist.',
+    'client.termsRequired':
+      'Please accept the updated terms first. The terms window has opened; tick the box and accept, then try again.',
     'client.login': 'Sign in to the cloud studio again.',
     'client.status': 'The service did not complete the request ({status}).',
     'client.unavailable':
@@ -86,6 +90,8 @@ export const clientCatalogs = {
       'This approval has already been used. Recover the original submission instead of approving it again.',
   },
   zh: {
+    'client.refVideoTooLong':
+      '清晰画质配参考视频目前最长 5 秒。请把镜头缩短到 5 秒，或改用普通画质。',
     'client.newVersion': '映序有新版本了。',
     'client.supportViewReadOnly': '只读查看中，不能修改。',
     'client.supportViewPathBlocked': '只读查看时不能打开这里。',
@@ -118,6 +124,8 @@ export const clientCatalogs = {
       'GPU 正在休眠或切换，任务尚未提交。请重新检查后生成；作品和素材已保留。',
     'client.versionChanged': '云端版本已改变。你的草稿已保留，请先比较新版本。',
     'client.notFound': '此云功能尚未连接，或该内容不存在。',
+    'client.termsRequired':
+      '请先同意更新后的服务条款。条款窗口已打开，勾选并点「同意」后再试一次。',
     'client.login': '请重新登录云工作室。',
     'client.status': '服务暂未完成请求（{status}）。',
     'client.unavailable': '暂时连不上云端，作品不受影响，请稍后再试。',

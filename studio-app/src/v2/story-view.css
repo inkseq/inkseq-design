@@ -1451,3 +1451,25 @@ body.sb-resizing-y video {
     opacity: 1;
   }
 }
+/* Pre-generate advice (h3-studio#739): a quiet line above Generate, never a blocker. */
+.ed-footer .ed-hint {
+  margin: 0;
+  padding: 6px 10px;
+  border-radius: var(--r-sm);
+  background: color-mix(in srgb, var(--warn) 10%, transparent);
+  color: var(--ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+}
+/* Phones (owner 2026-10-28): Generate gets its own full row and the other two share the
+   next one, instead of three buttons squeezed off the edge. */
+@media (max-width: 560px) {
+  .editor .ed-footer .ed-actions > * {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .editor .ed-footer .ed-actions .primary {
+    flex: 1 1 100%;
+    order: -1;
+  }
+}

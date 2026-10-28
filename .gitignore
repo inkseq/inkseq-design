@@ -59,6 +59,9 @@
 !studio-app/src/story-chat-model.test.js
 !studio-app/src/story-chat-preview.js
 !studio-app/src/story-chat-client.js
+!studio-app/src/story-chat-attach.js
+!studio-app/src/story-chat-attach.test.js
+!studio-app/src/StoryChatAttachments.jsx
 !studio-app/src/QuickCreateEntry.jsx
 !studio-app/src/LegacyQuickChatLink.jsx
 !studio-app/src/LoginDialog.jsx
@@ -434,6 +437,9 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/take-review.css
 !studio-app/src/take-review-model.js
 !studio-app/src/TermsGate.jsx
+!studio-app/src/AllSettings.jsx
+!studio-app/src/all-settings-model.js
+!studio-app/src/all-settings.test.js
 !studio-app/src/terms-gate.js
 !studio-app/src/terms-gate.test.js
 !studio-app/src/take-review.test.js
