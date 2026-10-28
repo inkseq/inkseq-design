@@ -368,6 +368,13 @@ function ReceiptDialog({ receipt, onClose }) {
       t('credits.receiptFor'),
       t('credits.receiptItem', { credits: formatCredits(receipt.credits, locale) }),
     ],
+    // Tax-exclusive packs (CR-74): the pack price, the tax Stripe added, and the amount paid.
+    ...(receipt.tax_cents > 0
+      ? [
+          [t('credits.receiptPack'), formatPrice(receipt.base_cents, receipt.currency)],
+          [t('credits.receiptTax'), formatPrice(receipt.tax_cents, receipt.currency)],
+        ]
+      : []),
     [t('credits.receiptAmount'), formatPrice(receipt.amount_cents, receipt.currency)],
     ...(receipt.refunded_cents > 0
       ? [[t('credits.status.refunded'), formatPrice(receipt.refunded_cents, receipt.currency)]]

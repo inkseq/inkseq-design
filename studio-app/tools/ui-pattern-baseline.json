@@ -1,6 +1,6 @@
 {
   "totals": {
-    "busyDisables": 80
+    "busyDisables": 77
   },
   "files": {
     "busyDisables": {
@@ -17,7 +17,7 @@
       "ProductionQueue.jsx": 15,
       "ProjectActivity.jsx": 1,
       "StoryboardComponents.jsx": 5,
-      "StoryboardWorkbench.jsx": 7,
+      "StoryboardWorkbench.jsx": 4,
       "StoryboardWorkspace.jsx": 5,
       "StoryChat.jsx": 1,
       "StoryFilmControl.jsx": 2,
