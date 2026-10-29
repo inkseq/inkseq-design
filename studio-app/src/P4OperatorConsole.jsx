@@ -2,6 +2,7 @@ import { EmptyState, Note } from './ui/Note.jsx';
 import { Disclosure } from './ui/Disclosure.jsx';
 import { Button } from './ui/Button.jsx';
 import { Chip } from './ui/Chip.jsx';
+import { Segmented } from './ui/Segmented.jsx';
 import StudioHeader from './StudioHeader.jsx';
 import { Dialog as SharedDialog } from './ui/Dialog.jsx';
 import { FloatingMessage } from './floating-notice.js';
@@ -1914,36 +1915,23 @@ export default function P4OperatorConsole() {
           />
         ) : (
           <>
-            <nav className="seg ops-page-tabs" aria-label={t('operator.status119')}>
-              {/* Admins find hosts and budgets under Admin (owner 2026-10-29: one long
-                  mixed page); other operators keep their own host and budget tabs. */}
-              {[
+            {/* Shared tabs (owner 2026-10-29). Admins find hosts and budgets under Admin;
+                other operators keep their own host and budget tabs. */}
+            <Segmented
+              tabs
+              className="ops-page-tabs"
+              label={t('operator.status119')}
+              value={view}
+              onChange={(id) => (id === 'admin' ? showAdmin() : setView(id))}
+              options={[
                 ['machines', 'operator.status61'],
                 ['find', 'operator.status62'],
                 ...(admin ? [] : [['hosts', 'operator.status63']]),
                 ['ended', 'operator.status18'],
                 ...(admin ? [] : [['budget', 'operator.status64']]),
-              ].map(([id, key]) => (
-                <Button
-                  className={view === id ? 'on' : ''}
-                  key={id}
-                  aria-current={view === id ? 'page' : undefined}
-                  onClick={() => setView(id)}
-                >
-                  {t(key)}
-                </Button>
-              ))}
-              {admin && (
-                <Button
-                  className={view === 'admin' ? 'on' : ''}
-                  aria-current={view === 'admin' ? 'page' : undefined}
-                  onClick={showAdmin}
-                >
-                  <ShieldCheck size={13} />
-                  {t('operator.copy139')}
-                </Button>
-              )}
-            </nav>
+                ...(admin ? [['admin', 'operator.copy139']] : []),
+              ].map(([id, key]) => ({ value: id, label: t(key) }))}
+            />
             {/* While a refresh is due the last totals stay, muted, instead of turning into dashes. */}
             <div className={'stats five' + (stale ? ' stale' : '')}>
               <div>
@@ -2181,18 +2169,14 @@ export default function P4OperatorConsole() {
             )}
             {view === 'admin' && admin && (
               <>
-                <nav className="seg ops-admin-tabs" aria-label={t('operator.copy139')}>
-                  {ADMIN_TABS.map(([id, key]) => (
-                    <Button
-                      key={id}
-                      className={adminTab === id ? 'on' : ''}
-                      aria-current={adminTab === id ? 'page' : undefined}
-                      onClick={() => setAdminTab(id)}
-                    >
-                      {t(key)}
-                    </Button>
-                  ))}
-                </nav>
+                <Segmented
+                  tabs
+                  className="ops-admin-tabs"
+                  label={t('operator.copy139')}
+                  value={adminTab}
+                  onChange={setAdminTab}
+                  options={ADMIN_TABS.map(([id, key]) => ({ value: id, label: t(key) }))}
+                />
                 {adminTab === 'start' && (
                   <>
                     <DemandStartPanel controller={controller} state={state} busy={blocked} />
