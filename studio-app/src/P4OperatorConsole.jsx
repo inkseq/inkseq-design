@@ -19,11 +19,12 @@ import {
   Cpu,
   Square,
   Timer,
+  ChevronLeft,
 } from 'lucide-react';
 import { useCloud } from './CloudStudio.jsx';
 import { cloudController as cloud } from './cloud-controller.js';
 import { createP4OperatorController } from './p4-operator-controller.js';
-import OperatorBudgetPanel, { AdminBudgetPanel, BudgetWorkspace } from './OperatorBudgetPanel.jsx';
+import OperatorBudgetPanel, { BudgetWorkspace } from './OperatorBudgetPanel.jsx';
 import OperatorJobsPanel from './OperatorJobsPanel.jsx';
 import DemandStartPanel from './DemandStartPanel.jsx';
 import OperatorHostsPanel, { OfferHostHistory } from './OperatorHostsPanel.jsx';
@@ -1712,6 +1713,13 @@ function ConsoleNotices({ state, stale, onRecover }) {
   );
 }
 
+// Admin work split into short pages (owner 2026-10-29) instead of one long scroll.
+const ADMIN_TABS = [
+  ['start', 'operator.adminTab.start'],
+  ['fleet', 'operator.adminTab.fleet'],
+  ['hosts', 'operator.adminTab.hosts'],
+];
+
 export default function P4OperatorConsole() {
   const { t, locale } = useI18n();
   const pageActive = usePageActive(),
@@ -1725,6 +1733,7 @@ export default function P4OperatorConsole() {
     controller = useMemo(() => createP4OperatorController({ locale: readBrowserLocale }), []),
     state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState),
     [view, setView] = useState('machines'),
+    [adminTab, setAdminTab] = useState('start'),
     [dialog, setDialog] = useState(null),
     [, setNow] = useState(Date.now());
   const legacyView =
@@ -1847,6 +1856,12 @@ export default function P4OperatorConsole() {
       />
       <main className="home-main ops-gpu-page">
         <div className="home-head p4-page-heading">
+          {admin && (
+            <Button variant="ghost" size="sm" onClick={() => navigateApp('/admin')}>
+              <ChevronLeft size={14} />
+              {t('adminHome.title')}
+            </Button>
+          )}
           <h1 className="page-title p4-page-title">
             <Cpu size={20} />
             {t('v2.gpus')}
@@ -1900,12 +1915,14 @@ export default function P4OperatorConsole() {
         ) : (
           <>
             <nav className="seg ops-page-tabs" aria-label={t('operator.status119')}>
+              {/* Admins find hosts and budgets under Admin (owner 2026-10-29: one long
+                  mixed page); other operators keep their own host and budget tabs. */}
               {[
                 ['machines', 'operator.status61'],
                 ['find', 'operator.status62'],
-                ['hosts', 'operator.status63'],
+                ...(admin ? [] : [['hosts', 'operator.status63']]),
                 ['ended', 'operator.status18'],
-                ['budget', 'operator.status64'],
+                ...(admin ? [] : [['budget', 'operator.status64']]),
               ].map(([id, key]) => (
                 <Button
                   className={view === id ? 'on' : ''}
@@ -2164,22 +2181,41 @@ export default function P4OperatorConsole() {
             )}
             {view === 'admin' && admin && (
               <>
-                <OperatorHostsPanel
-                  key={state.account + ':admin'}
-                  controller={controller}
-                  state={state}
-                  admin
-                  busy={blocked}
-                />
-                <DemandStartPanel controller={controller} state={state} busy={blocked} />
-                <OperatorJobsPanel controller={controller} state={state} busy={blocked} />
-                <AdminBudgetPanel controller={controller} state={state} busy={blocked} />
-                <AdminView
-                  snapshot={state.adminSnapshot}
-                  profiles={profiles}
-                  onDetail={(node) => onDetail(node, true)}
-                  onStop={(node) => onStop(node, true)}
-                />
+                <nav className="seg ops-admin-tabs" aria-label={t('operator.copy139')}>
+                  {ADMIN_TABS.map(([id, key]) => (
+                    <Button
+                      key={id}
+                      className={adminTab === id ? 'on' : ''}
+                      aria-current={adminTab === id ? 'page' : undefined}
+                      onClick={() => setAdminTab(id)}
+                    >
+                      {t(key)}
+                    </Button>
+                  ))}
+                </nav>
+                {adminTab === 'start' && (
+                  <>
+                    <DemandStartPanel controller={controller} state={state} busy={blocked} />
+                    <OperatorJobsPanel controller={controller} state={state} busy={blocked} />
+                  </>
+                )}
+                {adminTab === 'fleet' && (
+                  <AdminView
+                    snapshot={state.adminSnapshot}
+                    profiles={profiles}
+                    onDetail={(node) => onDetail(node, true)}
+                    onStop={(node) => onStop(node, true)}
+                  />
+                )}
+                {adminTab === 'hosts' && (
+                  <OperatorHostsPanel
+                    key={state.account + ':admin'}
+                    controller={controller}
+                    state={state}
+                    admin
+                    busy={blocked}
+                  />
+                )}
               </>
             )}
           </>
