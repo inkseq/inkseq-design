@@ -226,14 +226,16 @@ await journey(
   },
 );
 
+// Order of the Admin side nav (AdminHome SECTIONS); GPUs (owner 2026-10-29) opens /operator.
 const SECTION_INDEX = {
   overview: 0,
   jobs: 1,
-  limits: 2,
-  settings: 3,
-  users: 4,
-  pricing: 5,
-  log: 6,
+  gpus: 2,
+  limits: 3,
+  settings: 4,
+  users: 5,
+  pricing: 6,
+  log: 7,
 };
 await journey(
   'Admin console sections load with data',
