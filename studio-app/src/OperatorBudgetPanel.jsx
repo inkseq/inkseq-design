@@ -440,8 +440,7 @@ function PriceEditor({ row, busy, onPreview, onSave }) {
 export function AdminBudgetPanel({ controller, state, busy, part = 'all', activeIds = null }) {
   const { t, locale } = useI18n();
   const [notice, setNotice] = useState(''),
-    [reading, setReading] = useState(false),
-    [showRetired, setShowRetired] = useState(false);
+    [reading, setReading] = useState(false);
   const showAccounts = part !== 'prices',
     showPrices = part !== 'budgets';
   const authorized = state.snapshot?.operator?.admin === true;
@@ -515,36 +514,6 @@ export function AdminBudgetPanel({ controller, state, busy, part = 'all', active
       {showAccounts && (
         <OperatorBillingPanel controller={controller} state={state} busy={busy || reading} />
       )}
-      {showPrices && <h3>{t('operator.copy20')}</h3>}
-      {showPrices && prices && activeIds && (
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={showRetired}
-            onChange={(event) => setShowRetired(event.target.checked)}
-          />
-          {t('operatorPanel.showRetired', {
-            count: prices.profiles.filter((row) => !activeIds.has(row.id)).length,
-          })}
-        </label>
-      )}
-      {!showPrices ? null : prices ? (
-        prices.profiles
-          .filter((row) => showRetired || !activeIds || activeIds.has(row.id))
-          .map((row) => (
-            <PriceEditor
-              key={row.id}
-              row={row}
-              busy={busy || reading}
-              onPreview={(row, max, ceiling) => controller.previewPrice(row, max, ceiling)}
-              onSave={(row, max, ceiling, confirmation) =>
-                save(() => controller.updatePrice(row, max, ceiling, confirmation))
-              }
-            />
-          ))
-      ) : (
-        <p>{t('operator.copy21')}</p>
-      )}
       {showAccounts && (
         <Disclosure className="budget-audits" summary={t('operator.copy22')}>
           {audits?.events?.length ? (
@@ -566,28 +535,75 @@ export function AdminBudgetPanel({ controller, state, busy, part = 'all', active
         </Disclosure>
       )}
       {showPrices && (
-        <Disclosure className="budget-audits" summary={t('operator.copy25')}>
-          {prices?.audits?.length ? (
-            <ul>
-              {prices.audits.map((event) => (
-                <li key={event.id}>
-                  {event.actor_owner || event.actor_id} · {time(event.created_at, locale)} ·{' '}
-                  {event.profile_id}
-                  <br />
-                  {t('operatorPanel.priceAudit', {
-                    oldDefault: money(event.old?.max_price_microusd),
-                    newDefault: money(event.new?.max_price_microusd),
-                    oldCeiling: money(event.old?.price_ceiling_microusd),
-                    newCeiling: money(event.new?.price_ceiling_microusd),
-                  })}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>{t('operator.copy26')}</p>
-          )}
-        </Disclosure>
+        <PriceSection
+          prices={prices}
+          activeIds={activeIds}
+          busy={busy || reading}
+          controller={controller}
+          save={save}
+        />
       )}
     </section>
+  );
+}
+
+// Machine prices: only machine types that can run today unless retired ones are shown.
+function PriceSection({ prices, activeIds, busy, controller, save }) {
+  const { t, locale } = useI18n();
+  const [showRetired, setShowRetired] = useState(false);
+  return (
+    <>
+      <h3>{t('operator.copy20')}</h3>
+      {prices && activeIds && (
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={showRetired}
+            onChange={(event) => setShowRetired(event.target.checked)}
+          />
+          {t('operatorPanel.showRetired', {
+            count: prices.profiles.filter((row) => !activeIds.has(row.id)).length,
+          })}
+        </label>
+      )}
+      {prices ? (
+        prices.profiles
+          .filter((row) => showRetired || !activeIds || activeIds.has(row.id))
+          .map((row) => (
+            <PriceEditor
+              key={row.id}
+              row={row}
+              busy={busy}
+              onPreview={(row, max, ceiling) => controller.previewPrice(row, max, ceiling)}
+              onSave={(row, max, ceiling, confirmation) =>
+                save(() => controller.updatePrice(row, max, ceiling, confirmation))
+              }
+            />
+          ))
+      ) : (
+        <p>{t('operator.copy21')}</p>
+      )}
+      <Disclosure className="budget-audits" summary={t('operator.copy25')}>
+        {prices?.audits?.length ? (
+          <ul>
+            {prices.audits.map((event) => (
+              <li key={event.id}>
+                {event.actor_owner || event.actor_id} · {time(event.created_at, locale)} ·{' '}
+                {event.profile_id}
+                <br />
+                {t('operatorPanel.priceAudit', {
+                  oldDefault: money(event.old?.max_price_microusd),
+                  newDefault: money(event.new?.max_price_microusd),
+                  oldCeiling: money(event.old?.price_ceiling_microusd),
+                  newCeiling: money(event.new?.price_ceiling_microusd),
+                })}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>{t('operator.copy26')}</p>
+        )}
+      </Disclosure>
+    </>
   );
 }
