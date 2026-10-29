@@ -352,9 +352,19 @@ div.sc-tabs {
 }
 .sc-compose-row textarea {
   flex: 1;
+  /* One line is exactly as tall as the 36px buttons, text centered (owner 2026-10-29);
+     longer text grows upward while the buttons stay on the bottom line. */
+  min-height: 36px;
   max-height: 160px;
+  padding: 8px 4px;
+  line-height: 20px;
   resize: none;
   field-sizing: content;
+}
+.sc-compose-row > button:first-child {
+  width: 36px;
+  height: 36px;
+  flex: none;
 }
 .sc-send {
   display: grid;
