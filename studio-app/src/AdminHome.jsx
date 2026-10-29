@@ -434,7 +434,7 @@ function BudgetAdministration({ account, part = 'all' }) {
   const current = state.account === account,
     authorized = current && state.snapshot?.operator?.admin === true;
   return (
-    <section className="ops-tab-panel">
+    <section className="ah-card ah-budget">
       {state.error && current && <p role="alert">{state.error}</p>}
       {authorized ? (
         <AdminBudgetPanel
