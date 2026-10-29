@@ -202,6 +202,13 @@ textarea {
   resize: vertical;
   line-height: 1.55;
 }
+/* A one-line bare text area sits on the same line as its buttons: as tall as the
+   control height around it, text centered; more lines grow it (owner 2026-10-29). */
+textarea.field-bare[rows='1'] {
+  min-height: var(--control-h, var(--h-md));
+  padding-block: calc((var(--control-h, var(--h-md)) - 20px) / 2);
+  line-height: 20px;
+}
 /* A field that sits inside its own frame (the chat composer): no box of its own. */
 :is(input, textarea, select).field-bare,
 :is(input, textarea, select).field-bare:focus,
