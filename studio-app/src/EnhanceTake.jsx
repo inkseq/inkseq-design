@@ -16,8 +16,9 @@ const TIERS = ['1080p', '2k'];
 
 export function EnhanceTakeButton({ take, onMessage }) {
   const { t } = useI18n(),
+    c = useCloud(),
     [open, setOpen] = useState(false);
-  if (!enhanceable(take)) return null;
+  if (!enhanceable(take, c.capabilities)) return null;
   return (
     <>
       <Button size="sm" title={t('enhance.help')} onClick={() => setOpen(true)}>

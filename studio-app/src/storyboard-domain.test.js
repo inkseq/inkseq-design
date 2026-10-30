@@ -682,7 +682,8 @@ test('submit hints: video or many references, and audio without written lines', 
 
 test('an enhance job joins the shot takes as an enhanced copy; the original stays enhanceable', () => {
   const p = fixture();
-  const ref = { project_id: 'project', shot_id: 'shot', shot_version: 1 };
+  const ref = { project_id: 'project', shot_id: 'shot', shot_version: 1 },
+    on = { enhance: { enabled: true } };
   mergeJobCandidate(p, {
     id: 'draft-job',
     status: 'succeeded',
@@ -698,7 +699,12 @@ test('an enhance job joins the shot takes as an enhanced copy; the original stay
   });
   let takes = view(p).shots[0].versions;
   assert.equal(takes.find((v) => v.jobId === 'enhance-job').status, 'running');
-  assert.ok(enhanceable(takes.find((v) => v.artifactId === 'draft')));
+  assert.ok(
+    enhanceable(
+      takes.find((v) => v.artifactId === 'draft'),
+      on,
+    ),
+  );
   mergeJobCandidate(p, {
     id: 'enhance-job',
     recipe_id: 'enhance-v1',
@@ -709,6 +715,18 @@ test('an enhance job joins the shot takes as an enhanced copy; the original stay
   takes = view(p).shots[0].versions;
   const sharp = takes.find((v) => v.artifactId === 'sharp');
   assert.ok(sharp.enhanced);
-  assert.equal(enhanceable(sharp), false);
-  assert.ok(enhanceable(takes.find((v) => v.artifactId === 'draft')));
+  assert.equal(enhanceable(sharp, on), false);
+  assert.equal(
+    enhanceable(
+      takes.find((v) => v.artifactId === 'draft'),
+      {},
+    ),
+    false,
+  );
+  assert.ok(
+    enhanceable(
+      takes.find((v) => v.artifactId === 'draft'),
+      on,
+    ),
+  );
 });
