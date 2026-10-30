@@ -119,7 +119,8 @@ export const clientCatalogs = {
     'maintenance.safe': '你的作品、素材和正在跑的任务都不受影响。',
     'errors.maintenance_in_progress':
       'Inkseq 正在更新，这次没有提交也没有扣费。请在 {time}（你的当地时间）之后再试。',
-    'errors.maintenance_in_progress_soon': 'Inkseq 正在更新，这次没有提交也没有扣费。请几分钟后再试。',
+    'errors.maintenance_in_progress_soon':
+      'Inkseq 正在更新，这次没有提交也没有扣费。请几分钟后再试。',
     'client.capacityDrain':
       'GPU 正在休眠或切换，任务尚未提交。请重新检查后生成；作品和素材已保留。',
     'client.versionChanged': '云端版本已改变。你的草稿已保留，请先比较新版本。',
