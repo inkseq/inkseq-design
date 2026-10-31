@@ -51,3 +51,12 @@ jobs:
         working-directory: studio-app
       - run: npm run audit:layout
         working-directory: studio-app
+      # Signed-in screens from a recorded fixture: overlap, alignment and clipping rules (#897).
+      - run: npm run audit:visual
+        working-directory: studio-app
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-failures
+          path: studio-app/visual-fail-*.png
+          if-no-files-found: ignore
