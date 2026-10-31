@@ -406,6 +406,12 @@ design/inkseq-v2-prototype/dist/
 !studio-app/tools/
 !studio-app/tools/check-changed.mjs
 !studio-app/tools/layout-audit.mjs
+!studio-app/tools/layout-shared.mjs
+!studio-app/tools/visual-audit.mjs
+!studio-app/tools/visual/
+!studio-app/tools/visual/README.md
+!studio-app/tools/visual/sanitize-har.mjs
+!studio-app/tools/visual/storyboard.har
 !studio-app/tools/journeys.mjs
 !studio-app/src/ui/
 !studio-app/src/ui/tokens.css
