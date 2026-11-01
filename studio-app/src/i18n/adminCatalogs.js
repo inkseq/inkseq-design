@@ -36,7 +36,8 @@ export const adminCatalogs = {
     'adminHome.jobs': 'Jobs',
     'adminHome.limits': 'Machines & limits',
     'allSettings.balances': 'Provider balances',
-    'allSettings.balancesHelp': 'Read every 4 hours. Providers without a balance API link to their console.',
+    'allSettings.balancesHelp':
+      'Read every 4 hours. Providers without a balance API link to their console.',
     'allSettings.balanceConsole': 'Open console',
     'allSettings.balanceNotRead': 'Not read yet',
     'allSettings.balanceLow': 'Low',
