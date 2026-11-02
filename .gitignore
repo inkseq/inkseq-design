@@ -154,6 +154,10 @@
 !studio-app/src/ServiceStatus.jsx
 !studio-app/src/ShotPromptDraft.jsx
 !studio-app/src/EnhanceTake.jsx
+!studio-app/src/ReportProblem.jsx
+!studio-app/src/report-problem.js
+!studio-app/src/report-problem.css
+!studio-app/src/report-problem.test.js
 !studio-app/src/enhance-take.js
 !studio-app/src/enhance-take.test.js
 !studio-app/src/StoryNavigation.jsx
