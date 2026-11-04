@@ -45,8 +45,9 @@ const Freestyle = React.lazy(() => import('./Freestyle.jsx'));
 const StoryChat = React.lazy(() => import('./StoryChat.jsx'));
 const QuickCreateEntry = React.lazy(() => import('./QuickCreateEntry.jsx'));
 const LegacyQuickChatLink = React.lazy(() => import('./LegacyQuickChatLink.jsx'));
-import OperatorConsole from './P4OperatorConsole.jsx';
-import AdminHome from './AdminHome.jsx';
+// Admin and operator code stays out of the public script, in chunks only those routes load.
+const OperatorConsole = React.lazy(() => import('./P4OperatorConsole.jsx'));
+const AdminHome = React.lazy(() => import('./AdminHome.jsx'));
 import { CloudProjects, useCloud } from './CloudStudio.jsx';
 import AgentConnect from './AgentConnect.jsx';
 import AgentLink from './AgentLink.jsx';
@@ -1382,7 +1383,17 @@ function AppContent() {
     '/settings': ({ active }) => (
       <SpendingSettings key={account || 'signed-out'} account={account} active={active} />
     ),
-    '/admin': () => <AdminHome account={account} />,
+    '/admin': () => (
+      <React.Suspense
+        fallback={
+          <div className="home">
+            <StudioHeader account={account} active="admin" />
+          </div>
+        }
+      >
+        <AdminHome account={account} />
+      </React.Suspense>
+    ),
     '/operator': ({ active }) => (
       <React.Suspense fallback={<InkLoader label={t('loading.operator')} />}>
         <OperatorConsole active={active} />
