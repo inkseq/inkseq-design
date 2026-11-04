@@ -3532,3 +3532,16 @@ h4,
   background: var(--surface-3);
   color: var(--ink-2);
 }
+
+/* Phones: the header holds its buttons only without the wordmark, and with no hover the
+   selection circle is always shown, so the shot number sits beside it (#1026). */
+@media (max-width: 430px) {
+  .hbar .logo span {
+    display: none;
+  }
+}
+@media (hover: none) {
+  .card:has(.workbench-select) .card-no {
+    left: 46px;
+  }
+}
