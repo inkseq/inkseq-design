@@ -1918,6 +1918,10 @@ export function createCloudController({
       !store.rebaseCloud(record.project, { account: ctx.account, version: record.version })
     )
       emit({ remoteUpdate: { id: record.id, version: record.version } });
+  // Voice names and samples only. Off answers `enabled: false`, and the picker stays hidden.
+  async function readVoices() {
+    requireCloud();
+    return api.request('/v1/voices');
   }
   async function readShotReadiness() {
     requireCloud();
@@ -2150,6 +2154,7 @@ export function createCloudController({
     refreshInky: () => refreshInky(),
     readPictureSettings: () => readPictureSettings(),
     drawShotPicture: (shotId, requestId, language) => drawShotPicture(shotId, requestId, language),
+    readVoices: () => readVoices(),
     readShotReadiness: () => readShotReadiness(),
     ignoreInkySuggestion: (id) => ignoreInkySuggestion(id),
     saveTakeReview: (shotId, artifactId, body, key) =>

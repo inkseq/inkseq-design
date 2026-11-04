@@ -48,6 +48,15 @@
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/ShotPicture.jsx
+!studio-app/src/story-stage.js
+!studio-app/src/story-stage.test.js
+!studio-app/src/ShotLook.jsx
+!studio-app/src/shot-look.js
+!studio-app/src/TakeNextStep.jsx
+!studio-app/src/ShotCardPrompt.jsx
+!studio-app/src/shot-mention.js
+!studio-app/src/shot-mention.test.js
+!studio-app/src/VoicePicker.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
 !studio-app/src/first-visit-sample.test.js

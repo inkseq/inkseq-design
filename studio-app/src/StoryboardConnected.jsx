@@ -681,6 +681,7 @@ export default function StoryboardConnected({
     refreshInky: cloud.refreshInky,
     readPictureSettings: cloud.readPictureSettings,
     drawShotPicture: cloud.drawShotPicture,
+    readVoices: cloud.readVoices,
     readShotReadiness: cloud.readShotReadiness && (() => cloud.readShotReadiness()),
     ignoreInkySuggestion: (id) => cloud.ignoreInkySuggestion?.(id),
     saveTakeReview: (shot, artifact, body, key) => cloud.saveTakeReview(shot, artifact, body, key),
