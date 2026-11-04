@@ -450,6 +450,39 @@ await journey(
 );
 
 await journey(
+  'pages hold their layout while loading and on selection',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    await p.addInitScript(() => {
+      window.__layoutShift = 0;
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries())
+          if (!entry.hadRecentInput) window.__layoutShift += entry.value;
+      }).observe({ type: 'layout-shift', buffered: true });
+    });
+    for (const path of ['/settings?tab=credits', '/?view=works']) {
+      await p.goto(BASE + path, { waitUntil: 'networkidle' });
+      await settle(p, 1000);
+      const shift = await p.evaluate(() => window.__layoutShift);
+      expect(shift < 0.05, `${path} layout shift ${shift.toFixed(3)} is above 0.05`);
+    }
+    const box = p.getByRole('checkbox', { name: /选择故事/ }).first();
+    if (!(await box.count())) return p;
+    const top = () =>
+      p.evaluate(() => document.querySelector('.story-card').getBoundingClientRect().top);
+    const before = await top();
+    await box.hover();
+    await box.click();
+    await settle(p, 300);
+    const moved = Math.abs((await top()) - before);
+    expect(moved <= 2, `picking a story moved the cards ${moved} px`);
+    await box.click();
+    return p;
+  },
+);
+
+await journey(
   'profile editor is a dialog; Escape closes the file chooser first',
   () => QA_USER,
   async (open) => {
