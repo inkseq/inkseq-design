@@ -715,7 +715,11 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
   const open = state.cards.find((card) => card.id === openId);
   const profiles = state.cards.filter((card) => card.kind !== 'shot');
   const done = progress(state);
-  const starters = ['storyChat.starter1', 'storyChat.starter2', 'storyChat.starter3'];
+  const starters = [
+    { key: 'storyChat.starter1', picture: 'alien' },
+    { key: 'storyChat.starter2', picture: 'coffee' },
+    { key: 'storyChat.starter3', picture: 'fox' },
+  ];
 
   return (
     <div className="home sc-shell">
@@ -845,9 +849,21 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 <h1>{t('storyChat.welcome')}</h1>
                 <p>{t('storyChat.welcomeHelp')}</p>
                 <div className="sc-starters">
-                  {starters.map((key) => (
-                    <Button key={key} variant="option" onClick={() => send(t(key))}>
-                      {t(key)}
+                  {starters.map(({ key, picture }) => (
+                    <Button
+                      key={key}
+                      variant="option"
+                      className="sc-starter"
+                      onClick={() => send(t(key))}
+                    >
+                      <img
+                        src={'/v1/story-chats/starter-pictures/' + picture}
+                        alt=""
+                        width="320"
+                        height="180"
+                        loading="lazy"
+                      />
+                      <span>{t(key)}</span>
                     </Button>
                   ))}
                 </div>
