@@ -51,6 +51,7 @@
 !studio-app/src/monitoring.js
 !studio-app/src/optimistic-choice.js
 !studio-app/src/optimistic-choice.test.js
+!studio-app/src/error-words.test.js
 !studio-app/src/shot-readiness.js
 !studio-app/src/monitoring.test.js
 !studio-app/src/analytics.js
