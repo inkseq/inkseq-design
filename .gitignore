@@ -50,6 +50,8 @@
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
 !studio-app/src/optimistic-choice.js
+!studio-app/src/story-preview.js
+!studio-app/src/story-preview.test.js
 !studio-app/src/optimistic-choice.test.js
 !studio-app/src/error-words.test.js
 !studio-app/src/shot-readiness.js
