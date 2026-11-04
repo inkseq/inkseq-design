@@ -59,7 +59,7 @@ export function VoicePicker({ profile }) {
             <li key={voice.id} className={chosen ? 'voice-item chosen' : 'voice-item'}>
               <IconButton
                 size="sm"
-                aria-label={t('voice.listen', { name })}
+                label={t('voice.listen', { name })}
                 onClick={() => toggle(voice.id, sampleOf(voice, language))}
               >
                 {playing === voice.id ? <Pause size={14} /> : <Play size={14} />}

@@ -125,6 +125,19 @@ test('scene header rejects foreign, absent and non-scene targets without changin
   assert.equal(get(project, added.id).parentId, 'foreign-scene');
 });
 
+test('a shot added after a card lands right behind it, in its scene', () => {
+  const project = fixture(),
+    first = project.entities.find((entity) => entity.type === 'shot');
+  const added = act(project, { type: 'add', after: first.id, title: 'Next' });
+  const shots = children(project, first.parentId).filter((entity) => entity.type === 'shot');
+  assert.equal(shots[shots.indexOf(first) + 1].id, added.id);
+  assert.deepEqual(
+    shots.map((entity) => entity.order),
+    shots.map((_, index) => index),
+  );
+  assert.equal(act(project, { type: 'add', after: 'no-such-shot' }), false);
+});
+
 test('chapters: add, rename, move, and shots reorder across chapters', () => {
   const project = fixture();
   const first = project.entities.find((e) => e.type === 'chapter');

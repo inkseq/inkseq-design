@@ -80,6 +80,7 @@ import {
   queuePositions,
 } from './storyboard-ui-model.js';
 import { useStoryboardUI as useStore } from './storyboard-ui-context.jsx';
+import { ShotCardPrompt } from './ShotCardPrompt.jsx';
 import { VoicePicker } from './VoicePicker.jsx';
 import { useShotReadiness } from './shot-readiness.js';
 import { StoryboardNameDialog } from './StoryboardDialog.jsx';
@@ -1589,6 +1590,8 @@ export function ShotCard({
   const usual = usualSettings(state.shots, db, locale);
   const item = isOver ? dragItem(active, db) : null;
   const plan = item && (item.asset || item.profile) ? planDrop(shot, item, 'smart', db) : null;
+  // A restored take keeps its exact prompt and references; it is only changed in the editor.
+  const restored = !!shot.entity?.data.h3?.explicitReferences && !shot.entity?.data.storyboard;
   return (
     <div
       ref={setNodeRef}
@@ -1641,6 +1644,19 @@ export function ShotCard({
           )}
         </span>
         <span className={'card-state ' + status.tone} title={status.label} />
+        <IconButton
+          size="xs"
+          className="card-add"
+          label={tr('shotCard.addAfter')}
+          onPointerDown={(event) => event.stopPropagation()}
+          onClick={(event) => {
+            event.stopPropagation();
+            if (state.busy || state.workbenchPending) return;
+            dispatch({ type: 'add', after: shot.id, title: tr('storyboard.newShot') });
+          }}
+        >
+          <Plus size={14} />
+        </IconButton>
         <Progress v={latest} />
       </div>
       <div className="card-body">
@@ -1668,6 +1684,7 @@ export function ShotCard({
             )}
           </span>
         </div>
+        {!restored && <ShotCardPrompt shot={shot} />}
         {(shot.cast.length > 0 || shot.place || shot.props.length > 0) && (
           <WhoChips shot={shot} small />
         )}
