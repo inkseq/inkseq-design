@@ -3607,3 +3607,39 @@ h4,
     display: none;
   }
 }
+
+/* Look and camera for a shot (#1043): closed until opened, so the editor stays short. */
+.shot-look > summary {
+  cursor: pointer;
+}
+.shot-look-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 8px;
+  margin: 8px 0;
+}
+.shot-look-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+  height: auto;
+  padding: 4px;
+}
+.shot-look-pick img,
+.shot-look-auto {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--line);
+  border-radius: 4px;
+}
+.shot-look-cameras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
