@@ -1654,15 +1654,14 @@ export function ShotCard({
             )}
             {warnings.length > 0 && (
               <Tooltip tap content={warnings.join('\n')}>
-                <button
-                  type="button"
+                <Button
                   className="warnbadge"
                   aria-label={warnings.join('. ')}
                   onPointerDown={(event) => event.stopPropagation()}
                   onClick={(event) => event.stopPropagation()}
                 >
                   !
-                </button>
+                </Button>
               </Tooltip>
             )}
           </span>
