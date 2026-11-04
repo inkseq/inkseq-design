@@ -1918,6 +1918,7 @@ export function createCloudController({
       !store.rebaseCloud(record.project, { account: ctx.account, version: record.version })
     )
       emit({ remoteUpdate: { id: record.id, version: record.version } });
+  }
   // Voice names and samples only. Off answers `enabled: false`, and the picker stays hidden.
   async function readVoices() {
     requireCloud();
