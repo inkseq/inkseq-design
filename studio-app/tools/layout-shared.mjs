@@ -25,7 +25,15 @@ export async function startPreview() {
 
 // Runs inside the page. Only visible elements count; scroll containers may clip on purpose.
 export function inspect() {
-  const out = { scrollX: 0, offscreen: [], clipped: [], spill: [], tiny: [], small: [] };
+  const out = {
+    scrollX: 0,
+    offscreen: [],
+    clipped: [],
+    spill: [],
+    tiny: [],
+    small: [],
+    header: [],
+  };
   const doc = document.documentElement;
   out.scrollX = doc.scrollWidth - doc.clientWidth;
   const vw = doc.clientWidth;
@@ -75,5 +83,20 @@ export function inspect() {
   }
   for (const key of ['offscreen', 'clipped', 'spill', 'tiny', 'small'])
     out[key] = [...new Set(out[key])];
+  // Header items must not run into each other, counting content wider than its own box.
+  const bar = document.querySelector('.hbar');
+  if (bar) {
+    const items = [...bar.children].filter(
+      (el) =>
+        el.tagName !== 'NAV' && el.getClientRects().length && el.getBoundingClientRect().width > 1,
+    );
+    items.forEach((el, i) => {
+      const next = items[i + 1];
+      if (!next) return;
+      const rect = el.getBoundingClientRect();
+      if (rect.left + Math.max(rect.width, el.scrollWidth) > next.getBoundingClientRect().left + 1)
+        out.header.push(`${label(el)} runs into ${label(next)}`);
+    });
+  }
   return out;
 }

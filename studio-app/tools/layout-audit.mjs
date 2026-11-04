@@ -51,6 +51,7 @@ async function audit([name, width, height]) {
       ...found.offscreen.map((x) => `off-screen: ${x}`),
       ...found.clipped.map((x) => `clipped without ellipsis: ${x}`),
       ...found.spill.map((x) => `content spills out of button: ${x}`),
+      ...found.header.map((x) => `header overlap: ${x}`),
       ...found.tiny.map((x) => `text under 10px: ${x}`),
       ...errors.map((x) => `page error: ${x}`),
     ];
