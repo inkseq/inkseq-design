@@ -47,6 +47,9 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/ShotCardPrompt.jsx
+!studio-app/src/shot-mention.js
+!studio-app/src/shot-mention.test.js
 !studio-app/src/VoicePicker.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
