@@ -42,6 +42,9 @@
     animation: none;
   }
 }
+.takes-save {
+  min-width: 96px;
+}
 .ui-wait-block {
   min-height: 220px;
 }
