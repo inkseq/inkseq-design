@@ -80,6 +80,7 @@ import {
   queuePositions,
 } from './storyboard-ui-model.js';
 import { useStoryboardUI as useStore } from './storyboard-ui-context.jsx';
+import { ShotPicture } from './ShotPicture.jsx';
 import { useShotReadiness } from './shot-readiness.js';
 import { StoryboardNameDialog } from './StoryboardDialog.jsx';
 import { createStoryboardPlayback } from './storyboard-playback.js';
@@ -2252,6 +2253,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
         <div className={'modepanel ' + info.mode.toLowerCase()}>
           {info.frameInputs && (
             <>
+              <ShotPicture shot={shot} hasPicture={!!sf?.asset} />
               <div className="slots" data-guide-field="frames">
                 <Slot
                   onFiles={(files) =>
