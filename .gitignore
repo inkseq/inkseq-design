@@ -47,6 +47,7 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/TakeNextStep.jsx
 !studio-app/src/ShotCardPrompt.jsx
 !studio-app/src/shot-mention.js
 !studio-app/src/shot-mention.test.js
