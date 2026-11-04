@@ -49,6 +49,8 @@
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
+!studio-app/src/optimistic-choice.js
+!studio-app/src/optimistic-choice.test.js
 !studio-app/src/shot-readiness.js
 !studio-app/src/monitoring.test.js
 !studio-app/src/analytics.js

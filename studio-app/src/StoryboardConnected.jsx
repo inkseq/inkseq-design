@@ -427,6 +427,10 @@ export default function StoryboardConnected({ onLegacyGuide, onCanvas, onNewScen
             deployment_profile_id: action.profileId,
           });
       }
+      // An edit left unconfirmed by a failed answer replays with its own key first, so one
+      // bad response does not block every later choice until the page reloads (#1032).
+      if (['actions', 'preferences', 'copies'].includes(cloud.workbenchPending()?.kind))
+        await dispatch({ type: 'workbenchRecover' });
       await cloud.workbenchCommand('actions', {
         actions,
         ...(action.expectedVersion === undefined
