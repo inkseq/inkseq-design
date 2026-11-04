@@ -34,6 +34,8 @@ export const storyOpenCatalogs = {
     'notice.dismiss': 'Dismiss',
     'pageError.title': 'Something went wrong on this page',
     'pageError.body': 'Your work is saved. Reload the page, or go back to Works.',
+    'pageError.bodyUnknown':
+      'Reload the page, or go back to Works. Your last few changes may not have been saved.',
     'pageError.reload': 'Reload',
     'pageError.works': 'Back to Works',
     'storyOpen.back': 'Back to Works',
@@ -74,6 +76,7 @@ export const storyOpenCatalogs = {
     'notice.dismiss': '关闭',
     'pageError.title': '这个页面出错了',
     'pageError.body': '你的内容已经保存。重新加载页面，或者回到作品。',
+    'pageError.bodyUnknown': '重新加载页面，或者返回作品。最后几步改动可能还没保存。',
     'pageError.reload': '重新加载',
     'pageError.works': '返回作品',
     'storyOpen.back': '返回作品',
