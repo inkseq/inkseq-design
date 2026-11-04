@@ -73,8 +73,14 @@ export function CreditUsageBar({ credits, balance }) {
 
 // null while loading or unavailable (signed out, or the backend has no credits yet).
 export function useCredits(account) {
+  return useCreditsRead(account).credits;
+}
+
+// `read` tells "still loading" from "unavailable", so a chip can hold its place only while loading.
+function useCreditsRead(account) {
   const api = useClient(account);
-  const [credits, setCredits] = useState(null);
+  const [credits, setCredits] = useState(null),
+    [read, setRead] = useState(false);
   useEffect(() => {
     if (!account && !mocked()) return undefined;
     let live = true;
@@ -82,7 +88,8 @@ export function useCredits(account) {
       api
         .request('/v1/credits')
         .then((body) => live && setCredits(creditSummary(body)))
-        .catch(() => live && setCredits(null));
+        .catch(() => live && setCredits(null))
+        .finally(() => live && setRead(true));
     read();
     const onFocus = () => document.visibilityState === 'visible' && read();
     window.addEventListener(CREDITS_CHANGED, read);
@@ -93,7 +100,7 @@ export function useCredits(account) {
       document.removeEventListener('visibilitychange', onFocus);
     };
   }, [api, account]);
-  return credits;
+  return { credits, read };
 }
 
 // Adds the anonymous funnel id when analytics is on (h3-studio#725); older servers ignore it.
@@ -102,10 +109,17 @@ function withAnalytics(body) {
   return analytics ? { ...body, analytics } : body;
 }
 
-export function CreditsChip({ account }) {
+export function CreditsChip({ account, frame = account }) {
   const { t, locale } = useI18n();
-  const credits = useCredits(account);
-  if (!credits) return null;
+  const { credits, read } = useCreditsRead(account);
+  if (!credits)
+    return frame && !read ? (
+      <Button className="credits-chip keep-label" disabled aria-hidden="true" tabIndex={-1}>
+        <Coins size={14} />
+        <b>&nbsp;</b>
+        <span className="credits-word">{t('credits.word')}</span>
+      </Button>
+    ) : null;
   const low = credits.available < 100;
   return (
     <Button

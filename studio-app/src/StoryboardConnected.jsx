@@ -137,7 +137,7 @@ function WorkbenchConfirmation({ receipt, shotLabels, onClose }) {
       className="sb-confirm"
     >
       {checking && !Number.isFinite(balance) ? (
-        <i className="sb-confirm-usage sb-confirm-wait" />
+        <i className="ui-wait sb-confirm-usage sb-confirm-wait" />
       ) : (
         <CreditUsageBar credits={cost.credits} balance={balance} />
       )}
@@ -155,7 +155,7 @@ function WorkbenchConfirmation({ receipt, shotLabels, onClose }) {
             {takes && ' · ' + t('workbench.take', { number: item.index + 1 })}
           </h3>
           {checking ? (
-            <i className="sb-confirm-wait sb-confirm-wait-recipe" />
+            <i className="ui-wait sb-confirm-wait-recipe" />
           ) : (
             <TakeRecipe
               take={{ seed: item.seed, recipe: planRecipe(item.plan, c.capabilities) }}
