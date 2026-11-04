@@ -8,6 +8,7 @@ import { cloudSystemMessage } from './cloud-model.js';
 import { exportSrt } from './caption-model.js';
 import StudioHeader from './StudioHeader.jsx';
 import { lastAccount, rememberAccount } from './account-access.js';
+import { SESSION_REFUSED } from './cloud-client.js';
 import AccountMenu from './AccountMenu.jsx';
 import ReportProblem from './ReportProblem.jsx';
 import { Menu, MenuItem } from './ui/Menu.jsx';
@@ -1198,6 +1199,14 @@ function AppContent() {
     c = useCloud(),
     account = c.account;
   useEffect(() => installPersistenceGuard(store), []);
+  // Pages with their own client report a refused session; the shared check signs out once.
+  useEffect(() => {
+    const recheck = () => {
+      if (cloud.getState().account) void cloud.recheckSession();
+    };
+    window.addEventListener(SESSION_REFUSED, recheck);
+    return () => window.removeEventListener(SESSION_REFUSED, recheck);
+  }, []);
   useEffect(() => {
     if (account || c.sessionReady) rememberAccount(account);
   }, [account, c.sessionReady]);
