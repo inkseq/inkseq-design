@@ -277,8 +277,11 @@ function projectAction(project, action) {
 const badTitle = (value) => value !== undefined && (!text(value, 160) || !value.trim());
 function addAction(project, action, { chapterId, view }) {
   if (badTitle(action.title) || badTitle(action.sceneTitle)) return false;
-  const requested = action.sceneId === undefined ? null : find(project, action.sceneId);
-  if (action.sceneId !== undefined && requested?.type !== 'scene') return false;
+  const after = action.after === undefined ? null : find(project, action.after);
+  if (action.after !== undefined && after?.type !== 'shot') return false;
+  const sceneId = after ? after.parentId : action.sceneId;
+  const requested = sceneId === undefined ? null : find(project, sceneId);
+  if (sceneId !== undefined && requested?.type !== 'scene') return false;
   // A shot added to a specific scene belongs to that scene's chapter (all chapters share one page).
   const existing =
     (requested && find(project, requested.parentId)) ||
@@ -315,7 +318,24 @@ function addAction(project, action, { chapterId, view }) {
       extraRefs: [],
     },
   });
+  if (after) placeAfter(project, added, after);
   return { id: added.id };
+}
+function placeAfter(project, added, after) {
+  const siblings = children(project, after.parentId).filter(
+    (entity) => entity.type === 'shot' && entity.id !== added.id,
+  );
+  siblings.splice(siblings.indexOf(after) + 1, 0, added);
+  siblings.forEach((entity, index) => {
+    if (entity.order !== index) {
+      entity.order = index;
+      mark(entity);
+    }
+  });
+  // Previous-shot identity changes for whatever now follows the new shot.
+  storyShots(project)
+    .filter((entity) => entity.data.storyboard?.continuePrevious)
+    .forEach(mark);
 }
 function removeAction(project, action, { shot }) {
   if (shot?.type !== 'shot') return false;
