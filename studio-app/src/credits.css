@@ -293,6 +293,30 @@
   display: grid;
   gap: 6px;
 }
+/* Reserved while each credit read is out, at the measured card heights, so nothing moves. */
+.credits-hero {
+  min-height: 189px;
+}
+.credits-wait-packs {
+  min-height: 226px;
+}
+.credits-wait-rates {
+  min-height: 221px;
+}
+.credits-wait-log {
+  min-height: 131px;
+}
+@media (max-width: 720px) {
+  .credits-hero {
+    min-height: 203px;
+  }
+  .credits-wait-packs {
+    min-height: 362px;
+  }
+  .credits-wait-rates {
+    min-height: 397px;
+  }
+}
 /* Reserved while the confirm dialog checks, so nothing moves when the plan arrives. */
 .sb-confirm-wait {
   min-height: 34px;
