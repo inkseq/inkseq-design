@@ -49,6 +49,7 @@
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
+!studio-app/src/first-visit-sample.test.js
 !studio-app/src/chunk-reload.js
 !studio-app/src/chunk-reload.test.js
 !studio-app/src/optimistic-choice.js
