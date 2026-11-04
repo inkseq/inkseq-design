@@ -1,5 +1,5 @@
 import { Disclosure } from './ui/Disclosure.jsx';
-import { EnhanceTakeButton } from './EnhanceTake.jsx';
+import { TakeNextStep } from './TakeNextStep.jsx';
 import {
   UserRound,
   MapPin,
@@ -2002,7 +2002,6 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
             {/* #232 (#53): downloads and "save frame" stay in view as compact buttons. */}
             <div className="take-tools-inline">
               <StoryboardDownloads version={viewing} title={shot.title} />
-              <EnhanceTakeButton take={viewing} onMessage={setMsg} />
               <Button
                 size="sm"
                 disabled={saving}
@@ -2041,6 +2040,16 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
 
             {msg && <small className="okmsg">{msg}</small>}
           </div>
+        )}
+        {['done', 'succeeded'].includes(viewing?.status) && !restoredExact && (
+          <TakeNextStep
+            shot={shot}
+            take={viewing}
+            mediaRef={mediaRef}
+            busy={regenerating}
+            onAnother={() => regenerate({ newSeed: true })}
+            onMessage={setMsg}
+          />
         )}
 
         {viewing?.id === shot.chosen && ['done', 'succeeded'].includes(viewing?.status) && (

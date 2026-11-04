@@ -47,6 +47,7 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/TakeNextStep.jsx
 !studio-app/src/VoicePicker.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
