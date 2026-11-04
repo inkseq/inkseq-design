@@ -1032,6 +1032,32 @@ test('aggregate preflight accepts an API-made shot that has no storyboard yet', 
     h.controller.destroy();
   }
 });
+test('preflight reads one draft per shot when nothing is saved in between', async () => {
+  const h = await harness();
+  try {
+    await h.controller.open(h.remote.get(h.store.getState().project.id).id);
+    h.api.request = async (path, options) => ({
+      request_hash: await digest(options.body),
+      id: 'one-read-preflight',
+      project_id: h.store.getState().project.id,
+      project_version: options.body.expected_version,
+      status: 'completed',
+      ready: true,
+      items: [
+        { shot_id: h.shot, index: 0, seed: '1', plan_id: 'plan-0', plan: { status: 'ready' } },
+      ],
+    });
+    h.calls.length = 0;
+    await h.controller.workbenchCommand('preflight', {
+      shot_ids: [h.shot],
+      copies: 1,
+      capabilities_version: 'story-v1',
+    });
+    assert.equal(h.calls.filter((call) => call[0] === 'draft').length, 1);
+  } finally {
+    h.controller.destroy();
+  }
+});
 test('aggregate preflight late response cannot open or clear another workspace operation', async () => {
   const h = await harness();
   try {

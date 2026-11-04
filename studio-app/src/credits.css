@@ -291,6 +291,30 @@
   display: grid;
   gap: 6px;
 }
+/* Reserved while the confirm dialog checks, so nothing moves when the plan arrives. */
+.sb-confirm-wait {
+  display: block;
+  min-height: 34px;
+  border-radius: 6px;
+  background: var(--surface-3);
+  animation: sb-confirm-wait 1.2s ease-in-out infinite alternate;
+}
+.sb-confirm-wait-recipe {
+  min-height: 21px;
+}
+.sb-confirm-start {
+  min-width: 96px;
+}
+@keyframes sb-confirm-wait {
+  to {
+    opacity: 0.5;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sb-confirm-wait {
+    animation: none;
+  }
+}
 .sb-confirm-usage .bar.short b {
   width: 100% !important;
   background: var(--danger);
