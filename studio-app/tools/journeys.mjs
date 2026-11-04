@@ -226,7 +226,7 @@ await journey(
   },
 );
 
-// Order of the Admin side nav (AdminHome SECTIONS); GPUs (owner 2026-10-29) opens /operator.
+// Order of the Admin side nav (AdminHome SECTIONS).
 const SECTION_INDEX = {
   overview: 0,
   jobs: 1,
@@ -248,6 +248,7 @@ await journey(
     await p.waitForSelector('.admin-home .cap .ui-setting-row', { timeout: 15000 });
     for (const [section, selector] of [
       ['overview', '.admin-home .ah-kpis'],
+      ['gpus', '.admin-home .ah-main .ops-gpu-page'],
       ['settings', '.admin-home .all-settings .ui-setting-row'],
       ['users', '.admin-home .user-row:not(.head)'],
       ['pricing', '.admin-home .margin-table'],
