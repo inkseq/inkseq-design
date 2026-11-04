@@ -1670,12 +1670,37 @@ export function createCloudController({
         )
       )
         throw Error('workbench.existingJob');
+    }
+    if (current().workspace.dirty) {
+      await save();
+      guard(ctx);
+    }
+    // Drafts are reads, so ask for several at once (#1030). One read at the current
+    // project version stays valid; only an upload or frame saved below needs a new one.
+    const drafts = new Map(),
+      unread = [...shotIds];
+    await Promise.all(
+      Array.from({ length: Math.min(6, unread.length) }, async () => {
+        while (unread.length) {
+          const shotId = unread.shift();
+          drafts.set(shotId, await api.generationDraft(ctx.projectId, shotId));
+        }
+      }),
+    );
+    guard(ctx);
+    const currentDraft = async (shotId) => {
+      if (drafts.get(shotId).project_version !== current().workspace.serverVersion) {
+        drafts.set(shotId, await api.generationDraft(ctx.projectId, shotId));
+        guard(ctx);
+      }
+      return drafts.get(shotId);
+    };
+    for (const shotId of shotIds) {
       if (current().workspace.dirty) {
         await save();
         guard(ctx);
       }
-      let preview = await api.generationDraft(ctx.projectId, shotId);
-      guard(ctx);
+      const preview = await currentDraft(shotId);
       const recipe = state.capabilities?.recipes?.find(
         (row) => row.id === preview.draft?.recipe_id,
       );
@@ -1783,9 +1808,8 @@ export function createCloudController({
         await save();
         guard(ctx);
       }
-      preview = await api.generationDraft(ctx.projectId, shotId);
-      guard(ctx);
-      if (preview.project_version !== current().workspace.serverVersion || preview.issues?.length)
+      const saved = await currentDraft(shotId);
+      if (saved.project_version !== current().workspace.serverVersion || saved.issues?.length)
         throw Object.assign(Error('workbench.inputsInvalid'), { shotId });
     }
   }
