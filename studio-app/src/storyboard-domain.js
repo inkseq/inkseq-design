@@ -94,6 +94,7 @@ function storyboardProfiles(project) {
         desc: e.description,
         def: e.data.defaultLookId || e.data.defaultVersionId || variants[0]?.id || '',
         voice: list(e.data.voices).find((v) => v.id === e.data.mainVoiceId)?.assetId || '',
+        voiceId: typeof e.data.voiceId === 'string' ? e.data.voiceId : '',
         voices: list(e.data.voices).map((v) => ({ asset: v.assetId, start: v.clipStart || 0 })),
         ambient: e.data.ambient?.assetId || '',
         ambientStart: e.data.ambient?.clipStart ?? 0,

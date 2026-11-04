@@ -80,6 +80,7 @@ import {
   queuePositions,
 } from './storyboard-ui-model.js';
 import { useStoryboardUI as useStore } from './storyboard-ui-context.jsx';
+import { VoicePicker } from './VoicePicker.jsx';
 import { useShotReadiness } from './shot-readiness.js';
 import { StoryboardNameDialog } from './StoryboardDialog.jsx';
 import { createStoryboardPlayback } from './storyboard-playback.js';
@@ -1136,6 +1137,7 @@ export function ProfileEditor() {
           )}
         </section>
 
+        {p.type === 'character' && <VoicePicker profile={p} />}
         {p.type === 'character' && <VoiceSection p={p} />}
         {p.type === 'location' && (
           <section className="pe-section">

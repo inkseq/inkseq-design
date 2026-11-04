@@ -536,6 +536,8 @@ function validProfilePatch(project, profile, patch) {
   )
     return false;
   if (owns(patch, 'def') && (!variant(profile, patch.def) || profile.type === 'prop')) return false;
+  if (owns(patch, 'voiceId') && (profile.type !== 'character' || !text(patch.voiceId, 40)))
+    return false;
   const voice = list(profile.data.voices).find((value) => value.assetId === patch.voice);
   if (owns(patch, 'voice') && (profile.type !== 'character' || (patch.voice && !voice)))
     return false;
@@ -557,6 +559,7 @@ function profileAction(project, action, { profile }) {
     profile.data[profile.type === 'character' ? 'defaultLookId' : 'defaultVersionId'] = patch.def;
   }
   if (owns(patch, 'voice')) profile.data.mainVoiceId = voice?.id || '';
+  if (owns(patch, 'voiceId')) profile.data.voiceId = patch.voiceId;
   if (owns(patch, 'ambient'))
     profile.data.ambient = patch.ambient
       ? {
