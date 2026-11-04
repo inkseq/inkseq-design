@@ -326,7 +326,8 @@ async function openShot(p, where) {
   await p.goto(BASE + '/?view=workspace&project=' + encodeURIComponent(where.project));
   const card = p.locator(`[data-shot-card="${where.shot}"]`);
   await card.waitFor({ timeout: 60000 });
-  await card.click();
+  // The picture: the card's prompt box keeps its own clicks.
+  await card.locator('.card-media').click();
   await p.locator('.ed-footer').waitFor({ timeout: 20000 });
   await settle(p, 1500);
 }

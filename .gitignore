@@ -47,6 +47,8 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/story-stage.js
+!studio-app/src/story-stage.test.js
 !studio-app/src/ShotLook.jsx
 !studio-app/src/shot-look.js
 !studio-app/src/TakeNextStep.jsx
