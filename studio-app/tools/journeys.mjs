@@ -482,6 +482,40 @@ await journey(
   },
 );
 
+// Free: the storyboard check submits no job and spends nothing; Start is never pressed (#1018).
+await journey(
+  'Generate opens its check at once and the server accepts it',
+  () => QA_USER,
+  async (open) => {
+    const p = await open(QA_USER);
+    const where = await qaShot(p);
+    await openShot(p, where);
+    const pressed = Date.now();
+    await p.locator('.ed-actions button').last().click();
+    await p.locator('dialog.sb-confirm[open]').waitFor({ timeout: 3000 });
+    const waited = Date.now() - pressed;
+    expect(waited < 1500, `the confirm dialog took ${waited} ms to open`);
+    const start = p.locator('.sb-confirm-start');
+    await p.waitForFunction(
+      () => {
+        const dialog = document.querySelector('dialog.sb-confirm[open]');
+        if (!dialog) return true;
+        const button = dialog.querySelector('.sb-confirm-start');
+        return !button || !/核对|Checking/.test(button.innerText);
+      },
+      null,
+      { timeout: 30000 },
+    );
+    const alerts = await p.locator('dialog.sb-confirm [role="alert"]').allTextContents();
+    expect(!alerts.length, 'the check refused Generate: ' + alerts.join(' | '));
+    expect(await start.count(), 'the check closed without a Start button');
+    expect(await start.isEnabled(), 'Start stayed disabled after the check');
+    await p.locator('dialog.sb-confirm .dialog-actions button').first().click();
+    await p.locator('dialog.sb-confirm[open]').waitFor({ state: 'detached', timeout: 5000 });
+    return p;
+  },
+);
+
 await journey(
   'profile editor is a dialog; Escape closes the file chooser first',
   () => QA_USER,
