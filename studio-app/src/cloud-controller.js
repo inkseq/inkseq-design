@@ -310,10 +310,9 @@ export function createCloudController({
     installMedia();
   }
   function expire() {
+    const previous = state.account;
     replaceIdentity(null);
-    emit({
-      error: '云登录已失效或身份已改变。原本机作品已恢复，云草稿仍按原账户保留，请重新核对登录。',
-    });
+    emit({ error: translateForAccount(previous, 'cloud.sessionEnded') });
   }
   async function recheckSession({ loadLists = false, refreshCapabilities = false } = {}) {
     if (sessionCheck) return sessionCheck;

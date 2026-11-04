@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createStore } from './store.js';
 import { createCloudController } from './cloud-controller.js';
-import { createCloudClient, CloudError } from './cloud-client.js';
+import { createCloudClient, CloudError, SESSION_REFUSED } from './cloud-client.js';
 import { shotSnapshot, digest, stableJSON } from './cloud-model.js';
 import { applyStoryboardAction } from './storyboard-actions.js';
 
@@ -1280,5 +1280,44 @@ test('restored no-profile draft remains exact while an explicit unavailable prof
     );
   } finally {
     h.controller.destroy();
+  }
+});
+
+test('refusals show words people can read, never codes or another language', async () => {
+  const refused = async (body, status = 422) => {
+    const client = createCloudClient({
+      fetcher: async () =>
+        new Response(JSON.stringify(body), {
+          status,
+          headers: { 'Content-Type': 'application/json', 'X-Authenticated-Account': 'superdan' },
+        }),
+    });
+    client.setAccount('superdan');
+    return client.generationDraft('project', 'shot').catch((error) => error.message);
+  };
+  assert.match(await refused({ detail: 'project_in_trash' }), /in the trash/);
+  assert.match(await refused({ detail: 'some_internal_code' }), /did not go through/);
+  assert.doesNotMatch(await refused({ detail: 'some_internal_code' }), /some_internal_code|422/);
+  assert.match(await refused({ detail: '素材尚未就绪' }), /did not go through/);
+  assert.equal(await refused({ detail: 'Pick a shorter clip.' }), 'Pick a shorter clip.');
+  assert.match(await refused({ detail: 'some_internal_code' }, 503), /Can't reach|right now/i);
+});
+
+test('a client without its own session owner reports a refused session', async () => {
+  const seen = [];
+  globalThis.dispatchEvent = (event) => seen.push(event.type);
+  try {
+    const client = createCloudClient({
+      fetcher: async () =>
+        new Response('{"detail":"authentication_required"}', {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+    });
+    client.setAccount('superdan');
+    await assert.rejects(client.generationDraft('project', 'shot'), /sign in again/i);
+    assert.deepEqual(seen, [SESSION_REFUSED]);
+  } finally {
+    delete globalThis.dispatchEvent;
   }
 });
