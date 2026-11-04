@@ -1,4 +1,5 @@
 /* Pure edits of the existing document. Cloud IO and execution stay in the controller. */
+import { validCamera, validLook } from './shot-look.js';
 import { children, ancestors } from './store.js';
 import { detachDeletedReferences } from './entity-references.js';
 import {
@@ -115,6 +116,8 @@ function validShotScalars(patch) {
   ])
     if (owns(patch, key) && !text(patch[key], max)) return false;
   if (owns(patch, 'mode') && !['FL', 'REF'].includes(patch.mode)) return false;
+  if (owns(patch, 'look') && !validLook(patch.look)) return false;
+  if (owns(patch, 'camera') && !validCamera(patch.camera)) return false;
   if (owns(patch, 'quality') && !['draft', 'final'].includes(patch.quality)) return false;
   if (
     owns(patch, 'duration') &&
@@ -185,6 +188,8 @@ function validShotPatch(project, patch) {
       'place',
       'props',
       'continuePrev',
+      'look',
+      'camera',
       'quality',
       'seedLock',
       'aspect',
@@ -228,7 +233,9 @@ function patchShot(project, shot, patch) {
   if (
     !shot.data.storyboard &&
     shot.data.h3?.explicitReferences &&
-    Object.keys(patch).some((key) => ['cast', 'place', 'props', 'continuePrev'].includes(key))
+    Object.keys(patch).some((key) =>
+      ['cast', 'place', 'props', 'continuePrev', 'look', 'camera'].includes(key),
+    )
   )
     return false;
   const clean = { ...patch };
@@ -237,7 +244,7 @@ function patchShot(project, shot, patch) {
     !shot.data.storyboard &&
     !shot.data.h3?.explicitReferences &&
     Object.keys(clean).some((key) =>
-      ['mode', 'cast', 'place', 'props', 'continuePrev'].includes(key),
+      ['mode', 'cast', 'place', 'props', 'continuePrev', 'look', 'camera'].includes(key),
     )
   )
     materializeLegacyContext(project, shot, clean);

@@ -80,6 +80,7 @@ import {
   queuePositions,
 } from './storyboard-ui-model.js';
 import { useStoryboardUI as useStore } from './storyboard-ui-context.jsx';
+import { ShotLook } from './ShotLook.jsx';
 import { ShotCardPrompt } from './ShotCardPrompt.jsx';
 import { VoicePicker } from './VoicePicker.jsx';
 import { useShotReadiness } from './shot-readiness.js';
@@ -2098,6 +2099,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
             placeholder={tr('storyboard.finish11')}
           />
         </label>
+        {!restoredExact && <ShotLook shot={shot} onChange={upd} />}
 
         {restoredExact ? (
           <p>{tr('workbench.restoredBindings')}</p>
