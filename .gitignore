@@ -47,6 +47,7 @@
 !studio-app/package-lock.json
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
+!studio-app/src/ShotPicture.jsx
 !studio-app/src/SeriesApp.jsx
 !studio-app/src/app-styles.js
 !studio-app/src/catalog-tiers.test.js

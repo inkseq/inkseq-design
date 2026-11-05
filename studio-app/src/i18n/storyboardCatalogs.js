@@ -254,6 +254,15 @@ export const storyboardCatalogs = {
     'storyboard.copy53': 'Add audio',
     'storyboard.copy54': 'Drag audio here from your library or computer',
     'storyboard.copy55': 'No voice sample yet. A voice is chosen when the shot is made.',
+    'shotPicture.make': 'Make a first frame',
+    'shotPicture.again': 'Make another',
+    'shotPicture.title': 'Make a first frame',
+    'shotPicture.note':
+      "The picture becomes this shot's first frame, so you can check the look before making the video.",
+    'shotPicture.failed':
+      'That picture did not work. Nothing was added to the shot. Please try again.',
+    'shotPicture.cancel': 'Cancel',
+    'shotPicture.confirm': 'Make it',
     'voice.title': 'Choose a voice',
     'voice.tooShort':
       "That line is under 3 seconds, so it cannot be this character's voice sample. It is saved in the story's files. A longer line will work.",
@@ -876,6 +885,13 @@ export const storyboardCatalogs = {
     'storyboard.copy53': '添加声音',
     'storyboard.copy54': '把声音拖到这里（从素材库或电脑）',
     'storyboard.copy55': '还没有声音样本，生成时会自动配声音。',
+    'shotPicture.make': '生成首帧',
+    'shotPicture.again': '再来一张',
+    'shotPicture.title': '生成首帧',
+    'shotPicture.note': '这张图会成为这个镜头的首帧，可以先看画面，再生成视频。',
+    'shotPicture.failed': '这张图没有生成成功，镜头没有变化。请再试一次。',
+    'shotPicture.cancel': '取消',
+    'shotPicture.confirm': '生成',
     'voice.title': '选择声音',
     'voice.tooShort':
       '这句不到 3 秒，不能作为这个角色的声音样本。它已存进故事的文件，写长一点就可以。',

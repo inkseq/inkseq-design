@@ -3540,6 +3540,12 @@ h4,
   }
 }
 
+/* Sits above the frame slots; the slots keep their place when a picture arrives. */
+.shot-picture {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: var(--sp-2);
+}
 /* Prompt, next-shot button and size on the storyboard card (#1040). */
 .sb-scene-groups[data-card-size='s'] .wall {
   grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));

@@ -1893,6 +1893,33 @@ export function createCloudController({
     guard(ctx);
     return value;
   }
+  async function readPictureSettings() {
+    requireCloud();
+    return api.request('/v1/story-chats/config');
+  }
+  // A shot's first frame (#1039). The story needs a chat only for the picture receipts, so it
+  // opens hidden. The newest server project then comes in like any other remote change.
+  async function drawShotPicture(shotId, requestId, language) {
+    requireCloud();
+    const ctx = context(),
+      base = `/v1/story-chats/${encodeURIComponent(ctx.projectId)}`;
+    await api.request(base + '/open', { method: 'POST', body: { language, hidden: true } });
+    guard(ctx);
+    // Drawing plus storing a picture takes 15–40 s.
+    await api.request(base + '/images', {
+      method: 'POST',
+      body: { request_id: requestId, card_id: shotId },
+      timeoutMs: 180000,
+    });
+    guard(ctx);
+    const record = checkedProjectRecord(await api.project(ctx.projectId));
+    guard(ctx);
+    if (
+      record.version > current().workspace.serverVersion &&
+      !store.rebaseCloud(record.project, { account: ctx.account, version: record.version })
+    )
+      emit({ remoteUpdate: { id: record.id, version: record.version } });
+  }
   // Voice names and samples only. Off answers `enabled: false`, and the picker stays hidden.
   async function readVoices() {
     requireCloud();
@@ -2191,6 +2218,8 @@ export function createCloudController({
     readTakeReviewSummaries: (shotId) => readTakeReviewSummaries(shotId),
     readInkySuggestions: () => readInkySuggestions(),
     refreshInky: () => refreshInky(),
+    readPictureSettings: () => readPictureSettings(),
+    drawShotPicture: (shotId, requestId, language) => drawShotPicture(shotId, requestId, language),
     readVoices: () => readVoices(),
     speakLine: (body) => speakLine(body),
     readShotReadiness: () => readShotReadiness(),
