@@ -1,10 +1,11 @@
 import { WorkbenchBulk } from './StoryboardWorkbench.jsx';
 import { Button } from './ui/Button.jsx';
 import { Segmented } from './ui/Segmented.jsx';
-import { STAGES, stageFrom, withStage } from './story-stage.js';
+import { STAGES, chapterFrom, stageFrom, withStage } from './story-stage.js';
 import { CARD_SIZES, readCardSize, rememberCardSize } from './shot-mention.js';
 import { FloatingMessage } from './floating-notice.js';
 import './v2/story-view.css';
+import './film-editor.css';
 import { selectShot, emptySelection } from './storyboard-selection.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -160,7 +161,7 @@ function QueueSummary() {
 const FilmEditor = React.lazy(() => import('./FilmEditor.jsx'));
 // Remotion loads only when the editor opens, keeping it out of the storyboard bundle.
 // Chapter divider on the continuous storyboard: title, totals, fold, edit film and a menu.
-function ChapterHeader({ chapter, index, count, shots, folded, onFold, onNewScene }) {
+function ChapterHeader({ chapter, index, count, shots, folded, onFold, onNewScene, onEdit }) {
   const { t } = useI18n();
   const { state, dispatch } = useStoryboardUI();
   const trash = useTrash();
@@ -196,7 +197,10 @@ function ChapterHeader({ chapter, index, count, shots, folded, onFold, onNewScen
         {t('chapter.meta', { count: shots.length, duration: fmt(totalDuration(shots)) })}
       </span>
       <div className="spacer" />
-      <FilmEditorButton chapterId={chapter.id} />
+      <Button onClick={onEdit}>
+        <Scissors size={14} />
+        {t('editor.open')}
+      </Button>
       <ItemMenu label={t('chapter.menu')} disabled={locked}>
         <MenuItem onSelect={() => setRenaming(true)}>{t('chapter.rename')}</MenuItem>
         {onNewScene && (
@@ -301,31 +305,8 @@ function usePersistentFlag(key) {
   return [value, set];
 }
 
-function FilmEditorButton({ chapterId }) {
-  const { t } = useI18n();
-  const { dispatch } = useStoryboardUI();
-  const [open, setOpen] = useState(false);
-  if (!chapterId) return null;
-  return (
-    <>
-      <Button onClick={() => setOpen(true)}>
-        <Scissors size={14} />
-        {t('editor.open')}
-      </Button>
-      {open && (
-        <React.Suspense fallback={<p role="status">{t('settings.loading')}</p>}>
-          <FilmEditor
-            chapterId={chapterId}
-            onClose={() => setOpen(false)}
-            onUploadAudio={(files) => dispatch({ type: 'uploadFiles', files })}
-          />
-        </React.Suspense>
-      )}
-    </>
-  );
-}
-
-// Story, library and edit as steps of one project (h3-studio#995). Switching only changes what shows.
+// World, storyboard, library and edit as steps of one project (h3-studio#995, #1062). Switching
+// only changes what shows.
 function StageNav({ stage, stages, onChange }) {
   const { t } = useI18n();
   // Shown in the middle of the top bar, which SeriesApp draws above this page.
@@ -352,13 +333,62 @@ function StageNav({ stage, stages, onChange }) {
   );
 }
 
-function StoryFilmEditor({ chapterId, onClose }) {
+// The Edit step. A story of several chapters cuts one at a time, chosen here; the steps above never
+// change between stories. The waiting page has the same header and preview as the real one.
+function StoryFilmEditor({ chapterId, chapters, onChapter, opening, onClose }) {
   const { t } = useI18n();
   const { dispatch } = useStoryboardUI();
+  // Each chapter gets a fresh editor, so the picker is rebuilt too: keep the keyboard on it.
+  const refocus = useRef(false),
+    pickerNode = useRef(null);
+  useEffect(() => {
+    if (!refocus.current) return;
+    refocus.current = false;
+    pickerNode.current?.focus();
+  }, [chapterId]);
+  const picker =
+    chapters.length > 1 ? (
+      <select
+        className="film-chapter-pick"
+        aria-label={t('editor.chapter')}
+        value={chapterId}
+        ref={pickerNode}
+        onChange={(event) => {
+          refocus.current = true;
+          onChapter(event.target.value);
+        }}
+      >
+        {chapters.map((chapter, index) => {
+          const number = t('chapter.number', { n: index + 1 });
+          return (
+            <option key={chapter.id} value={chapter.id}>
+              {DEFAULT_CHAPTER_NAMES.has(chapter.title) ? number : number + ' · ' + chapter.title}
+            </option>
+          );
+        })}
+      </select>
+    ) : null;
+  const waiting = (
+    <section className="film-editor" aria-busy="true" aria-label={t('editor.open')}>
+      <header className="film-editor-head">
+        <div>
+          <div className="film-editor-title">
+            <h2>{t('editor.open')}</h2>
+            {picker}
+          </div>
+          <small className="muted">{'\u00a0'}</small>
+        </div>
+      </header>
+      <div className="film-editor-stage ui-wait" />
+    </section>
+  );
+  if (opening) return waiting;
   return (
-    <React.Suspense fallback={<p role="status">{t('settings.loading')}</p>}>
+    <React.Suspense fallback={waiting}>
       <FilmEditor
+        key={chapterId}
         chapterId={chapterId}
+        chapterPicker={picker}
         onClose={onClose}
         onUploadAudio={(files) => dispatch({ type: 'uploadFiles', files })}
       />
@@ -368,13 +398,15 @@ function StoryFilmEditor({ chapterId, onClose }) {
 
 function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmControl }) {
   const { t } = useI18n();
-  const [stage, setStageValue] = useState(() => stageFrom(globalThis.location?.search));
-  const setStage = (value) => {
+  const [stage, setStageValue] = useState(() => stageFrom(globalThis.location?.search)),
+    [editChapter, setEditChapter] = useState(() => chapterFrom(globalThis.location?.search));
+  const setStage = (value, chapter = editChapter) => {
     setStageValue(value);
+    setEditChapter(chapter);
     globalThis.history?.replaceState(
       globalThis.history.state,
       '',
-      withStage(globalThis.location.href, value),
+      withStage(globalThis.location.href, value, chapter),
     );
   };
   const [cardSize, setCardSize] = useState(() => readCardSize(globalThis.localStorage));
@@ -406,6 +438,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     [room, setRoom] = useState({ height: 0, content: 0 }),
     [theater, setTheater] = useState(false);
   const [folded, setFolded] = useState(() => new Set());
+  const { setPlaying } = player;
   useEffect(() => {
     const measure = () => {
       const col = column.current,
@@ -438,12 +471,15 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
   useEffect(() => {
     if (!pageActive) setTheater(false);
   }, [pageActive]);
+  // The storyboard's sound stops when it goes out of view: full screen, or another step.
+  const storyboardOut = theater || stage !== 'storyboard';
   useEffect(() => {
-    if (theater)
-      column.current?.parentElement
-        ?.querySelectorAll('.drawer video,.drawer audio')
-        .forEach((media) => media.pause());
-  }, [theater]);
+    if (!storyboardOut) return;
+    if (stage !== 'storyboard') setPlaying(false);
+    column.current?.parentElement
+      ?.querySelectorAll('.drawer video,.drawer audio')
+      .forEach((media) => media.pause());
+  }, [storyboardOut, stage, setPlaying]);
   useEffect(() => {
     if (!theater) return;
     const token = crypto.randomUUID(),
@@ -567,12 +603,17 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       if (first) chapterStarts.add(first.id);
     }
   // #232 (#6): dragged to its narrowest, the library is the same icon rail as collapsed.
-  // A story of several chapters edits each from its own header, so it has no single edit step.
-  const editable = !multi && !!state.project.chapterId && !state.placeholder,
-    stages = editable ? STAGES : STAGES.filter((value) => value !== 'edit'),
-    shownStage = stages.includes(stage) ? stage : 'storyboard',
-    wholeLibrary = shownStage === 'library';
-  const railed = !wholeLibrary && (libraryCollapsed || library.size <= 150),
+  // World and Library are the same panel as a whole page: its people and places, or its files.
+  const libraryPage = stage === 'world' ? 'world' : stage === 'library' ? 'files' : null,
+    wholePage = stage !== 'storyboard';
+  // The chapter Edit opens on: the one chosen, or else the one this story is on.
+  const liveChapter = (id) => (chapters.some((chapter) => chapter.id === id) ? id : null),
+    editChapterId =
+      liveChapter(editChapter) ||
+      liveChapter(state.project.chapterId) ||
+      chapters[0]?.id ||
+      state.project.chapterId;
+  const railed = !wholePage && (libraryCollapsed || library.size <= 150),
     toggleLibrary = () => {
       if (!railed) return setLibraryCollapsed(true);
       setLibraryCollapsed(false);
@@ -584,14 +625,15 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
         'layout A' +
         (state.placeholder ? ' story-placeholder' : '') +
         (railed ? ' library-collapsed' : '') +
-        (wholeLibrary ? ' stage-library' : '') +
+        (libraryPage ? ' stage-library' : '') +
+        (stage === 'edit' ? ' stage-edit' : '') +
         (theater ? ' theater' : '')
       }
       data-testid="storyboard-layout-a"
       style={{
         // Theater (#232 #4): the player and its timeline take the whole window width.
         gridTemplateColumns:
-          theater || wholeLibrary
+          theater || wholePage
             ? 'minmax(0,1fr)'
             : railed
               ? '52px minmax(0,1fr)'
@@ -599,14 +641,17 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
         '--libw': (railed ? 52 : library.size) + 'px',
       }}
     >
-      <StageNav stage={shownStage} stages={stages} onChange={setStage} />
-      {shownStage === 'edit' && (
+      <StageNav stage={stage} stages={STAGES} onChange={setStage} />
+      {stage === 'edit' && (
         <StoryFilmEditor
-          chapterId={state.project.chapterId}
+          chapterId={editChapterId}
+          chapters={chapters}
+          onChapter={(id) => setStage('edit', id)}
+          opening={!!state.placeholder}
           onClose={() => setStage('storyboard')}
         />
       )}
-      {!railed && !wholeLibrary && (
+      {!railed && !wholePage && (
         <Button
           className="sb-library-scrim"
           aria-label={t('storyboard.detail15')}
@@ -615,11 +660,13 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       )}
       <AssetLibrary
         onPick={pickAsset}
-        selectedShot={state.shots.find((shot) => shot.id === selected)}
+        // On its own page no shot is in view, so nothing here may quietly change one.
+        selectedShot={libraryPage ? undefined : state.shots.find((shot) => shot.id === selected)}
         collapsed={railed}
-        onToggle={toggleLibrary}
+        onToggle={libraryPage ? undefined : toggleLibrary}
+        page={libraryPage}
       />
-      {!railed && !wholeLibrary && (
+      {!railed && !wholePage && (
         <StoryboardSplitter panel={library} label={t('storyboard.copy17')} />
       )}
       <div
@@ -938,6 +985,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                                 })
                               }
                               onNewScene={onNewScene}
+                              onEdit={() => setStage('edit', chapter.id)}
                             />
                             {!folded.has(chapter.id) && own.map(renderGroup)}
                           </div>
