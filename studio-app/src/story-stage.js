@@ -1,6 +1,6 @@
 // Which step of a story is showing (h3-studio#995). Each has its own address, so a reload or a
 // shared link stays on it. Every step is a view of the same project.
-export const STAGES = Object.freeze(['world', 'storyboard', 'library', 'edit']);
+export const STAGES = Object.freeze(['script', 'world', 'storyboard', 'library', 'edit']);
 const DEFAULT = 'storyboard';
 
 export function stageFrom(search) {
