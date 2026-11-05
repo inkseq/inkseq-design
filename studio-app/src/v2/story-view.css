@@ -699,7 +699,7 @@ body.sb-resizing-y video {
 }
 .sb-chapter-head h2 small {
   flex: none;
-  color: var(--accent);
+  color: color-mix(in srgb, var(--accent) 72%, var(--ink));
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.02em;

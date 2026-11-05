@@ -885,6 +885,32 @@ export function createStore({ storage, now = () => Date.now(), seed = legacySeed
       emit();
       return saved;
     },
+    // Signing out leaves no copy of work the server already has. A draft with unsaved changes
+    // stays for its account: deleting it would lose work (#1021).
+    forgetSavedCloudDrafts(account) {
+      if (!storage || !account) return 0;
+      const prefix = `yingxu-cloud-draft-v1:${encodeURIComponent(account)}:`;
+      let forgotten = 0;
+      try {
+        const keys = Array.from({ length: storage.length }, (_, i) => storage.key(i));
+        for (const key of keys) {
+          if (!key?.startsWith(prefix)) continue;
+          let draft = null;
+          try {
+            draft = JSON.parse(storage.getItem(key));
+          } catch {
+            continue;
+          }
+          if (draft?.dirty === false) {
+            storage.removeItem(key);
+            forgotten += 1;
+          }
+        }
+      } catch {
+        return forgotten;
+      }
+      return forgotten;
+    },
     getCloudDraft(account, id) {
       const key = cloudKey(account, id);
       if (volatileCloudDrafts.has(key)) return clone(volatileCloudDrafts.get(key));

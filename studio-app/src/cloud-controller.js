@@ -26,6 +26,7 @@ import {
 import { roughCutSnapshot, roughCutJobs } from './roughcut-model.js';
 import { burnCaptionStatus } from './caption-model.js';
 import { requireModeAvailable } from './generation-availability.js';
+import { resetAnalytics } from './analytics.js';
 import {
   chapterShots,
   storyboardProfile,
@@ -852,8 +853,8 @@ export function createCloudController({
         !selected ||
         selected.generation_support?.[b.mode]?.enabled !== true ||
         (b.quality === 'final'
-          ? selected.model_id !== 'MiniMax-H3-Base-INT8'
-          : selected.model_id !== 'MiniMax-H3-Pruned-Rank8-INT8')
+          ? !selected.model_id?.endsWith('-Base-INT8')
+          : !selected.model_id?.endsWith('-Pruned-Rank8-INT8'))
       )
         throw Error(words('所选模型与草稿/精修配置不一致或尚不可用；未使用另一模型替代。'));
       if (
@@ -2260,7 +2261,10 @@ export function createCloudController({
           void clearVideoCache().catch(() => {});
           const result = await api.logout();
           rememberVisit({ mode: 'local' });
-          replaceIdentity(null, '已退出。云草稿仍按原账户保留，本机作品已恢复。');
+          const leaving = state.account;
+          replaceIdentity(null, '已退出。未保存的云草稿仍按原账户保留，本机作品已恢复。');
+          store.forgetSavedCloudDrafts(leaving);
+          resetAnalytics();
           announceSession();
           const providerLogout = providerLogoutUrl(result);
           if (providerLogout && typeof window !== 'undefined')
@@ -2274,7 +2278,10 @@ export function createCloudController({
           void clearVideoCache().catch(() => {});
           await api.revokeAllSessions('sessions-' + uid());
           rememberVisit({ mode: 'local' });
-          replaceIdentity(null, '已在所有设备退出。云草稿仍按原账户保留。');
+          const leaving = state.account;
+          replaceIdentity(null, '已在所有设备退出。未保存的云草稿仍按原账户保留。');
+          store.forgetSavedCloudDrafts(leaving);
+          resetAnalytics();
           announceSession();
         },
         { blocking: true },
