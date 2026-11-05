@@ -309,6 +309,21 @@ function usePersistentFlag(key) {
 
 // Script, world, storyboard, library and edit as steps of one project (h3-studio#995, #1062).
 // Switching only changes what shows.
+// Inky stays in the top bar on every step of the story (owner, 2026-11-05: always there, silent
+// with nothing to say).
+function InkyInTopBar({ selectedShot }) {
+  const [slot, setSlot] = useState(null),
+    place = useRef(null);
+  useLayoutEffect(() => {
+    setSlot(place.current?.closest('.workspace')?.querySelector('.wbar-inky') || null);
+  }, []);
+  return (
+    <span ref={place} hidden>
+      {slot && createPortal(<InkyForStory selectedShot={selectedShot} />, slot)}
+    </span>
+  );
+}
+
 function StageNav({ stage, stages, onChange }) {
   const { t } = useI18n();
   // Shown in the middle of the top bar, which SeriesApp draws above this page.
@@ -411,6 +426,12 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       withStage(globalThis.location.href, value, chapter),
     );
   };
+  // A link can change the step too: Inky's "go fix it" opens a shot on the storyboard from any step.
+  const { search } = useAppLocation();
+  useEffect(() => {
+    setStageValue(stageFrom(search));
+    setEditChapter(chapterFrom(search));
+  }, [search]);
   const [cardSize, setCardSize] = useState(() => readCardSize(globalThis.localStorage));
   const chooseCardSize = (value) => {
     setCardSize(value);
@@ -703,7 +724,6 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
                 value={cardSize}
                 onChange={chooseCardSize}
               />
-              <InkyForStory selectedShot={selected} />
               {!groups.length && !state.placeholder && (
                 <Button
                   disabled={state.busy || !!state.workbenchPending}
@@ -1086,6 +1106,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       }}
     >
       <StageNav stage={stage} stages={STAGES} onChange={setStage} />
+      <InkyInTopBar selectedShot={selected} />
       {stage === 'script' && (
         <StoryScript
           chapters={chapters}

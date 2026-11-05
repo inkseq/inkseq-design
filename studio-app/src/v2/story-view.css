@@ -1528,6 +1528,9 @@ body.sb-resizing-y video {
 .wbar {
   position: relative;
 }
+.wbar-inky {
+  display: inline-flex;
+}
 .wbar-stages {
   position: absolute;
   top: 50%;
@@ -1544,7 +1547,7 @@ body.sb-resizing-y video {
 }
 /* No room in the middle: the steps take their own row under the bar. The controls on the right
    are about 610 px wide with their labels, and the steps are always centred on the window. */
-@media (max-width: 1240px) {
+@media (max-width: 1340px) {
   .v2-story-view .wbar {
     height: auto;
     min-height: 48px;

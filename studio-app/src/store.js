@@ -1352,7 +1352,7 @@ export function createStore({ storage, now = () => Date.now(), seed = legacySeed
     undo() {
       if (!past.length) return false;
       future.push(state.project);
-      state = { ...state, project: past.pop(), notice: '已撤销上一步。' };
+      state = { ...state, project: past.pop(), notice: words('已撤销上一步。') };
       coalesce = null;
       if (state.selectedId && !state.project.entities.some((e) => e.id === state.selectedId))
         state.selectedId = null;
