@@ -105,6 +105,12 @@ export const storyboardCatalogs = {
     'storyboard.pricing': 'Getting the price for your shots…',
     'storyboard.addShot': 'Add shot',
     'stage.title': 'Steps of this story',
+    'stage.world': 'World',
+    'stage.searchWorld': 'Search characters, locations and props…',
+    'stage.searchFiles': 'Search files…',
+    'stage.worldCharacterTip':
+      'Character = description + look photos + voice. In the storyboard, drag it from the side panel onto a shot to use them all.',
+    'stage.worldTip': ' Open a card to change it or add photos.',
     'stage.storyboard': 'Storyboard',
     'stage.library': 'Library',
     'stage.edit': 'Edit',
@@ -447,7 +453,7 @@ export const storyboardCatalogs = {
     'storyboard.mixed18': 'New {kind}',
     'storyboard.mixed19': 'Suggested: {profile} · {version} (in this shot)',
     'storyboard.mixed20':
-      'Open a profile and drag photos into it from Images. New uploads can be filed from Unfiled in one click.',
+      ' Open a profile and drag photos into it from Images. New uploads can be filed from Unfiled in one click.',
     'storyboard.mixed21':
       'Keep this look: change only the prompt or references, and the rest stays like this take',
     'storyboard.finish1': 'Search the library…',
@@ -723,6 +729,12 @@ export const storyboardCatalogs = {
     'storyboard.pricing': '正在计算这些镜头的费用…',
     'storyboard.addShot': '加镜头',
     'stage.title': '故事的步骤',
+    'stage.world': '世界',
+    'stage.searchWorld': '搜索人物、场景、道具…',
+    'stage.searchFiles': '搜索文件…',
+    'stage.worldCharacterTip':
+      '人物档案 = 描述 + 造型照片 + 声音。在故事板里，从侧边面板拖到镜头上就会一起带上。',
+    'stage.worldTip': '打开卡片可以修改或添加照片。',
     'stage.storyboard': '故事板',
     'stage.library': '素材库',
     'stage.edit': '剪辑',
