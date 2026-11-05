@@ -6,7 +6,6 @@
     "busyDisables": {
       "AdminHome.jsx": 1,
       "AgentLink.jsx": 1,
-      "App.jsx": 7,
       "ChapterRoughCut.jsx": 5,
       "CloudStudio.jsx": 11,
       "CreationHistory.jsx": 4,
@@ -16,6 +15,7 @@
       "P4OperatorConsole.jsx": 2,
       "ProductionQueue.jsx": 15,
       "ProjectActivity.jsx": 1,
+      "SeriesApp.jsx": 7,
       "StoryboardComponents.jsx": 5,
       "StoryboardWorkbench.jsx": 4,
       "StoryboardWorkspace.jsx": 5,
