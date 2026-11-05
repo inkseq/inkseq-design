@@ -169,8 +169,7 @@ export const workbenchCatalogs = {
     'workbench.costCredits': '费用：{credits} 积分',
     'workbench.balance': '你有 {credits} 积分',
     'workbench.notEnough': '积分不够，请先到 设置 → 积分 充值。',
-    'workbench.tooShort':
-      '有 {count} 个镜头比视频最短时长 {seconds} 秒还短，没有扣费。',
+    'workbench.tooShort': '有 {count} 个镜头比视频最短时长 {seconds} 秒还短，没有扣费。',
     'workbench.lengthen': '改成 {seconds} 秒',
     'workbench.blockedInput':
       '这个镜头的图片或设置暂时不能生成，没有扣费。请检查镜头的参考素材后再试。',
