@@ -5,7 +5,7 @@ import React, { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { ImagePlus } from 'lucide-react';
 import { CreditUsageBar, creditShortfall, useCredits } from './CreditsUI.jsx';
-import { useCloud } from './CloudStudio.jsx';
+import { useCloud } from './use-cloud.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { Button } from './ui/Button.jsx';
 import { Dialog, DialogActions } from './ui/Dialog.jsx';
