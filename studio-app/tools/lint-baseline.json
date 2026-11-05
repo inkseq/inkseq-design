@@ -1,18 +1,18 @@
 {
   "totals": {
-    "complexity": 76,
-    "max-lines-per-function": 49
+    "complexity": 79,
+    "max-lines-per-function": 50
   },
   "files": {
     "complexity": {
       "src/admin-overview-model.js": 1,
-      "src/App.jsx": 1,
       "src/assistant-connections-model.js": 1,
       "src/AssistantConnections.jsx": 1,
       "src/ChapterRoughCut.jsx": 1,
       "src/cloud-client.js": 1,
       "src/cloud-controller.js": 7,
       "src/CloudStudio.jsx": 1,
+      "src/CreditsUI.jsx": 1,
       "src/dstack-presentation.js": 1,
       "src/DstackCapacity.jsx": 3,
       "src/FilmEditor.jsx": 1,
@@ -34,15 +34,17 @@
       "src/quick-chat-controller.js": 2,
       "src/quick-chat-history.js": 1,
       "src/QuickChatControls.jsx": 1,
+      "src/SeriesApp.jsx": 1,
       "src/SpendingBreakdown.jsx": 1,
       "src/SpendingSettings.jsx": 1,
       "src/store.js": 2,
       "src/story-film.js": 1,
+      "src/storyboard-actions.js": 1,
       "src/storyboard-commands.js": 1,
       "src/StoryboardComponents.jsx": 5,
       "src/StoryboardConnected.jsx": 1,
       "src/StoryboardMedia.jsx": 1,
-      "src/StoryboardWorkbench.jsx": 1,
+      "src/StoryboardWorkbench.jsx": 2,
       "src/StoryboardWorkspace.jsx": 1,
       "src/StoryChat.jsx": 1,
       "src/StoryFilmControl.jsx": 1,
@@ -76,6 +78,7 @@
       "src/ProductionQueue.jsx": 1,
       "src/quick-chat-controller.js": 1,
       "src/QuickChatControls.jsx": 1,
+      "src/SeriesApp.jsx": 1,
       "src/SpendingSettings.jsx": 1,
       "src/store.js": 1,
       "src/story-chat-client.js": 1,
@@ -89,7 +92,8 @@
       "src/StoryFilmControl.jsx": 1,
       "src/StoryNavigation.jsx": 3,
       "src/TakeReview.jsx": 1,
-      "src/UniversalTrash.jsx": 2,
+      "src/trash-provider.jsx": 1,
+      "src/UniversalTrash.jsx": 1,
       "src/v2/LibraryView.jsx": 1,
       "src/video-cache-core.js": 1
     }
