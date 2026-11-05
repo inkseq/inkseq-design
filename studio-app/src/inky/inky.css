@@ -221,6 +221,53 @@
   gap: 8px;
 }
 
+.inky-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inky-thread {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 240px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.inky-say {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.inky-say p {
+  margin: 0;
+  max-width: 90%;
+  padding: 6px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--fill);
+}
+.inky-say.me {
+  align-items: flex-end;
+}
+.inky-say.me p {
+  background: var(--accent-soft);
+}
+.inky-compose {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+.inky-compose textarea {
+  width: 100%;
+  box-sizing: border-box;
+  resize: none;
+}
 .inky-perch {
   z-index: 41;
   display: flex;

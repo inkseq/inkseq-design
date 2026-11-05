@@ -1923,6 +1923,40 @@ export function createCloudController({
     guard(ctx);
     return value;
   }
+  // The server changed the story: bring the page up to date, as a remote change.
+  async function pullServerStory(ctx) {
+    const record = checkedProjectRecord(await api.project(ctx.projectId));
+    guard(ctx);
+    if (
+      record.version > current().workspace.serverVersion &&
+      !store.rebaseCloud(record.project, { account: ctx.account, version: record.version })
+    )
+      emit({ remoteUpdate: { id: record.id, version: record.version } });
+  }
+  // Typing to Inky (#1065): the person's own unsaved text goes first, so nothing of theirs is lost.
+  async function sendInkyMessage(text, shotId) {
+    requireCloud();
+    const ctx = context();
+    if (current().workspace.dirty) await save();
+    const value = await api.request(`/v1/story-chats/${encodeURIComponent(ctx.projectId)}/turns`, {
+      method: 'POST',
+      body: { turn_id: 'inky-' + crypto.randomUUID(), text, inky: { shot_id: shotId || null } },
+      timeoutMs: 120000,
+    });
+    guard(ctx);
+    await pullServerStory(ctx);
+    return value.turn;
+  }
+  async function undoInkyMessage(turnId) {
+    requireCloud();
+    const ctx = context();
+    await api.request(`/v1/story-chats/${encodeURIComponent(ctx.projectId)}/undo`, {
+      method: 'POST',
+      body: { turn_id: turnId },
+    });
+    guard(ctx);
+    await pullServerStory(ctx);
+  }
   // A draft of the shot's action text. The server saves nothing; the person decides.
   async function rewriteInkySuggestion(id) {
     requireCloud();
@@ -2161,6 +2195,8 @@ export function createCloudController({
     readShotReadiness: () => readShotReadiness(),
     ignoreInkySuggestion: (id) => ignoreInkySuggestion(id),
     rewriteInkySuggestion: (id) => rewriteInkySuggestion(id),
+    sendInkyMessage: (text, shotId) => sendInkyMessage(text, shotId),
+    undoInkyMessage: (turnId) => undoInkyMessage(turnId),
     saveTakeReview: (shotId, artifactId, body, key) =>
       saveTakeReview(shotId, artifactId, body, key),
     // Story edits share one version, so they run one after another: a quick second click
