@@ -185,6 +185,9 @@
 !studio-app/src/enhance-take.js
 !studio-app/src/enhance-take.test.js
 !studio-app/src/StoryNavigation.jsx
+!studio-app/src/StoryScript.jsx
+!studio-app/src/story-script.css
+!studio-app/src/story-headings.js
 !studio-app/src/StoryOpenNotice.jsx
 !studio-app/src/story-open.js
 !studio-app/src/story-open.css

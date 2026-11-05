@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { chapterFrom, stageFrom, withStage } from './story-stage.js';
+import { STAGES, chapterFrom, stageFrom, withStage } from './story-stage.js';
+
+test('the script comes first, and the storyboard stays the default', () => {
+  assert.deepEqual(STAGES, ['script', 'world', 'storyboard', 'library', 'edit']);
+  assert.equal(withStage('https://x.test/?project=p1', 'script'), '/?project=p1&stage=script');
+});
 
 test('an unknown or missing stage is the storyboard', () => {
   assert.equal(stageFrom(''), 'storyboard');
@@ -8,6 +13,7 @@ test('an unknown or missing stage is the storyboard', () => {
   assert.equal(stageFrom('?view=workspace&stage=library'), 'library');
   assert.equal(stageFrom('?stage=edit'), 'edit');
   assert.equal(stageFrom('?stage=world'), 'world');
+  assert.equal(stageFrom('?stage=script'), 'script');
   assert.equal(stageFrom(undefined), 'storyboard');
 });
 

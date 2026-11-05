@@ -2,13 +2,15 @@ import { WorkbenchBulk } from './StoryboardWorkbench.jsx';
 import { Button } from './ui/Button.jsx';
 import { Segmented } from './ui/Segmented.jsx';
 import { STAGES, chapterFrom, stageFrom, withStage } from './story-stage.js';
+import { DEFAULT_CHAPTER_NAMES, sceneHeading } from './story-headings.js';
+import { StoryScript } from './StoryScript.jsx';
 import { CARD_SIZES, readCardSize, rememberCardSize } from './shot-mention.js';
 import { FloatingMessage } from './floating-notice.js';
 import './v2/story-view.css';
 import './film-editor.css';
 import { selectShot, emptySelection } from './storyboard-selection.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { Activity, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   Plus,
@@ -305,8 +307,8 @@ function usePersistentFlag(key) {
   return [value, set];
 }
 
-// World, storyboard, library and edit as steps of one project (h3-studio#995, #1062). Switching
-// only changes what shows.
+// Script, world, storyboard, library and edit as steps of one project (h3-studio#995, #1062).
+// Switching only changes what shows.
 function StageNav({ stage, stages, onChange }) {
   const { t } = useI18n();
   // Shown in the middle of the top bar, which SeriesApp draws above this page.
@@ -575,6 +577,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     .map((scene) => ({
       id: scene.id,
       title: scene.title,
+      script: scene.data?.script || '',
       chapterId: scene.parentId,
       shots: shots.filter((shot) => shot.entity?.parentId === scene.id),
     }));
@@ -619,38 +622,8 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
       setLibraryCollapsed(false);
       if (library.size <= 150) library.set(260);
     };
-  return (
-    <div
-      className={
-        'layout A' +
-        (state.placeholder ? ' story-placeholder' : '') +
-        (railed ? ' library-collapsed' : '') +
-        (libraryPage ? ' stage-library' : '') +
-        (stage === 'edit' ? ' stage-edit' : '') +
-        (theater ? ' theater' : '')
-      }
-      data-testid="storyboard-layout-a"
-      style={{
-        // Theater (#232 #4): the player and its timeline take the whole window width.
-        gridTemplateColumns:
-          theater || wholePage
-            ? 'minmax(0,1fr)'
-            : railed
-              ? '52px minmax(0,1fr)'
-              : `${library.size}px 8px minmax(0,1fr)`,
-        '--libw': (railed ? 52 : library.size) + 'px',
-      }}
-    >
-      <StageNav stage={stage} stages={STAGES} onChange={setStage} />
-      {stage === 'edit' && (
-        <StoryFilmEditor
-          chapterId={editChapterId}
-          chapters={chapters}
-          onChapter={(id) => setStage('edit', id)}
-          opening={!!state.placeholder}
-          onClose={() => setStage('storyboard')}
-        />
-      )}
+  const behindScript = (
+    <>
       {!railed && !wholePage && (
         <Button
           className="sb-library-scrim"
@@ -1087,7 +1060,62 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
           </div>
         </div>
       </div>
-      {selected && (
+    </>
+  );
+  return (
+    <div
+      className={
+        'layout A' +
+        (state.placeholder ? ' story-placeholder' : '') +
+        (railed ? ' library-collapsed' : '') +
+        (libraryPage ? ' stage-library' : '') +
+        (stage === 'edit' ? ' stage-edit' : '') +
+        (stage === 'script' ? ' stage-script' : '') +
+        (theater ? ' theater' : '')
+      }
+      data-testid="storyboard-layout-a"
+      style={{
+        // Theater (#232 #4): the player and its timeline take the whole window width.
+        gridTemplateColumns:
+          theater || wholePage
+            ? 'minmax(0,1fr)'
+            : railed
+              ? '52px minmax(0,1fr)'
+              : `${library.size}px 8px minmax(0,1fr)`,
+        '--libw': (railed ? 52 : library.size) + 'px',
+      }}
+    >
+      <StageNav stage={stage} stages={STAGES} onChange={setStage} />
+      {stage === 'script' && (
+        <StoryScript
+          chapters={chapters}
+          groups={groups}
+          shots={shots}
+          onNewScene={onNewScene}
+          onOpenShot={(id) => {
+            setStage('storyboard');
+            setSelected(id);
+            requestAnimationFrame(() =>
+              document
+                .querySelector('[data-shot-card="' + id + '"]')
+                ?.scrollIntoView({ block: 'nearest' }),
+            );
+          }}
+        />
+      )}
+      {stage === 'edit' && (
+        <StoryFilmEditor
+          chapterId={editChapterId}
+          chapters={chapters}
+          onChapter={(id) => setStage('edit', id)}
+          opening={!!state.placeholder}
+          onClose={() => setStage('storyboard')}
+        />
+      )}
+      {/* Saving redraws this page. The script page is for typing, so the storyboard behind it waits
+          for idle moments and keeps its place for the way back. */}
+      <Activity mode={stage === 'script' ? 'hidden' : 'visible'}>{behindScript}</Activity>
+      {selected && stage !== 'script' && (
         <aside
           hidden={theater}
           className={'drawer' + (expanded ? ' wide workbench-expanded' : '')}
@@ -1140,15 +1168,10 @@ function useGuideField(pageActive, search, selected) {
 // Default chapter and scene names come from whoever made the story (assistant, server or an
 // older build), often in the other language. Show the story title for a lone default chapter
 // and "Scene N" in the reader's language; names the user typed stay as they are.
-const DEFAULT_CHAPTER_NAMES = new Set(['Story', '故事', '第一章', 'Chapter 1']);
 const chapterHeading = (state, multi) =>
   multi || DEFAULT_CHAPTER_NAMES.has(state.project.chapter)
     ? state.project.title || state.project.chapter
     : state.project.chapter;
-const sceneHeading = (title, t) => {
-  const n = /^(?:Scene |场景 ?)(\d+)$/.exec(title || '')?.[1];
-  return n ? t('storyboard.sceneN', { number: n }) : title;
-};
 function useGenerateLink(pageActive, search, state, dispatch) {
   const link = readAgentLink(search),
     asked = link?.generate ? link.projectId : null;
