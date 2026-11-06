@@ -344,7 +344,7 @@ function shotSupport(shot, state, { effectiveProfile, effectiveRecipe, inputMode
 
 // A card as "Name (description)", never "Name: description": H3 voices "Name: text" as a
 // spoken line (Geryon run, 2026-11-07). Mirrors profile_text in h3-studio storyboard.py.
-const CJK = /[　-〿㐀-鿿＀-￯]/;
+const CJK = /[\u3000-\u303f\u3400-\u9fff\uff00-\uffef]/;
 export function profileText(name, description, variant) {
   let detail = (description || '').trim();
   if (variant?.desc?.trim()) {
