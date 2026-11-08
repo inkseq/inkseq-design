@@ -529,3 +529,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/script-beats.js
 !studio-app/src/script-beats.test.js
 !studio-app/src/ScriptBeats.jsx
+!studio-app/src/shot-plan.js
+!studio-app/src/shot-plan.css
+!studio-app/src/shot-plan.test.js
+!studio-app/src/ShotPlan.jsx
