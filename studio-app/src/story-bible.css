@@ -63,7 +63,7 @@
   font-size: var(--fs-xs);
 }
 /* Beats the dialog's fit-content button rule (ui/dialog.css). */
-.bible .bible-slot > button.bible-slot-face.bible-slot-face {
+.bible .bible-slot > .bible-slot-face.bible-slot-face.bible-slot-face {
   width: 100%;
   max-width: 120px;
   height: auto;
@@ -104,10 +104,10 @@
   box-shadow: var(--shadow);
 }
 .bible-picker > small,
-.bible-picker > button:not(.bible-picker-item) {
+.bible-picker > :not(.bible-picker-item) {
   grid-column: 1 / -1;
 }
-.bible .bible-picker > button.bible-picker-item.bible-picker-item {
+.bible .bible-picker > .bible-picker-item.bible-picker-item.bible-picker-item {
   width: 100%;
   height: auto;
   min-height: 0;
