@@ -521,3 +521,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/StartRulesPanel.jsx
 !studio-app/src/start-rules-model.js
 !studio-app/src/start-rules.test.js
+!studio-app/src/story-bible.js
+!studio-app/src/story-bible.test.js
+!studio-app/src/story-bible.css
+!studio-app/src/ProfileBible.jsx
+!studio-app/src/BibleImport.jsx

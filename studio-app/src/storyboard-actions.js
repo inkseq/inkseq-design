@@ -10,6 +10,7 @@ import {
   storyboardView,
   newStoryboardEntity,
 } from './storyboard-domain.js';
+import { applyBiblePatch, validBiblePatch } from './story-bible.js';
 
 const find = (project, id) => project.entities.find((entity) => entity.id === id);
 const list = (value) => (Array.isArray(value) ? value : []);
@@ -711,6 +712,13 @@ function addVoiceGroupAction(project, action, { profile }) {
   changedProfile(project, profile);
   return { id: profile.id };
 }
+// Structured story-bible fields (story-bible.js): body, expressions, speaker, anchors…
+function bibleAction(project, action, { profile }) {
+  if (!validBiblePatch(project, profile, action.patch)) return false;
+  applyBiblePatch(profile, action.patch);
+  changedProfile(project, profile);
+  return { id: profile.id };
+}
 const SHOT_AND_PAGE_ACTIONS = {
   project: projectAction,
   add: addAction,
@@ -735,6 +743,7 @@ const SHOT_AND_PAGE_ACTIONS = {
 };
 const PROFILE_ACTIONS = {
   profile: profileAction,
+  bible: bibleAction,
   addVariant: addVariantAction,
   variant: variantAction,
   fileImage: fileImageGroupAction,
