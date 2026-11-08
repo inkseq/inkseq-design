@@ -526,3 +526,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/story-bible.css
 !studio-app/src/ProfileBible.jsx
 !studio-app/src/BibleImport.jsx
+!studio-app/src/script-beats.js
+!studio-app/src/script-beats.test.js
+!studio-app/src/ScriptBeats.jsx
