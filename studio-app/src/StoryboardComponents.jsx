@@ -92,7 +92,7 @@ import { ShotLook } from './ShotLook.jsx';
 import { ShotCardPrompt } from './ShotCardPrompt.jsx';
 import { VoicePicker } from './VoicePicker.jsx';
 import { BibleDots, ProfileBible } from './ProfileBible.jsx';
-import { BibleImportExport } from './BibleImport.jsx';
+import { StagePage } from './StagePage.jsx';
 import { characterGroups } from './story-bible.js';
 import { ShotCardPlan, ShotPlanPanel } from './ShotPlan.jsx';
 import { useShotReadiness } from './shot-readiness.js';
@@ -512,15 +512,13 @@ function ChooseFiles({ kind, exclude, title, onPick, onFiles, onClose }) {
 /* ---------- library ---------- */
 
 // The panel beside the storyboard holds everything, so any of it can be dragged onto a shot. As a
-// whole page it holds one half: page 'world' the people, places and props, page 'files' the files.
-export function AssetLibrary({
-  onPick,
-  selectedShot,
-  compact,
-  collapsed = false,
-  onToggle,
-  page = null,
-}) {
+// whole page it holds one half: page 'world' the people, places and props, page 'files' the files
+// (StagePage.jsx).
+export function AssetLibrary({ page = null, ...props }) {
+  return page ? <StagePage page={page} /> : <PanelLibrary {...props} />;
+}
+
+function PanelLibrary({ onPick, selectedShot, compact, collapsed = false, onToggle }) {
   const { t: tr } = useI18n();
   const { TYPE_LABEL } = displayLabels(tr);
   const ALL_TABS = [
@@ -532,19 +530,11 @@ export function AssetLibrary({
     ['audio', tr('storyboard.copy51'), Music],
     ['inbox', tr('storyboard.detail13'), Inbox],
   ];
-  const LIB_TABS = ALL_TABS.filter(
-    ([k]) => !page || ['character', 'location', 'prop'].includes(k) === (page === 'world'),
-  );
+  const LIB_TABS = ALL_TABS;
 
   const { state, dispatch, db } = useStore();
-  // Each page keeps its own category and search.
-  const place = page || 'panel',
-    [tabs, setTabs] = useState({}),
-    [searches, setSearches] = useState({}),
-    tab = tabs[place] || LIB_TABS[0][0],
-    q = searches[place] || '',
-    setTab = (value) => setTabs((old) => ({ ...old, [place]: value })),
-    setQ = (value) => setSearches((old) => ({ ...old, [place]: value }));
+  const [tab, setTab] = useState(LIB_TABS[0][0]),
+    [q, setQ] = useState('');
   const [wide, setWide] = useState(false),
     [zoom, setZoom] = useState(null),
     [newProfileType, setNewProfileType] = useState(null);
@@ -592,9 +582,7 @@ export function AssetLibrary({
       count: state.assets.length,
     });
   const newProfileLabel = tr('storyboard.mixed16', { kind: TYPE_LABEL[tab] }),
-    heading = tr(
-      page === 'world' ? 'stage.world' : page === 'files' ? 'stage.library' : 'storyboard.copy41',
-    );
+    heading = tr('storyboard.copy41');
   return (
     <aside
       className={
@@ -610,15 +598,11 @@ export function AssetLibrary({
           <>
             <b>{heading}</b>
             <small>
-              {page === 'world'
-                ? profileCount
-                : page === 'files'
-                  ? fileCount
-                  : tr('storyboard.libraryCounts', { profiles: profileCount, assets: fileCount })}
+              {tr('storyboard.libraryCounts', { profiles: profileCount, assets: fileCount })}
             </small>
           </>
         )}
-        {page ? null : onToggle ? (
+        {onToggle ? (
           <Button
             variant="ghost"
             size="sm"
@@ -637,18 +621,11 @@ export function AssetLibrary({
         )}
       </div>
       <div className="row tight">
-        {page === 'world' ? (
-          <Button size="sm" onClick={() => setNewProfileType(tab)}>
-            <Plus size={14} />
-            {newProfileLabel}
-          </Button>
-        ) : (
-          <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
-            <Upload size={14} />
-            {tr('storyboard.copy42')}
-          </Button>
-        )}
-        {isProfileTab && !page && (
+        <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
+          <Upload size={14} />
+          {tr('storyboard.copy42')}
+        </Button>
+        {isProfileTab && (
           // #232 (#8): one "+" that creates whatever category is open.
           <Button
             variant="ghost"
@@ -676,20 +653,8 @@ export function AssetLibrary({
       </div>
       <input
         className="lib-search"
-        aria-label={tr(
-          page === 'world'
-            ? 'stage.searchWorld'
-            : page === 'files'
-              ? 'stage.searchFiles'
-              : 'storyboard.detail72',
-        )}
-        placeholder={
-          page === 'world'
-            ? tr('stage.searchWorld')
-            : page === 'files'
-              ? tr('stage.searchFiles')
-              : tr('storyboard.detail73')
-        }
+        aria-label={tr('storyboard.detail72')}
+        placeholder={tr('storyboard.detail73')}
         value={q}
         onChange={(e) => setQ(e.target.value)}
       />
@@ -744,7 +709,6 @@ export function AssetLibrary({
                 <ProfileCard
                   key={p.id}
                   p={p}
-                  draggable={!page}
                   used={usedP.has(p.id)}
                   onOpen={() => dispatch({ type: 'openProfile', id: p.id })}
                   onAdd={selectedShot ? () => onPick({ profile: p.id }) : null}
@@ -766,14 +730,13 @@ export function AssetLibrary({
               );
             })}
           </div>
-          {page === 'world' && <BibleImportExport />}
           <div className="lib-tip">
             {tab === 'character'
-              ? tr(page === 'world' ? 'stage.worldCharacterTip' : 'storyboard.detail18')
+              ? tr('storyboard.detail18')
               : tab === 'location'
                 ? tr('storyboard.detail19')
                 : tr('storyboard.detail20')}
-            {tr(page === 'world' ? 'stage.worldTip' : 'storyboard.mixed20')}
+            {tr('storyboard.mixed20')}
           </div>
         </>
       )}
@@ -793,11 +756,8 @@ export function AssetLibrary({
                 key={a.id}
                 asset={a}
                 gridCard
-                // The full-page library has no shot or profile to drop on (audit 2026-11-09).
-                draggable={!page}
                 used={usedA.has(a.id)}
-                // On its own page there is no shot to add to: a click just looks at the file.
-                onClick={page ? () => setZoom(a) : () => onPick?.({ asset: a.id })}
+                onClick={() => onPick?.({ asset: a.id })}
                 onZoom={setZoom}
               />
             ))}
@@ -806,12 +766,10 @@ export function AssetLibrary({
 
       {tab === 'inbox' && (
         <div className="inbox">
-          {!page && (
-            <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
-              <Upload size={14} />
-              {tr('storyboard.copy44')}
-            </Button>
-          )}
+          <Button size="sm" onClick={() => uploadInput.current.click()} disabled={state.busy}>
+            <Upload size={14} />
+            {tr('storyboard.copy44')}
+          </Button>
           {!inbox.length && <p className="muted">{tr('storyboard.copy45')}</p>}
           {inbox.map((a) => (
             <InboxRow key={a.id} a={a} />
@@ -866,7 +824,7 @@ export function AssetLibrary({
   );
 }
 
-function InboxRow({ a }) {
+export function InboxRow({ a }) {
   const { t: tr } = useI18n();
   const { TYPE_LABEL } = displayLabels(tr);
   const { state, dispatch, db } = useStore();

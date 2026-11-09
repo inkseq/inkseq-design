@@ -1584,41 +1584,6 @@ body.sb-resizing-y video {
 .layout.A.stage-edit > :not(.film-editor) {
   display: none;
 }
-/* As its own step the library is the page, not the phone's slide-over. */
-.sb-workspace .layout.A.stage-library:not(.library-collapsed) > .library {
-  position: static;
-  width: auto;
-  z-index: auto;
-  box-shadow: none;
-  border-right: 0;
-}
-/* The panel's narrow layout, opened out for a whole page. */
-.layout.A.stage-library .lib-search {
-  max-width: 480px;
-}
-.layout.A.stage-library .lib-tabs {
-  display: flex;
-  flex-wrap: wrap;
-}
-.layout.A.stage-library .lib-tabs .filter-chip > span {
-  overflow: visible;
-}
-.layout.A.stage-library .grid {
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-}
-.layout.A.stage-library .inbox {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  align-items: start;
-}
-.layout.A.stage-library .plist {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  align-content: start;
-  /* A group box (三兄弟) is taller than one card; the cards beside it keep their own height. */
-  align-items: start;
-  gap: 10px;
-}
 /* Step progress (story-flow.js): a thin bar under each step name; counts are in its tooltip. */
 .sb-stage-label {
   position: relative;
