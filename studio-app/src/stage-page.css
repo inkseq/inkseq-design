@@ -113,7 +113,8 @@
   --sp-card-min: 168px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--sp-card-min), 1fr));
-  gap: var(--sp-5) var(--sp-4);
+  /* One gutter both ways (layout audit 2026-11-10). */
+  gap: var(--sp-4);
   align-items: start;
 }
 .sp-grid[data-kind='location'] {
@@ -126,26 +127,24 @@
   .sp-grid,
   .sp-grid[data-kind='file'] {
     --sp-card-min: 148px;
-    gap: var(--sp-4) var(--sp-3);
+    gap: var(--sp-3);
   }
   .sp-grid[data-kind='location'] {
     --sp-card-min: 100%;
   }
 }
 
-/* A group (三兄弟): a labelled band across the grid whose members use the grid's own columns.
-   The negative margin pays for the band's border and padding, so members line up exactly with
-   the single cards above and below. */
+/* A group (三兄弟): a labelled section across the grid whose members use the grid's own
+   columns, so they line up exactly with the single cards above and below. A rule above the
+   label marks it; a tinted box would need a negative margin and stick out past the page's
+   left edge (layout audit 2026-11-10). */
 .sp-group {
   grid-column: 1 / -1;
   display: grid;
   grid-template-columns: subgrid;
-  row-gap: var(--sp-3);
-  margin-inline: calc(-1 * var(--sp-3) - 1px);
-  padding: var(--sp-3);
-  border: 1px solid var(--line);
-  border-radius: var(--r-lg);
-  background: var(--fill);
+  gap: inherit;
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--line);
 }
 .sp-group-head {
   grid-column: 1 / -1;
