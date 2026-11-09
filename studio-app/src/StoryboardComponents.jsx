@@ -38,6 +38,7 @@ import { useDragMove } from './ui/useDragMove.js';
 import { Badge, Chip, Note } from './ui/Note.jsx';
 import './profile-editor.css';
 import { TrashMenu, TrashButton, RenameDialog } from './UniversalTrash.jsx';
+import { Menu, MenuItem } from './ui/Menu.jsx';
 import { WorkbenchTakes, WorkbenchCopies } from './StoryboardWorkbench.jsx';
 import { AssistantBadge } from './AssistantConnections.jsx';
 import { useI18n } from './i18n/I18nProvider.jsx';
@@ -214,6 +215,7 @@ function Tile({ asset, used, onClick, onZoom, dragId, draggable = true, gridCard
           target={{ kind: 'entity', project_id: state.project.id, id: asset.entity.id }}
           onRename={() => setRenaming(true)}
           onEdit={() => setRenaming(true)}
+          onMedia
         />
       )}
       {renaming && (
@@ -2116,7 +2118,8 @@ function focusPlanField(root, key, tr) {
 
 // Next to Generate: what the plan still lacks, each a link to its field. It only informs;
 // generating is never blocked by it (audit 2026-11-09). One line, so nothing moves as items
-// get done.
+// get done: the next item as a link, the rest behind "+N" (no sideways scroll in the panel,
+// layout audit 2026-11-10).
 function PlanMissing({ shot, editorRef }) {
   const { t: tr } = useI18n();
   const { dispatch } = useStore();
@@ -2146,11 +2149,28 @@ function PlanMissing({ shot, editorRef }) {
           ? tr('plan.missing', { done: items.length - open.length, total: items.length })
           : tr('plan.allDone')}
       </span>
-      {open.map((item) => (
-        <Button key={item.key} variant="link" size="sm" onClick={() => go(item)}>
-          {tr('plan.check.' + item.key)}
+      {open[0] && (
+        <Button variant="link" size="sm" className="ed-missing-next" onClick={() => go(open[0])}>
+          {tr('plan.check.' + open[0].key)}
         </Button>
-      ))}
+      )}
+      {open.length > 1 && (
+        <Menu
+          label={tr('plan.missingMore', { count: open.length - 1 })}
+          align="start"
+          trigger={
+            <Button variant="link" size="sm" className="ed-missing-more">
+              +{open.length - 1}
+            </Button>
+          }
+        >
+          {open.slice(1).map((item) => (
+            <MenuItem key={item.key} onSelect={() => go(item)}>
+              {tr('plan.check.' + item.key)}
+            </MenuItem>
+          ))}
+        </Menu>
+      )}
     </div>
   );
 }

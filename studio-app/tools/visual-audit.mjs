@@ -1,21 +1,45 @@
-// Visual layout checks (h3-studio#897): open signed-in screens from a recorded API fixture
-// (tools/visual/storyboard.har, no network, no login) and fail on geometry the owner
-// should never have to spot by eye: overlapping marks, badges off one line, labels cut at
-// a bar's end, fills spilling past rounded corners, plus the layout audit's generic checks.
-// Usage: npm run build && npm run audit:visual [-- --base http://127.0.0.1:4173]
-// Re-record the fixture: see tools/visual/README.md.
+// Visual layout checks (h3-studio#897): open signed-in screens from recorded API fixtures
+// (tools/visual/*.har, no network, no login) and fail on geometry the owner should never have
+// to spot by eye: overlapping marks, badges off one line, labels cut at a bar's end, fills
+// spilling past rounded corners, plus the layout audit's generic checks.
+// Two suites:
+//   storyboard  the dock, takes, trim bar and enhance dialog (storyboard.har);
+//   story       every story step: Script, World, Storyboard, Library and Edit, at three window
+//               sizes in light and dark (story.har; screens in tools/visual/story-screens.mjs,
+//               page rules in tools/visual/page-rules.mjs).
+// Usage: npm run build && npm run audit:visual [-- --only story] [-- --shots <dir>]
+//        [-- --pick "desktop light"]
+//        [-- --base http://127.0.0.1:4173]; AUDIT_PORT=4291 serves the build on another port.
+// Re-record a fixture: see tools/visual/README.md.
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 import { inspect, startPreview } from './layout-shared.mjs';
+import { mediaBoxes, pageRules } from './visual/page-rules.mjs';
+import { STORY_SCREENS } from './visual/story-screens.mjs';
 
 const args = process.argv.slice(2);
-const baseArg = args.indexOf('--base');
+const arg = (name) => (args.includes(name) ? args[args.indexOf(name) + 1] : null);
+const only = arg('--only');
+const shots = arg('--shots');
+// --pick "phone light" runs only the story-suite windows whose label contains each word.
+const pick = (arg('--pick') || '').split(/\s+/).filter(Boolean);
 const HAR = fileURLToPath(new URL('./visual/storyboard.har', import.meta.url));
+const STORY_HAR = fileURLToPath(new URL('./visual/story.har', import.meta.url));
 const PROJECT = 'project-1d39fa642bb64f3babc89de38cc621a2';
 const VIEWPORTS = [
   ['desktop', 1440, 900],
   ['laptop', 1280, 760],
 ];
+const STORY_VIEWPORTS = [
+  ['desktop', 1440, 900],
+  ['wide', 1920, 1080],
+  ['phone', 390, 844],
+];
+const THEMES = ['light', 'dark'];
+const RECORDED = 'http://127.0.0.1:4173';
 
 // Runs inside the page: each rule names elements by selector and returns problems.
 function measure(rules) {
@@ -99,7 +123,8 @@ const SCREENS = [
   {
     name: 'shot panel: takes and trim bar',
     async open(page) {
-      await page.locator('.card').first().click();
+      // The card's title opens the shot (its description box would only take focus).
+      await page.locator('.card .card-title').first().click();
       await page.locator('.versions .ver.chosen').waitFor();
       await page.mouse.move(1, 1);
     },
@@ -125,18 +150,166 @@ const SCREENS = [
   },
 ];
 
-const preview = baseArg >= 0 ? { base: args[baseArg + 1], stop() {} } : await startPreview();
+// Fixtures are recorded on 127.0.0.1:4173; served elsewhere, the same answers move with it.
+function fixture(file, base) {
+  if (base === RECORDED) return file;
+  const moved = join(tmpdir(), `visual-${process.pid}-${file.split(/[\\/]/).pop()}`);
+  writeFileSync(moved, readFileSync(file, 'utf8').split(RECORDED).join(base));
+  return moved;
+}
+const generic = (found) => [
+  ...(found.scrollX > 1 ? [`page scrolls sideways by ${found.scrollX}px`] : []),
+  ...found.offscreen.map((x) => `off-screen: ${x}`),
+  ...found.clipped.map((x) => `clipped without ellipsis: ${x}`),
+  ...found.spill.map((x) => `content spills out of button: ${x}`),
+  ...found.tiny.map((x) => `text under 10px: ${x}`),
+];
+const slug = (text) =>
+  text
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-|-$/g, '')
+    .toLowerCase();
+
+// Pictures are held until the screen has drawn, then half load (a wide stand-in picture) and
+// half fail. Cards and picture boxes must not move either way (layout-stability rule).
+const PICTURE =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="16"><rect width="64" height="16" fill="#888"/></svg>';
+async function mediaGate(context) {
+  const gate = { holding: true, pending: [], n: 0 };
+  const answer = (route) =>
+    gate.n++ % 2
+      ? route.abort()
+      : route.fulfill({ status: 200, contentType: 'image/svg+xml', body: PICTURE });
+  await context.route(/\/v1\/(assets|artifacts|voices)\/.+\/(content|sample)/, (route) =>
+    gate.holding ? gate.pending.push(route) : answer(route),
+  );
+  gate.release = () => {
+    gate.holding = false;
+    for (const route of gate.pending.splice(0)) answer(route).catch(() => {});
+  };
+  return gate;
+}
+
+async function storySuite(browser, base) {
+  const har = fixture(STORY_HAR, base);
+  const runs = STORY_VIEWPORTS.flatMap((v) => THEMES.map((theme) => [...v, theme])).filter((run) =>
+    pick.every((word) => run.join(' ').includes(word)),
+  );
+  const results = await Promise.all(
+    runs.map(async ([label, width, height, theme]) => {
+      const lines = [];
+      const missing = new Set();
+      let count = 0;
+      const context = await browser.newContext({
+        viewport: { width, height },
+        isMobile: width < 768,
+        hasTouch: width < 768,
+        locale: 'zh-CN',
+        colorScheme: theme,
+      });
+      await context.route(
+        (url) => !url.href.startsWith(base),
+        (route) => route.abort(),
+      );
+      await context.routeFromHAR(har, { url: /\/(v1|api)\//, notFound: 'abort' });
+      const gate = await mediaGate(context);
+      const page = await context.newPage();
+      const errors = [];
+      page.on('pageerror', (error) => errors.push(error.message));
+      page.on('requestfailed', (request) => {
+        const url = new URL(request.url());
+        if (/^\/(v1|api)\//.test(url.pathname) && !/\/(content|sample)$/.test(url.pathname))
+          missing.add(`${request.method()} ${url.pathname}`);
+      });
+      for (const [index, screen] of STORY_SCREENS.entries()) {
+        const tag = `${label} ${width}x${height} ${theme} ${screen.name}`;
+        let problems;
+        try {
+          gate.holding = true;
+          await screen.open(page, base);
+          await page.locator(screen.ready).first().waitFor({ timeout: 15000 });
+          await page.waitForTimeout(500);
+          const media = screen.rules.media;
+          const before = media ? await page.evaluate(mediaBoxes, media) : [];
+          gate.release();
+          await page.waitForTimeout(700);
+          const after = media ? await page.evaluate(mediaBoxes, media) : [];
+          const moved = [];
+          if (before.length !== after.length)
+            moved.push(
+              `${before.length} picture boxes before pictures arrived, ${after.length} after`,
+            );
+          else
+            before.forEach((a, i) => {
+              const b = after[i];
+              if (['x', 'y', 'w', 'h'].some((k) => Math.abs(a[k] - b[k]) > 1))
+                moved.push(
+                  `moved when pictures loaded or failed: ${a.key} ` +
+                    `${[a.x, a.y, a.w, a.h].map(Math.round).join(',')} -> ` +
+                    `${[b.x, b.y, b.w, b.h].map(Math.round).join(',')}`,
+                );
+            });
+          const found = await page.evaluate(inspect);
+          problems = [
+            ...(await page.evaluate(pageRules, screen.rules)),
+            ...moved.slice(0, 5),
+            ...generic(found),
+            ...errors.splice(0).map((x) => `page error: ${x}`),
+          ];
+        } catch (error) {
+          problems = [`could not open: ${error.message.split('\n')[0]}`];
+        }
+        const name = `${label}-${theme}-${String(index).padStart(2, '0')}-${slug(screen.name)}.png`;
+        if (shots) await page.screenshot({ path: join(shots, name) });
+        if (problems.length) {
+          count += problems.length;
+          lines.push(`FAIL ${tag}`);
+          for (const p of problems.slice(0, 60)) lines.push(`  ${p}`);
+          if (problems.length > 60) lines.push(`  … ${problems.length - 60} more`);
+          if (!shots) await page.screenshot({ path: `visual-fail-story-${name}` });
+        } else lines.push(`ok   ${tag}`);
+        if (screen.after) await screen.after(page).catch(() => {});
+      }
+      for (const m of missing) lines.push(`  note: no fixture answer for ${m}`);
+      await context.close();
+      return { lines, count };
+    }),
+  );
+  let failures = 0;
+  for (const { lines, count } of results) {
+    for (const line of lines) console.log(line);
+    failures += count;
+  }
+  return failures;
+}
+
+const preview = arg('--base') ? { base: arg('--base'), stop() {} } : await startPreview();
+if (shots) mkdirSync(shots, { recursive: true });
 const browser = await chromium.launch();
 let failures = 0;
 try {
+  if (only !== 'story') failures += await storyboardSuite(browser, preview.base);
+  if (only !== 'storyboard') failures += await storySuite(browser, preview.base);
+} finally {
+  await browser.close();
+  preview.stop();
+}
+if (failures) {
+  console.log(`\n${failures} visual layout problem(s); screenshots: visual-fail-*.png`);
+  process.exit(1);
+}
+
+async function storyboardSuite(browser, base) {
+  const har = fixture(HAR, base);
+  let failures = 0;
   for (const [label, width, height] of VIEWPORTS) {
     const context = await browser.newContext({ viewport: { width, height }, locale: 'zh-CN' });
     // Signed-in screens come from the fixture; anything else (media, other hosts) is refused.
     await context.route(
-      (url) => !url.href.startsWith(preview.base),
+      (url) => !url.href.startsWith(base),
       (route) => route.abort(),
     );
-    await context.routeFromHAR(HAR, { url: /\/(v1|api)\//, notFound: 'abort' });
+    await context.routeFromHAR(har, { url: /\/(v1|api)\//, notFound: 'abort' });
     const page = await context.newPage();
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
@@ -144,16 +317,12 @@ try {
       const tag = `${label} ${width}x${height} ${screen.name}`;
       let problems;
       try {
-        await screen.open(page, preview.base);
+        await screen.open(page, base);
         await page.waitForTimeout(600);
         const found = await page.evaluate(inspect);
         problems = [
           ...(await page.evaluate(measure, screen.rules)),
-          ...(found.scrollX > 1 ? [`page scrolls sideways by ${found.scrollX}px`] : []),
-          ...found.offscreen.map((x) => `off-screen: ${x}`),
-          ...found.clipped.map((x) => `clipped without ellipsis: ${x}`),
-          ...found.spill.map((x) => `content spills out of button: ${x}`),
-          ...found.tiny.map((x) => `text under 10px: ${x}`),
+          ...generic(found),
           ...errors.splice(0).map((x) => `page error: ${x}`),
         ];
       } catch (error) {
@@ -168,11 +337,5 @@ try {
     }
     await context.close();
   }
-} finally {
-  await browser.close();
-  preview.stop();
-}
-if (failures) {
-  console.log(`\n${failures} visual layout problem(s); screenshots: visual-fail-*.png`);
-  process.exit(1);
+  return failures;
 }

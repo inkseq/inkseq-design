@@ -107,6 +107,9 @@ function FilmPlayhead({ player, pps }) {
 }
 
 const SIZES = { '9:16': [720, 1280], '16:9': [1280, 720], '1:1': [960, 960], '4:3': [960, 720] };
+// A clip whose file cannot play (an expired link, a dropped connection) shows black for its
+// time instead of throwing out of the player (Remotion throws when no onError is given).
+const keepPlaying = () => {};
 
 // The whole cut as one Remotion composition: each included clip is a Sequence that plays
 // its source from the trimmed in-point, so the preview matches the exporter frame for frame.
@@ -135,6 +138,7 @@ function Cut({ clips, sources, cues = [], audio = [] }) {
                   trimBefore={part.startFrame}
                   pauseWhenBuffering
                   muted
+                  onError={keepPlaying}
                   style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                 />
               </Sequence>
@@ -146,6 +150,7 @@ function Cut({ clips, sources, cues = [], audio = [] }) {
               playbackRate={clip.rate}
               pauseWhenBuffering
               muted
+              onError={keepPlaying}
               style={{ width: '100%', height: '100%', objectFit: 'contain' }}
             />
           ) : (
@@ -176,6 +181,7 @@ function Cut({ clips, sources, cues = [], audio = [] }) {
               trimBefore={a.trimBefore}
               playbackRate={a.rate}
               pauseWhenBuffering
+              onError={keepPlaying}
               volume={(f) => a.volume * envelope(f, a.frames, a.fadeIn, a.fadeOut)}
             />
           </Sequence>
@@ -368,10 +374,13 @@ function TimelineClip({
             }}
           />
         ))}
-      <span className="film-tclip-label">
-        <b>{clip.index + 1}</b>
-        {width >= 72 && <span>{clip.name}</span>}
-      </span>
+      {/* The number needs room for its pill; a sliver of a clip shows only its picture. */}
+      {width >= 30 && (
+        <span className="film-tclip-label">
+          <b>{clip.index + 1}</b>
+          {width >= 72 && <span>{clip.name}</span>}
+        </span>
+      )}
       {clip.rate !== 1 && width >= 30 && (
         <span className="film-tclip-rate">{t('editor.rate', { rate: clip.rate })}</span>
       )}
