@@ -1222,8 +1222,7 @@ export function ProfileEditor() {
           )}
         </section>
 
-        {p.type === 'character' && <VoicePicker profile={p} />}
-        {p.type === 'character' && <VoiceSection p={p} />}
+        {p.type === 'character' && <VoicePicker profile={p} samples={<VoiceSection p={p} />} />}
         {p.type === 'location' && (
           <section className="pe-section">
             <header className="pe-section-head">
