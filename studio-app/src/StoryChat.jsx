@@ -54,6 +54,7 @@ const busyCard = (card) => card.status === 'generating' || card.status === 'uplo
 import { track } from './analytics.js';
 import { readComposerDraft, writeComposerDraft } from './chunk-reload.js';
 import { readableLines } from './speech-lines.js';
+import { useSpeechText } from './use-speech-text.js';
 
 // Dragged narrow, the stories list snaps to an icon rail (owner, 2026-10-25).
 const RAIL = 56,
@@ -195,6 +196,8 @@ function CardDetail({
   const photo = useRef(null);
   const [name, setName] = useState(card.name || '');
   const [text, setText] = useState(card.text || '');
+  // A shot's spoken lines edit as 「台词」; saving keeps the speech tags (h3-studio#1113).
+  const speech = useSpeechText(text);
   useEffect(() => {
     setName(card.name || '');
     setText(card.text || '');
@@ -245,8 +248,14 @@ function CardDetail({
         {shot ? t('storyChat.detailShot') : t('storyChat.detailText')}
         <textarea
           rows={4}
-          value={text}
-          onChange={(event) => setText(event.target.value)}
+          value={shot ? speech.shown : text}
+          onChange={(event) =>
+            setText(
+              shot
+                ? speech.edit(event.target.value, event.target.selectionEnd)
+                : event.target.value,
+            )
+          }
           onBlur={commit}
         />
       </label>
