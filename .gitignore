@@ -536,5 +536,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/caption-edit.js
 !studio-app/src/caption-edit.test.js
 !studio-app/src/FilmCaptionLane.jsx
+!studio-app/src/FilmTransport.jsx
+!studio-app/src/film-editor-keys.js
+!studio-app/src/film-editor-keys.test.js
 !studio-app/src/story-flow.js
 !studio-app/src/story-flow.test.js
