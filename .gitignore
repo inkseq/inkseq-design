@@ -541,3 +541,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/story-flow.test.js
 !studio-app/src/prompt-display.js
 !studio-app/src/prompt-display.test.js
+!studio-app/src/card-grid.js
+!studio-app/src/card-grid.test.js
+!studio-app/src/storyboard-a11y.js
+!studio-app/src/storyboard-a11y.test.js
+!studio-app/src/segmented.test.js
