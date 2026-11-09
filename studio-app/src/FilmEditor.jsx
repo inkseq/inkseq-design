@@ -741,7 +741,7 @@ export default function FilmEditor({
       window.removeEventListener('keydown', late);
     };
   }, []);
-  const addAudio = async (asset, file, { wholeFilm = false } = {}) => {
+  const addAudio = async (asset, file, { wholeFilm = false, at = null } = {}) => {
     let duration = asset.data.metadata?.duration ?? asset.data.metadata?.duration_s;
     if (!Number.isFinite(duration) && file) duration = await probeDuration(file);
     edit((p) => {
@@ -749,7 +749,7 @@ export default function FilmEditor({
         p,
         chapterId,
         p.entities.find((e) => e.id === asset.id),
-        wholeFilm ? 0 : playhead(),
+        wholeFilm ? 0 : (at ?? playhead()),
         duration,
       );
       // Music for the whole film starts at 0 and stops where the film ends.
@@ -1135,6 +1135,11 @@ export default function FilmEditor({
                   edit((p) => trimTrack(p, chapterId, id, side, delta, cutTimeline))
                 }
                 onRemove={(id) => edit((p) => removeTrack(p, chapterId, id))}
+                sources={sources}
+                busy={busy}
+                onDropFiles={
+                  onUploadAudio ? (files, at) => void uploadAudio(files, { at }) : undefined
+                }
               />
               <CaptionLane
                 cues={rawCues}

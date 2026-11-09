@@ -155,6 +155,8 @@
 !studio-app/src/CloudAutosave.jsx
 !studio-app/src/film-audio.test.js
 !studio-app/src/FilmEditor.jsx
+!studio-app/src/audio-peaks.js
+!studio-app/src/audio-peaks.test.js
 !studio-app/src/film-editor.css
 !studio-app/src/InkLoader.jsx
 !studio-app/src/ink-loader.css
