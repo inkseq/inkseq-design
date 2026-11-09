@@ -15,6 +15,7 @@ import { useI18n } from './i18n/I18nProvider.jsx';
 import React, { Activity, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
+  ArrowRight,
   Plus,
   PanelLeftClose,
   PanelLeftOpen,
@@ -313,26 +314,94 @@ function usePersistentFlag(key) {
 // Switching only changes what shows.
 // Inky stays in the top bar on every step of the story (owner, 2026-11-05: always there, silent
 // with nothing to say).
-function InkyInTopBar({ selectedShot }) {
+function InkyInTopBar({ selectedShot, next, onNext }) {
   const [slot, setSlot] = useState(null),
     place = useRef(null);
   useLayoutEffect(() => {
     setSlot(place.current?.closest('.workspace')?.querySelector('.wbar-inky') || null);
   }, []);
+  // The flow's next step sits beside Inky, in the bar's normal flow, so it can never
+  // run under the controls on the right (owner, 2026-11-09).
   return (
     <span ref={place} hidden>
-      {slot && createPortal(<InkyForStory selectedShot={selectedShot} />, slot)}
+      {slot &&
+        createPortal(
+          <>
+            {next && <NextStep next={next} onNext={onNext} />}
+            <InkyForStory selectedShot={selectedShot} />
+          </>,
+          slot,
+        )}
     </span>
   );
 }
 
-function StageNav({ stage, stages, onChange, flow, onNext }) {
+function NextStep({ next, onNext }) {
   const { t } = useI18n();
-  const progress = (value) => {
-    const row = flow?.stages[value];
-    return row?.total ? ' ' + row.done + '/' + row.total : '';
+  const text = t('flow.next.' + next.key, { title: next.title || '' });
+  // The steps sit centred in the bar and the controls around them change with the window,
+  // so measure: the full sentence when it fits, else "Next", else only the arrow.
+  const [fit, setFit] = useState({ mode: 'full', pass: 0 }),
+    mode = fit.mode,
+    box = useRef(null);
+  useEffect(() => {
+    // Start from the full sentence again whenever the bar may have changed size.
+    const remeasure = () => setFit((old) => ({ mode: 'full', pass: old.pass + 1 }));
+    const frame = requestAnimationFrame(remeasure);
+    globalThis.addEventListener?.('resize', remeasure);
+    return () => {
+      cancelAnimationFrame(frame);
+      globalThis.removeEventListener?.('resize', remeasure);
+    };
+  }, []);
+  useLayoutEffect(() => {
+    const own = box.current?.getBoundingClientRect(),
+      steps = document.querySelector('.wbar-stages .sb-stages')?.getBoundingClientRect();
+    if (!own || !steps || fit.mode === 'icon') return;
+    const sameRow = Math.abs(own.top - steps.top) < steps.height;
+    if (sameRow && own.left < steps.right + 8)
+      setFit((old) => ({ ...old, mode: old.mode === 'full' ? 'short' : 'icon' }));
+  }, [fit, text]);
+  return (
+    <span ref={box} className={'sb-next-box ' + mode}>
+      <Button
+        size="sm"
+        variant="ghost"
+        className="sb-next-step"
+        title={text}
+        aria-label={t('flow.nextHint') + ': ' + text}
+        onClick={() => onNext(next)}
+      >
+        {mode === 'full' && <span className="sb-next-text">{text}</span>}
+        {mode === 'short' && <span>{t('flow.nextShort')}</span>}
+        <ArrowRight size={14} aria-hidden="true" />
+      </Button>
+    </span>
+  );
+}
+
+// How far a step is: a thin bar under its name, the counts in its tooltip.
+function stageOption(t, value, row) {
+  if (!row?.total) return { value, label: t('stage.' + value) };
+  const share = row.done / row.total;
+  return {
+    value,
+    title: t('flow.progress.' + value, { done: row.done, total: row.total }),
+    label: (
+      <span className="sb-stage-label">
+        {t('stage.' + value)}
+        <span
+          className={'sb-stage-meter' + (share >= 1 ? ' done' : '')}
+          style={{ '--share': share }}
+          aria-hidden="true"
+        />
+      </span>
+    ),
   };
-  const next = flow?.next;
+}
+
+function StageNav({ stage, stages, onChange, flow }) {
+  const { t } = useI18n();
   // Shown in the middle of the top bar, which SeriesApp draws above this page.
   const [slot, setSlot] = useState(null),
     place = useRef(null);
@@ -344,24 +413,10 @@ function StageNav({ stage, stages, onChange, flow, onNext }) {
       <Segmented
         tabs
         label={t('stage.title')}
-        options={stages.map((value) => ({ value, label: t('stage.' + value) + progress(value) }))}
+        options={stages.map((value) => stageOption(t, value, flow?.stages[value]))}
         value={stage}
         onChange={onChange}
       />
-      {next && (
-        <Button
-          size="sm"
-          variant="ghost"
-          className="sb-next-step"
-          title={t('flow.next.' + next.key, { title: next.title || '' })}
-          aria-label={
-            t('flow.nextHint') + ': ' + t('flow.next.' + next.key, { title: next.title || '' })
-          }
-          onClick={() => onNext(next)}
-        >
-          {t('flow.next.' + next.key, { title: next.title || '' })}
-        </Button>
-      )}
     </nav>
   );
   return (
@@ -1134,17 +1189,15 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
         '--libw': (railed ? 52 : library.size) + 'px',
       }}
     >
-      <StageNav
-        stage={stage}
-        stages={STAGES}
-        onChange={setStage}
-        flow={flow}
+      <StageNav stage={stage} stages={STAGES} onChange={setStage} flow={flow} />
+      <InkyInTopBar
+        selectedShot={selected}
+        next={flow.next}
         onNext={(next) => {
           setStage(next.stage);
           if (next.stage === 'storyboard' && next.id) setSelected(next.id);
         }}
       />
-      <InkyInTopBar selectedShot={selected} />
       {stage === 'script' && (
         <StoryScript
           chapters={chapters}
