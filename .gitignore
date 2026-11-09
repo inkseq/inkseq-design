@@ -533,3 +533,8 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/shot-plan.css
 !studio-app/src/shot-plan.test.js
 !studio-app/src/ShotPlan.jsx
+!studio-app/src/caption-edit.js
+!studio-app/src/caption-edit.test.js
+!studio-app/src/FilmCaptionLane.jsx
+!studio-app/src/story-flow.js
+!studio-app/src/story-flow.test.js
