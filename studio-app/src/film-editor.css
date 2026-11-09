@@ -365,7 +365,10 @@ button.autosave-status {
 @media (max-width: 900px) {
   .film-editor {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(200px, 40vh) auto auto auto auto auto auto;
+    /* The page scrolls here, so every row below the preview is exactly as tall as its content:
+       'auto' rows let the page squeeze the clip panel to 92 px, its trim bar lay over the
+       timeline and the sound and caption bars over the clips (layout audit 2026-11-10). */
+    grid-template-rows: auto minmax(200px, 40vh) repeat(6, max-content);
     grid-template-areas: 'head' 'monitor' 'inspector' 'tools' 'timeline' 'audio' 'captions' 'foot';
   }
   .film-inspector {

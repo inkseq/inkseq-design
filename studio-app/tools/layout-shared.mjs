@@ -2,8 +2,8 @@
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-export async function startPreview() {
-  const port = 4173;
+// The fixtures are recorded on port 4173; another port works too (the audit moves the fixture).
+export async function startPreview(port = Number(process.env.AUDIT_PORT) || 4173) {
   const vite = new URL('../node_modules/vite/bin/vite.js', import.meta.url);
   const child = spawn(
     process.execPath,

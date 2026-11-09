@@ -584,8 +584,12 @@
     height: 130px !important;
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: 1fr;
-    padding: 8px 10px;
+    padding: 8px 12px;
     gap: 6px;
+  }
+  .sb-workspace .dock-mini-toggle {
+    top: 8px;
+    right: 12px;
   }
   .sb-workspace .dock > .dock-screen {
     display: none;
@@ -859,7 +863,7 @@ body.sb-resizing-y video {
 /* Collapsed preview: one row with transport and the shot strip. */
 .dock.mini {
   grid-template-columns: minmax(0, 1fr);
-  padding: 8px 16px;
+  padding: 8px 22px;
 }
 .dock.mini .dock-right {
   display: flex;
@@ -973,6 +977,9 @@ body.sb-resizing-y video {
 }
 .tseg.compact {
   min-width: 4px;
+  /* A button's touch height must not push the squares into the time bar below. */
+  min-height: 0;
+  height: 100%;
   display: grid;
   place-items: center;
   background: color-mix(in srgb, var(--muted) 35%, var(--surface-3));
@@ -992,7 +999,7 @@ body.sb-resizing-y video {
 }
 .tseg-n {
   color: var(--white);
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 600;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
   overflow: hidden;
@@ -1119,11 +1126,18 @@ body.sb-resizing-y video {
   border-radius: 0;
 }
 /* #232 (#2): the collapse arrow stays at the dock's top-right corner in both states, so a
-   second press lands on it; (#1) contents never spill past the dock's bottom edge. */
+   second press lands on it; (#1) contents never spill past the dock's bottom edge.
+   Layout audit 2026-11-10: it sits inside the dock, level with the transport row, in a lane of
+   its own, so it no longer covers the board above, the resize handle or the theater button. */
 .dock-mini-toggle {
+  top: 19px;
   left: auto;
-  right: 16px;
+  right: 22px;
   transform: none;
+}
+.sb-workspace .dock-transport,
+.sb-workspace .dock.mini .dock-right {
+  padding-right: 52px;
 }
 .sb-workspace .dock-right {
   min-height: 0;
@@ -1615,9 +1629,23 @@ body.sb-resizing-y video {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   align-content: start;
-  /* A group box (三兄弟) is taller than one card; the cards beside it keep their own height. */
-  align-items: start;
+  /* Cards in one row share a height (layout audit 2026-11-10). */
+  align-items: stretch;
   gap: 10px;
+}
+/* A group (三兄弟) is a labelled band across the grid; its members sit in the grid's own
+   columns (subgrid), so they line up with the single cards above and share their gutters. */
+.layout.A.stage-library .plist > .bible-group {
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  gap: 10px;
+  padding: 8px 0 0;
+  border: 0;
+  border-top: 1px dashed var(--line-2);
+  border-radius: 0;
+}
+.layout.A.stage-library .plist > .bible-group > .bible-group-head {
+  grid-column: 1 / -1;
 }
 /* Step progress (story-flow.js): a thin bar under each step name; counts are in its tooltip. */
 .sb-stage-label {
