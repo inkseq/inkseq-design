@@ -321,3 +321,45 @@ test('confirmed pictures are drawn one at a time, in order', async () => {
     [...quote.action.requests, single.id],
   );
 });
+
+test('generation advice shows per shot in order, never stale or unknown advice (#628)', async () => {
+  const { fromServer, riskWarnings } = await import('./story-chat-client.js');
+  const shot = (id, order) => ({ id, order, text: 'x', seconds: 5, start: 0, end: 5 });
+  const view = (review) => ({
+    version: 1,
+    messages: [
+      {
+        id: 't1-a',
+        role: 'assistant',
+        text: 'Ready.',
+        proposal: { kind: 'generate', shot_ids: ['s1', 's2'], risk_review: review },
+      },
+    ],
+    cards: { shots: [shot('s2', 2), shot('s1', 1)] },
+  });
+  const review = {
+    version: 1,
+    status: 'warnings',
+    warnings: [
+      { shot_id: 's2', code: 'plot_density', source: 'model', suggestion: ' Split it. ' },
+      { shot_id: 's1', code: 'speech_too_dense', source: 'rule', suggestion: 'Fewer lines.' },
+      { shot_id: 's1', code: 'speech_too_dense', source: 'model', suggestion: 'Again.' },
+      { shot_id: 's1', code: 'made_up', source: 'model', suggestion: 'No.' },
+      { shot_id: 'other', code: 'action_density', source: 'rule', suggestion: 'No.' },
+    ],
+  };
+  const quote = Object.values(fromServer(view(review)).quotes)[0];
+  assert.deepEqual(quote.risks, [
+    { shotId: 's1', order: 1, code: 'speech_too_dense', suggestion: 'Fewer lines.' },
+    { shotId: 's2', order: 2, code: 'plot_density', suggestion: 'Split it.' },
+  ]);
+  assert.deepEqual(
+    Object.values(fromServer(view({ ...review, status: 'stale' })).quotes)[0].risks,
+    [],
+  );
+  assert.deepEqual(Object.values(fromServer(view(undefined)).quotes)[0].risks, []);
+  assert.deepEqual(
+    riskWarnings({ version: 2, status: 'warnings', warnings: review.warnings }, []),
+    [],
+  );
+});
