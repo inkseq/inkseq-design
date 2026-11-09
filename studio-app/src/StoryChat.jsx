@@ -694,6 +694,12 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     const node = thread.current;
     if (node) node.scrollTop = node.scrollHeight;
   }, [state.messages.length, state.busy]);
+  // A reply being written keeps its end in view, unless the person scrolled up to read.
+  const following = useRef(true);
+  useEffect(() => {
+    const node = thread.current;
+    if (node && state.draft && following.current) node.scrollTop = node.scrollHeight;
+  }, [state.draft]);
 
   const send = (value = text) => {
     const message = value.trim();
@@ -868,7 +874,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
               {boardOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
             </IconButton>
           </div>
-          <div className="sc-thread" ref={thread}>
+          <div
+            className="sc-thread"
+            ref={thread}
+            onScroll={(event) => {
+              const node = event.currentTarget;
+              following.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
+            }}
+          >
             {state.messages.length > 0 && (
               <h1 className="visually-hidden">{t('nav.quickCreate')}</h1>
             )}
@@ -968,12 +981,24 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 </div>
               );
             })}
+            {state.busy && state.draft && (
+              // The reply as it is being written (#1083); the server's view replaces it.
+              <div className="sc-msg assistant" aria-busy="true">
+                <p>{state.draft}</p>
+              </div>
+            )}
             {state.busy && (
               <div className="sc-typing" aria-live="polite">
                 <span />
                 <span />
                 <span />
-                <small>{t(state.cards.length ? 'storyChat.working' : 'storyChat.thinking')}</small>
+                <small>
+                  {t(
+                    state.cards.length || state.draft || state.step === 'applying'
+                      ? 'storyChat.working'
+                      : 'storyChat.thinking',
+                  )}
+                </small>
               </div>
             )}
             {done.done && (
