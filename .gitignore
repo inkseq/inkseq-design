@@ -525,6 +525,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/story-bible.test.js
 !studio-app/src/story-bible.css
 !studio-app/src/ProfileBible.jsx
+!studio-app/src/ProfileSplit.jsx
 !studio-app/src/BibleImport.jsx
 !studio-app/src/script-beats.js
 !studio-app/src/script-beats.test.js
@@ -541,3 +542,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/film-editor-keys.test.js
 !studio-app/src/story-flow.js
 !studio-app/src/story-flow.test.js
+!studio-app/src/prompt-display.js
+!studio-app/src/prompt-display.test.js
+!studio-app/src/card-grid.js
+!studio-app/src/card-grid.test.js
+!studio-app/src/storyboard-a11y.js
+!studio-app/src/storyboard-a11y.test.js
+!studio-app/src/segmented.test.js

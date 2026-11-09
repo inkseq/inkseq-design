@@ -5,14 +5,25 @@ import { sceneBeats } from './script-beats.js';
 import { STAGES, chapterFrom, stageFrom, withStage } from './story-stage.js';
 import { storyFlow } from './story-flow.js';
 import { DEFAULT_CHAPTER_NAMES, sceneHeading } from './story-headings.js';
-import { StoryScript } from './StoryScript.jsx';
+import { StoryScript, showScriptScene } from './StoryScript.jsx';
+import { useQueries } from '@tanstack/react-query';
 import { CARD_SIZES, readCardSize, rememberCardSize } from './shot-mention.js';
 import { FloatingMessage } from './floating-notice.js';
 import './v2/story-view.css';
 import './film-editor.css';
 import { selectShot, emptySelection } from './storyboard-selection.js';
+import { useCardGrid } from './card-grid.js';
+import { assetLabel, dragAnnouncements, dragItemName } from './storyboard-a11y.js';
 import { useI18n } from './i18n/I18nProvider.jsx';
-import React, { Activity, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  Activity,
+  useEffect,
+  useEffectEvent,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 import {
   ArrowRight,
@@ -81,6 +92,9 @@ import {
 } from './storyboard-ui-model.js';
 
 const EMPTY_SET = new Set();
+// Fields where Escape means "leave this field", not "close the panel".
+const TEXT_FIELD =
+  'input:not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="range"]), textarea, select, [contenteditable="true"]';
 
 // An empty scene is a drop target for shot cards, highlighted while a card is over it.
 function EmptySceneDrop({ sceneId, label }) {
@@ -513,14 +527,41 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     setCardSize(value);
     rememberCardSize(globalThis.localStorage, value);
   };
-  const { state, dispatch } = useStoryboardUI(),
+  const { state, dispatch, adapter } = useStoryboardUI(),
     trash = useTrash();
   // The flow's progress and next step (story-flow.js), shown on the stage tabs.
   const { scenes: flowScenes, profiles: flowProfiles, shots: flowShots } = state;
-  const flow = useMemo(
-    () => storyFlow({ scenes: flowScenes, profiles: flowProfiles, shots: flowShots }),
-    [flowScenes, flowProfiles, flowShots],
-  );
+  // What review said about each chosen take, from the summaries the shot editor already read
+  // (never read here), so the next step can say "reshoot" or "cut the film".
+  const chosenShots = flowShots.filter((shot) => shot.chosen);
+  const summaries = useQueries({
+    queries: chosenShots.map((shot) => ({
+      queryKey: ['take-review-summaries', state.contextId, shot.id],
+      queryFn: () => adapter.readTakeReviewSummaries(shot.id),
+      enabled: false,
+    })),
+  });
+  const reviewKey = chosenShots
+    .map((shot, index) => {
+      const rows = summaries[index]?.data;
+      if (!Array.isArray(rows)) return '';
+      const take = shot.versions.find((v) => v.id === shot.chosen);
+      const row = rows.find((r) => r.artifact_id === (take?.artifactId || shot.chosen));
+      return shot.id + '=' + (row?.verdict || '');
+    })
+    .filter(Boolean)
+    .join('|');
+  const flow = useMemo(() => {
+    const reviews = reviewKey
+      ? new Map(
+          reviewKey.split('|').map((pair) => {
+            const [id, verdict] = pair.split('=');
+            return [id, { verdict: verdict || null }];
+          }),
+        )
+      : null;
+    return storyFlow({ scenes: flowScenes, profiles: flowProfiles, shots: flowShots }, { reviews });
+  }, [flowScenes, flowProfiles, flowShots, reviewKey]);
   const gone = trash?.hidden || EMPTY_SET,
     goneScenes = new Set(
       (state.scenes || [])
@@ -543,6 +584,8 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     [room, setRoom] = useState({ height: 0, content: 0 }),
     [theater, setTheater] = useState(false);
   const [folded, setFolded] = useState(() => new Set());
+  // The shot cards are one Tab stop; arrow keys move between them (card-grid.js).
+  const boardGrid = useCardGrid('[data-shot-card]');
   const { setPlaying } = player;
   useEffect(() => {
     const measure = () => {
@@ -607,32 +650,68 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     return () => media.removeEventListener('change', change);
   }, []);
   useEffect(() => {
-    if (libraryCollapsed || theater) return;
-    const close = (event) => {
-      if (event.key === 'Escape') setLibraryCollapsed(true);
-    };
-    window.addEventListener('keydown', close);
-    return () => window.removeEventListener('keydown', close);
-  }, [libraryCollapsed, theater]);
-  useEffect(() => {
     setExpanded(false);
   }, [selected]);
+  // Escape closes one layer at a time (story tabs audit, 2026-11-09). Fields, menus, pickers,
+  // dialogs and a keyboard drag handle the key first; Escape in a field only leaves the field.
+  // Then full screen, the wide editor, the shot editor, the picked shots, and on a phone the
+  // library drawer. With nothing open it does nothing, so the library never folds away.
+  // One listener for the page's life: it reads the latest state through an effect event, so a
+  // re-render while a key is being handled (another handler setting state) never drops it.
+  const pickedCount = selection.ids.length;
+  const onEscape = useEffectEvent((event) => {
+    if (event.key !== 'Escape' || event.defaultPrevented || document.querySelector('dialog[open]'))
+      return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest('[role="listbox"], [role="menu"], .picker')) return;
+    if (target?.matches(TEXT_FIELD)) {
+      event.preventDefault();
+      const home = target.closest('[data-shot-editor], [data-grid-card]');
+      target.blur();
+      home?.focus({ preventScroll: true });
+      return;
+    }
+    const done = () => event.preventDefault();
+    if (theater) {
+      done();
+      setTheater(false);
+    } else if (expanded) {
+      done();
+      setExpanded(false);
+    } else if (selected) {
+      done();
+      setSelected(null);
+    } else if (pickedCount) {
+      done();
+      setSelection(emptySelection());
+    } else if (!libraryCollapsed && globalThis.matchMedia?.('(max-width:760px)').matches) {
+      done();
+      setLibraryCollapsed(true);
+    }
+  });
   useEffect(() => {
-    const close = (event) => {
-      if (event.key !== 'Escape' || document.querySelector('dialog[open]')) return;
-      if (theater) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        setTheater(false);
-      } else if (expanded) {
-        event.preventDefault();
-        event.stopImmediatePropagation();
-        setExpanded(false);
-      } else if (selected) setSelected(null);
-    };
-    window.addEventListener('keydown', close, true);
-    return () => window.removeEventListener('keydown', close, true);
-  }, [theater, expanded, selected, setSelected]);
+    if (!pageActive) return undefined;
+    const listen = (event) => onEscape(event);
+    window.addEventListener('keydown', listen);
+    return () => window.removeEventListener('keydown', listen);
+  }, [pageActive]);
+  // Opening a shot moves focus into its editor; closing it puts focus back on the shot's card.
+  const lastSelected = useRef(null);
+  useEffect(() => {
+    const was = lastSelected.current;
+    lastSelected.current = selected;
+    if (!pageActive || selected === was) return undefined;
+    const frame = requestAnimationFrame(() => {
+      const active = document.activeElement;
+      if (selected) {
+        const editor = document.querySelector(`[data-shot-editor="${CSS.escape(selected)}"]`);
+        if (editor && !editor.contains(active)) editor.focus({ preventScroll: true });
+      } else if (was && (!active || active === document.body || active.closest('.drawer'))) {
+        document.querySelector(`[data-shot-card="${CSS.escape(was)}"]`)?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [selected, pageActive]);
   useEffect(() => {
     setSelection(emptySelection());
   }, [state.contextId]);
@@ -642,20 +721,6 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
     const live = new Set(liveShotIds.split('|'));
     setSelection((old) => ({ ...old, ids: old.ids.filter((id) => live.has(id)) }));
   }, [liveShotIds]);
-  useEffect(() => {
-    const clear = (e) => {
-      if (
-        e.key === 'Escape' &&
-        !theater &&
-        !expanded &&
-        !selected &&
-        !document.querySelector('dialog[open]')
-      )
-        setSelection(emptySelection());
-    };
-    window.addEventListener('keydown', clear);
-    return () => window.removeEventListener('keydown', clear);
-  }, [theater, expanded, selected]);
   const library = useStoryboardPanelSize('library', 260, 140, 560),
     dock = useStoryboardPanelSize('dock', DOCK_MIN, DOCK_MIN, 900),
     drawer = useStoryboardPanelSize('drawer', 440, 340, 820),
@@ -901,7 +966,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
             items={state.shots.map((shot) => 'shot:' + shot.id)}
             strategy={rectSortingStrategy}
           >
-            <div className="sb-scene-groups" data-card-size={cardSize}>
+            <div className="sb-scene-groups" data-card-size={cardSize} ref={boardGrid}>
               {state.placeholder ? (
                 <div className="story-opening-shots">
                   {[0, 1, 2, 3, 4, 5].map((i) => (
@@ -1195,6 +1260,7 @@ function StoryboardLayoutA({ selected, setSelected, pickAsset, onNewScene, filmC
         next={flow.next}
         onNext={(next) => {
           setStage(next.stage);
+          if (next.stage === 'script' && next.id) showScriptScene(next.id);
           if (next.stage === 'storyboard' && next.id) setSelected(next.id);
         }}
       />
@@ -1447,8 +1513,36 @@ function StoryboardShell({ onNewScene, filmControl }) {
   const dragged =
       dragging && (dragging.asset ? db.asset(dragging.asset) : db.profile(dragging.profile)),
     thumb = dragging?.profile ? coverOf(db, dragged, dragged?.def) : dragged;
+  // What a screen reader hears while dragging, in the reader's language, naming shots by number
+  // and title and files by what they are, never by internal id (audit 2026-11-09).
+  const {
+    shots: dragShots,
+    assets: dragAssets,
+    profiles: dragProfiles,
+    scenes: dragScenes,
+  } = state;
+  const accessibility = useMemo(
+    () => ({
+      announcements: dragAnnouncements(t, (id) =>
+        dragItemName(
+          id,
+          {
+            shots: dragShots,
+            assets: dragAssets,
+            profiles: dragProfiles,
+            scenes: dragScenes,
+            sceneName: (scene) => sceneHeading(scene.title, t),
+          },
+          t,
+        ),
+      ),
+      screenReaderInstructions: { draggable: t('dnd.instructions') },
+    }),
+    [t, dragShots, dragAssets, dragProfiles, dragScenes],
+  );
   return (
     <DndContext
+      accessibility={accessibility}
       sensors={sensors}
       collisionDetection={collision}
       onDragStart={onDragStart}
@@ -1495,7 +1589,7 @@ function StoryboardShell({ onNewScene, filmControl }) {
           {dragged ? (
             <div className="sb-portal achip drag-ghost">
               <AssetThumb asset={thumb} />
-              <b>{dragged.name}</b>
+              <b>{dragging.asset ? assetLabel(dragged, t) : dragged.name}</b>
             </div>
           ) : null}
         </DragOverlay>
