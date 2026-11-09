@@ -7,6 +7,7 @@ import { modelsVisible, profileTier } from './model-visibility.js';
 import { children } from './store.js';
 import { effectiveLimits, effectiveControlSchema, roleSupported } from './quick-chat-model.js';
 import { bibleOf } from './story-bible.js';
+import { pickedPictures } from './shot-card-pictures.js';
 const uid = (kind) => kind + '-' + crypto.randomUUID();
 const find = (p, id) => p.entities.find((e) => e.id === id);
 const mode = (shot) => shot.data.storyboard?.mode || shot.data.h3?.inputMode || 'fl';
@@ -297,6 +298,8 @@ function shotView(project, s, { jobs, assets }) {
     cast: [...cast.values()],
     place: shotPlace(s, b, scene),
     props: b.propIds || [],
+    // Per card, which of its pictures a reference shot sends (h3-studio#504).
+    cardImages: b.cardImages || {},
     continuePrev: !!b.continuePrevious,
     look: b.look || '',
     camera: b.camera || '',
@@ -513,20 +516,29 @@ function addFrames(shot, state, ctx) {
 
 // Same ordering as the saved-draft compiler: each character's main image and voice, then
 // place, props, authored extras, and ambient sound.
+function placePictures(shot, place, pv) {
+  const images = pv?.images || [];
+  return images.length ? pickedPictures(shot, place.id, images) : [undefined];
+}
+
 function addReferenceInputs(shot, ctx, { cast, place, pv, props }) {
   const { t, asset } = ctx;
   cast
     .filter((c) => c.p)
     .forEach(({ p, v }) => {
-      addInput(ctx, v?.images[0], '图片', p.name + ' · ' + (v?.name || ''));
+      for (const id of pickedPictures(shot, p.id, v?.images || []))
+        addInput(ctx, id, '图片', p.name + ' · ' + (v?.name || ''));
+      if (!v?.images.length) addInput(ctx, undefined, '图片', p.name + ' · ' + (v?.name || ''));
       const voice = p.voices.find((vo) => vo.asset === (v?.voice || p.voice));
       if (voice)
         addInput(ctx, voice.asset, '声音', t('projection.voice', { name: p.name }), voice.start);
     });
-  if (place) addInput(ctx, pv?.images[0], '图片', '场景');
-  props.forEach((p) =>
-    addInput(ctx, p.variants[0]?.images[0], '图片', t('projection.prop', { name: p.name })),
-  );
+  if (place) for (const id of placePictures(shot, place, pv)) addInput(ctx, id, '图片', '场景');
+  props.forEach((p) => {
+    const images = p.variants[0]?.images || [];
+    for (const id of images.length ? pickedPictures(shot, p.id, images) : [undefined])
+      addInput(ctx, id, '图片', t('projection.prop', { name: p.name }));
+  });
   shot.refs.forEach((id) => {
     const a = asset(id),
       range = shot.entity?.data.storyboard?.extraRefs?.find((ref) => ref.entityId === id);
@@ -966,6 +978,7 @@ const STORYBOARD_FIELDS = {
   end: 'lastFrameId',
   continuePrev: 'continuePrevious',
   props: 'propIds',
+  cardImages: 'cardImages',
   look: 'look',
   camera: 'camera',
 };
