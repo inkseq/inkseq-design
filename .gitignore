@@ -539,3 +539,5 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/FilmCaptionLane.jsx
 !studio-app/src/story-flow.js
 !studio-app/src/story-flow.test.js
+!studio-app/src/prompt-display.js
+!studio-app/src/prompt-display.test.js

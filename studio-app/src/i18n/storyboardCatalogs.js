@@ -299,7 +299,7 @@ export const storyboardCatalogs = {
     'review.range.cut': 'Cut it',
     'review.range.fix': 'Fix in post',
     'review.range.reshoot': 'Reshoot',
-    'flow.progress.script': 'Script: {done} of {total} scenes split into beats',
+    'flow.progress.script': 'Script: {done} of {total} scenes in beats, every beat in a shot',
     'flow.progress.world': 'World: {done} of {total} profiles complete',
     'flow.progress.storyboard': 'Storyboard: {done} of {total} shots planned',
     'flow.progress.edit': 'Edit: {done} of {total} shots have a chosen take',
@@ -930,6 +930,25 @@ export const storyboardCatalogs = {
     'chatControls.copy27':
       'After switching, {count} current assets will be excluded. Original assets and existing cards are retained.',
     'chatControls.copy28': '{value} s',
+    // Script tab P0 and flow progress (audit 2026-11-09).
+    'script.beatsFromShots': 'Beats from shots',
+    'script.splitWhy.inShots':
+      'This scene has no text of its own to split: its script is in the shots. Use “Beats from shots”; each beat goes to the shot it came from.',
+    'script.splitWhy.empty': 'Write what happens in this scene above, then split it into beats.',
+    'script.splitWhy.ready':
+      'Splits line by line: “Name: line” becomes a line, anything else an action.',
+    'script.beatKeys': 'Alt+↑/↓ moves a beat · Ctrl+Enter adds one below',
+    'script.beatPart': 'Beat {n}: {part}',
+    'script.moveUp': 'Move up',
+    'script.moveDown': 'Move down',
+    'script.insertAction': 'Add an action below',
+    'script.insertLine': 'Add a line below',
+    'script.keptLine':
+      'Speaker and delivery are put aside; switch back to Line to bring them back.',
+    'flow.next.beatsFromShots': 'Next: turn the shots of “{title}” into beats',
+    'flow.next.claimSceneBeats': 'Next: give every beat of “{title}” a shot',
+    'flow.next.reviewTakes': 'Next: review takes',
+    'flow.next.reshoot': 'Next: reshoot marked shots',
   },
   zh: {
     'plan.size.extreme-wide': '大远景',
@@ -1215,7 +1234,7 @@ export const storyboardCatalogs = {
     'review.range.cut': '剪掉',
     'review.range.fix': '后期修',
     'review.range.reshoot': '重拍',
-    'flow.progress.script': '剧本：{total} 场里 {done} 场已拆成节拍',
+    'flow.progress.script': '剧本：{total} 场里 {done} 场已拆成节拍，每一拍都有镜头',
     'flow.progress.world': '世界：{total} 个档案里 {done} 个已补全',
     'flow.progress.storyboard': '故事板：{total} 个镜头里 {done} 个已做计划',
     'flow.progress.edit': '剪辑：{total} 个镜头里 {done} 个已选定一条',
@@ -1824,5 +1843,22 @@ export const storyboardCatalogs = {
     'chatControls.copy26': '当前匹配：{mode}。',
     'chatControls.copy27': '切换后 {count} 份当前素材不再参与，原素材和历史卡片保留。',
     'chatControls.copy28': '{value} 秒',
+    // 剧本页 P0 和流程进度（2026-11-09 审查）。
+    'script.beatsFromShots': '从镜头整理成节拍',
+    'script.splitWhy.inShots':
+      '这一场没有自己的原文可拆，剧本写在镜头里。用“从镜头整理成节拍”，每一拍会归到它原来的镜头。',
+    'script.splitWhy.empty': '先在上面写这场戏发生什么，再拆成节拍。',
+    'script.splitWhy.ready': '按行拆：“名字：台词”是台词，其余是动作。',
+    'script.beatKeys': 'Alt+↑/↓ 移动节拍 · Ctrl+Enter 在下面加一拍',
+    'script.beatPart': '第 {n} 拍：{part}',
+    'script.moveUp': '上移',
+    'script.moveDown': '下移',
+    'script.insertAction': '在下面加一拍动作',
+    'script.insertLine': '在下面加一句台词',
+    'script.keptLine': '说话人和语气先收起，切回台词就会恢复。',
+    'flow.next.beatsFromShots': '下一步：把“{title}”的镜头整理成节拍',
+    'flow.next.claimSceneBeats': '下一步：给“{title}”的每一拍选镜头',
+    'flow.next.reviewTakes': '下一步：审片',
+    'flow.next.reshoot': '下一步：重拍标记的镜头',
   },
 };
