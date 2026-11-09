@@ -28,17 +28,14 @@ if (process.argv.includes('--update')) {
   process.exit(0);
 }
 const baseline = JSON.parse(readFileSync(baselineFile, 'utf8'));
-// Owner 2026-10-31: size and complexity only warn while a feature is built; it is
-// refactored afterwards (h3-studio#899). Correctness rules still fail.
-const STRUCTURE = new Set(['complexity', 'max-lines-per-function']);
+// Every rule, size and complexity included, may only go down per file (h3-studio#899: the
+// warn-only period of 2026-10-31 ended once that batch shipped; the files that grew during it
+// are recorded in the baseline as allowed, so only new growth fails).
 const grown = [];
 for (const [rule, files] of Object.entries(counts))
   for (const [file, n] of Object.entries(files)) {
     const was = baseline.files[rule]?.[file] || 0;
-    if (n <= was) continue;
-    const line = `${file}: ${rule} ${n} (was ${was})`;
-    if (STRUCTURE.has(rule)) console.warn('warn (refactor later) ' + line);
-    else grown.push(line);
+    if (n > was) grown.push(`${file}: ${rule} ${n} (was ${was})`);
   }
 if (grown.length) {
   for (const line of grown) console.error(line);
