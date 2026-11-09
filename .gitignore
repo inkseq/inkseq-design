@@ -442,7 +442,10 @@ design/inkseq-v2-prototype/dist/
 !studio-app/tools/visual-audit.mjs
 !studio-app/tools/visual/
 !studio-app/tools/visual/README.md
+!studio-app/tools/visual/page-rules.mjs
 !studio-app/tools/visual/sanitize-har.mjs
+!studio-app/tools/visual/story-screens.mjs
+!studio-app/tools/visual/story.har
 !studio-app/tools/visual/storyboard.har
 !studio-app/tools/journeys.mjs
 !studio-app/src/ui/

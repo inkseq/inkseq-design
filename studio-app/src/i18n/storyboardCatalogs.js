@@ -1035,6 +1035,7 @@ export const storyboardCatalogs = {
       'Keys: I in, O out, Enter keeps it, 1–4 pick a part, Delete removes, ←/→ one frame, J/K/L back / pause / play',
     'plan.missingLabel': 'What the plan still lacks',
     'plan.missing': 'Plan {done}/{total}, still missing:',
+    'plan.missingMore': '{count} more missing',
     'plan.allDone': 'Plan complete',
   },
   zh: {
@@ -2028,6 +2029,7 @@ export const storyboardCatalogs = {
       '键盘：I 起点，O 终点，Enter 保留，1–4 选片段，Delete 删除，←/→ 一帧，J/K/L 后退 / 暂停 / 播放',
     'plan.missingLabel': '计划还缺什么',
     'plan.missing': '准备 {done}/{total}，还缺：',
+    'plan.missingMore': '还缺 {count} 项',
     'plan.allDone': '计划都填好了',
   },
 };
