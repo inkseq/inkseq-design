@@ -552,3 +552,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/storyboard-a11y.js
 !studio-app/src/storyboard-a11y.test.js
 !studio-app/src/segmented.test.js
+!studio-app/src/StagePage.jsx
+!studio-app/src/stage-page.js
+!studio-app/src/stage-page.css
+!studio-app/src/stage-page.test.js
