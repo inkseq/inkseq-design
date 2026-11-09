@@ -321,3 +321,44 @@ test('confirmed pictures are drawn one at a time, in order', async () => {
     [...quote.action.requests, single.id],
   );
 });
+
+test('a picture drawn from attached photos sends them with that card only', async () => {
+  const { createLiveChat, fromServer } = await import('./story-chat-client.js');
+  const ids = ['character-0123456789abcdef', 'location-0123456789abcde1'];
+  const view = {
+    version: 4,
+    project_id: 'p1',
+    messages: [
+      {
+        id: 'turn-abcdef0123456789-a',
+        role: 'assistant',
+        text: 'Confirm.',
+        changes: [],
+        proposal: {
+          kind: 'image',
+          shot_ids: [],
+          picture_card_ids: ids,
+          picture_sources: { [ids[0]]: ['asset-scarf'] },
+        },
+      },
+    ],
+    cards: {
+      characters: [{ id: ids[0], name: 'Zib', text: '' }],
+      places: [{ id: ids[1], name: 'Field', text: '' }],
+      props: [],
+      shots: [],
+    },
+  };
+  const calls = [];
+  const api = {
+    async request(path, options = {}) {
+      if (path.endsWith('/images')) calls.push(options.body);
+      return view;
+    },
+  };
+  const chat = createLiveChat({ api, projectId: 'p1', labels: {} });
+  const [quote] = Object.values(fromServer(view, {}).quotes);
+  await chat.settle(quote, true, [], () => {});
+  assert.deepEqual(calls[0].photo_ids, ['asset-scarf']);
+  assert.equal('photo_ids' in calls[1], false);
+});
