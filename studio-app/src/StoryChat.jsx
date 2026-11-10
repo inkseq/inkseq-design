@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useReducer, useRef, useState, useEffectEvent
 import { FloatingMessage } from './floating-notice.js';
 import {
   ArrowUp,
+  AlertTriangle,
   Check,
   Film,
   ImagePlus,
@@ -78,6 +79,29 @@ function Thumb({ card, wide = false }) {
   );
 }
 
+// What may not come out well in the proposed shots (h3-studio#628). Advice only: making the
+// shots stays the creator's choice, and nothing here edits a shot.
+function QuoteRisks({ risks }) {
+  const { t } = useI18n();
+  return (
+    <div className="sc-risks">
+      <p>
+        <AlertTriangle size={13} aria-hidden="true" /> {t('storyChat.riskTitle')}
+      </p>
+      <ul>
+        {risks.map((risk) => (
+          <li key={risk.shotId + risk.code}>
+            <b>
+              {t('storyChat.shotN', { n: risk.order })} · {t('storyChat.risk.' + risk.code)}
+            </b>
+            {risk.suggestion && <small>{risk.suggestion}</small>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function QuoteCard({ quote, balance, onSettle }) {
   const { t } = useI18n();
   const affordable = quoteAffordable(quote, balance);
@@ -112,6 +136,7 @@ function QuoteCard({ quote, balance, onSettle }) {
           <Film size={15} aria-hidden="true" />
           <strong>{quote.label}</strong>
         </div>
+        {quote.status === 'open' && quote.risks?.length > 0 && <QuoteRisks risks={quote.risks} />}
         {quote.status === 'open' ? (
           <div className="sc-quote-actions">
             <small>{t('storyChat.liveQuoteHelp')}</small>

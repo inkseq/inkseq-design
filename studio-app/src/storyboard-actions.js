@@ -1,5 +1,6 @@
 /* Pure edits of the existing document. Cloud IO and execution stay in the controller. */
 import { validCamera, validLook } from './shot-look.js';
+import { applyPictureDefaults, pictureDefaults } from './picture-defaults.js';
 import { children, ancestors } from './store.js';
 import { detachDeletedReferences } from './entity-references.js';
 import {
@@ -328,6 +329,9 @@ function addAction(project, action, { chapterId, view }) {
       extraRefs: [],
     },
   });
+  // A new shot starts with the story's default picture, when the story has one (#891).
+  const defaults = pictureDefaults(project);
+  if (defaults.set) applyPictureDefaults(added, defaults);
   if (after) placeAfter(project, added, after);
   return { id: added.id };
 }

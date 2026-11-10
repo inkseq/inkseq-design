@@ -423,6 +423,25 @@ button.autosave-status {
   user-select: none;
   overflow: hidden;
 }
+/* The block's own sound as a waveform, behind its name (#232, items 19–20). */
+.film-audio-wave {
+  position: absolute;
+  inset: 3px 0;
+  width: 100%;
+  height: calc(100% - 6px);
+  pointer-events: none;
+  stroke: currentColor;
+  stroke-width: 1px;
+  opacity: 0.32;
+}
+.film-audio-label {
+  position: relative;
+}
+/* A sound file held over the lane: it lands where it is dropped. */
+.film-audio-lane.dropping {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
 .film-audio.generated {
   background: color-mix(in srgb, var(--fl) 18%, var(--surface-2, var(--surface)));
   border-color: color-mix(in srgb, var(--fl) 50%, transparent);
