@@ -3,7 +3,7 @@
 // state with the server's view. Paid generation is never started here: a proposal hands the
 // story to Works, where the existing preflight, quote and confirmation run.
 import { track } from './analytics.js';
-import { attachActions, attachmentNote, uploadReady } from './story-chat-attach.js';
+import { attachActions, attachmentNote, turnPhotos, uploadReady } from './story-chat-attach.js';
 
 const KIND = { characters: 'character', places: 'place', props: 'prop' };
 
@@ -85,6 +85,16 @@ export function riskWarnings(review, cards) {
     .sort((a, b) => a.order - b.order || RISK_CODES.indexOf(a.code) - RISK_CODES.indexOf(b.code));
 }
 
+function pictureAction(proposal, cards, requests) {
+  return {
+    kind: 'image',
+    cards,
+    ...(cards.length === 1 ? {} : { requests }),
+    // Attached photos stay bound to the picture proposed from them (#726).
+    ...(proposal?.picture_sources ? { sources: proposal.picture_sources } : {}),
+  };
+}
+
 // The newest reply's proposals become confirm cards: pictures, a new story, generation.
 function proposalQuotes(message, { cards, labels, messages, quotes, started }) {
   // Suggested card pictures: one confirm card for all of them, drawn one at a time so each
@@ -100,10 +110,7 @@ function proposalQuotes(message, { cards, labels, messages, quotes, started }) {
     quotes[id] = {
       id,
       status: requests.every((request) => started.has(request)) ? 'confirmed' : 'open',
-      action:
-        pictures.length === 1
-          ? { kind: 'image', cards: pictures }
-          : { kind: 'image', cards: pictures, requests },
+      action: pictureAction(message.proposal, pictures, requests),
       credits: Number.isFinite(labels.imageCredits)
         ? labels.imageCredits * pictures.length
         : (labels.imageCredits ?? null),
@@ -262,12 +269,16 @@ export function createLiveChat({
     drawing = run.catch(() => {});
     return run;
   };
-  async function drawPicture(requestId, card, emit) {
+  async function drawPicture(requestId, card, emit, photos = []) {
     emit({ type: 'card.status', id: card, status: 'generating' });
     try {
       const value = await api.request(`/v1/story-chats/${encodeURIComponent(project)}/images`, {
         method: 'POST',
-        body: { request_id: requestId, card_id: card },
+        body: {
+          request_id: requestId,
+          card_id: card,
+          ...(photos.length ? { photo_ids: photos } : {}),
+        },
         // Drawing plus storing a picture takes 15–40 s.
         timeoutMs: 180000,
       });
@@ -323,12 +334,15 @@ export function createLiveChat({
         const ident = await ensure();
         const added = attachments.length ? await attach(ident, attachments) : [];
         const note = attachmentNote(added, labels.t);
+        // The assistant sees the attached photos themselves (h3-studio#726).
+        const photos = turnPhotos(added);
         const value = await api.request(`/v1/story-chats/${encodeURIComponent(ident)}/turns`, {
           method: 'POST',
           body: {
             turn_id: id,
             text: [text, note].filter(Boolean).join('\n\n'),
             ...(script ? { script: true } : {}),
+            ...(photos.length ? { photos } : {}),
           },
           // A model turn can take 10–30 s; never give up before the server does.
           timeoutMs: 120000,
@@ -366,7 +380,9 @@ export function createLiveChat({
       // Queue the whole batch at once so it stays together, in order.
       await Promise.all(
         quote.action.cards.map((card, index) =>
-          queued(() => drawPicture(requests[index] || quote.id, card, emit)),
+          queued(() =>
+            drawPicture(requests[index] || quote.id, card, emit, quote.action.sources?.[card]),
+          ),
         ),
       );
     },
