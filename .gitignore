@@ -93,6 +93,8 @@
 !studio-app/src/speech-lines.test.js
 !studio-app/src/story-chat-attach.js
 !studio-app/src/story-chat-attach.test.js
+!studio-app/src/story-chat-stream.js
+!studio-app/src/story-chat-stream.test.js
 !studio-app/src/StoryChatAttachments.jsx
 !studio-app/src/QuickCreateEntry.jsx
 !studio-app/src/LegacyQuickChatLink.jsx

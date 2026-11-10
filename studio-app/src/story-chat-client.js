@@ -4,6 +4,7 @@
 // story to Works, where the existing preflight, quote and confirmation run.
 import { track } from './analytics.js';
 import { attachActions, attachmentNote, turnPhotos, uploadReady } from './story-chat-attach.js';
+import { sendTurn } from './story-chat-stream.js';
 
 const KIND = { characters: 'character', places: 'place', props: 'prop' };
 
@@ -336,16 +337,16 @@ export function createLiveChat({
         const note = attachmentNote(added, labels.t);
         // The assistant sees the attached photos themselves (h3-studio#726).
         const photos = turnPhotos(added);
-        const value = await api.request(`/v1/story-chats/${encodeURIComponent(ident)}/turns`, {
-          method: 'POST',
-          body: {
-            turn_id: id,
-            text: [text, note].filter(Boolean).join('\n\n'),
-            ...(script ? { script: true } : {}),
-            ...(photos.length ? { photos } : {}),
-          },
-          // A model turn can take 10–30 s; never give up before the server does.
-          timeoutMs: 120000,
+        const body = {
+          turn_id: id,
+          text: [text, note].filter(Boolean).join('\n\n'),
+          ...(script ? { script: true } : {}),
+          ...(photos.length ? { photos } : {}),
+        };
+        // The reply shows while it is being written (#1083); the result is the plain POST's.
+        const value = await sendTurn(api, `/v1/story-chats/${encodeURIComponent(ident)}`, body, {
+          onReply: (reply) => emit({ type: 'turn.reply', text: reply }),
+          onProgress: (step) => emit({ type: 'turn.progress', step }),
         });
         load(value, emit, (value.turn?.changes || []).map((change) => change.id).filter(Boolean));
       } catch (failure) {
