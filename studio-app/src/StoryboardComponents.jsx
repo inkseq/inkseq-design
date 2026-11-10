@@ -53,6 +53,7 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import { useOptimisticChoice } from './optimistic-choice.js';
+import { ShotCardPictures } from './ShotCardPictures.jsx';
 import { useQuery } from '@tanstack/react-query';
 import { openKey, useCardGrid } from './card-grid.js';
 import { assetLabel, secondsLabel, shotName } from './storyboard-a11y.js';
@@ -2179,6 +2180,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   // Resolution and labels follow the pressed quality too, not only the toggle (#1032).
   const info = expand({ ...shot, quality: shownQuality }, db, locale);
   const upd = (patch) => dispatch({ type: 'update', id: shot.id, patch });
+  const pickThumb = (id) => <AssetThumb asset={db.asset(id)} size={28} />;
   // One new take: a fresh seed only matters when the seed is locked; HD switches the tier first.
   const regenerate = async (patch) => {
     if (patch.newSeed && !shot.seedLock) delete patch.newSeed;
@@ -2465,6 +2467,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                             </option>
                           ))}
                         </select>
+                        <ShotCardPictures
+                          shot={shot}
+                          cardId={p.id}
+                          name={p.name}
+                          images={variantOf(p, c.variant)?.images || []}
+                          thumb={pickThumb}
+                          onChange={upd}
+                        />
                       </div>
                       <IconButton
                         size="xs"
@@ -2512,6 +2522,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                               </option>
                             ))}
                           </select>
+                          <ShotCardPictures
+                            shot={shot}
+                            cardId={p.id}
+                            name={p.name}
+                            images={variantOf(p, shot.place.variant)?.images || []}
+                            thumb={pickThumb}
+                            onChange={upd}
+                          />
                         </div>
                         <IconButton
                           size="xs"
@@ -2538,6 +2556,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                             {p.name}
                           </Button>
                           <small>{tr('storyboard.copy88')}</small>
+                          <ShotCardPictures
+                            shot={shot}
+                            cardId={p.id}
+                            name={p.name}
+                            images={p.variants[0]?.images || []}
+                            thumb={pickThumb}
+                            onChange={upd}
+                          />
                         </div>
                         <IconButton
                           size="xs"

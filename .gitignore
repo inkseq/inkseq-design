@@ -48,6 +48,9 @@
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/ShotPicture.jsx
+!studio-app/src/ShotCardPictures.jsx
+!studio-app/src/shot-card-pictures.js
+!studio-app/src/shot-card-pictures.test.js
 !studio-app/src/SeriesApp.jsx
 !studio-app/src/app-styles.js
 !studio-app/src/catalog-tiers.test.js
