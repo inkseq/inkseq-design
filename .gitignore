@@ -571,3 +571,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/speech-edit.js
 !studio-app/src/speech-edit.test.js
 !studio-app/src/use-speech-text.js
+!studio-app/src/api/
+!studio-app/src/api/feedback.js
+!studio-app/src/feedback-api.test.js
