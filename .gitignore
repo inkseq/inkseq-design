@@ -568,6 +568,9 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/stage-page.js
 !studio-app/src/stage-page.css
 !studio-app/src/stage-page.test.js
+!studio-app/src/AdminRevenue.jsx
+!studio-app/src/admin-money-model.js
+!studio-app/src/admin-money.test.js
 !studio-app/src/speech-edit.js
 !studio-app/src/speech-edit.test.js
 !studio-app/src/use-speech-text.js
