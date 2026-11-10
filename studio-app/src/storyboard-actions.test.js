@@ -96,12 +96,18 @@ const act = (project, action) => edit(project, action, { chapterId: 'chapter' })
 test('picture picker updates persist through the action path and retain legacy shot context', () => {
   for (const storyboard of [
     undefined,
-    { mode: 'ref', place: { locationId: 'place', versionId: '' }, firstFrameId: 'image-one' },
+    {
+      mode: 'ref',
+      quality: 'draft',
+      place: { locationId: 'place', versionId: '' },
+      firstFrameId: 'image-one',
+    },
   ]) {
     const project = fixture(),
       shot = get(project, 'shot-a'),
       jobs = structuredClone(project.jobs);
     if (storyboard) shot.data.storyboard = storyboard;
+    shot.data.qualityIntent = 'final';
     get(project, 'hero').data.looks[0].imageIds = ['image-one', 'image-two'];
     const picks = togglePicture({}, 'hero', ['image-one', 'image-two'], 'image-two');
     assert.deepEqual(act(project, { type: 'update', id: shot.id, patch: { cardImages: picks } }), {
@@ -115,6 +121,7 @@ test('picture picker updates persist through the action path and retain legacy s
     assert.deepEqual(view.cast, [{ id: 'hero', variant: 'coat' }]);
     assert.equal(view.place.id, 'place');
     assert.equal(view.start, 'image-one');
+    assert.equal(view.quality, storyboard?.quality ?? 'final');
     assert.deepEqual(project.jobs, jobs);
     assert.equal(get(project, 'result').data.sourceJobId, 'paid-job');
     assert.ok(act(project, { type: 'update', id: shot.id, patch: { cardImages: {} } }));
