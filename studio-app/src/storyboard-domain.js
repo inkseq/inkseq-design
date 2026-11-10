@@ -8,6 +8,7 @@ import { children } from './store.js';
 import { effectiveLimits, effectiveControlSchema, roleSupported } from './quick-chat-model.js';
 import { bibleOf } from './story-bible.js';
 import { pickedPictures } from './shot-card-pictures.js';
+import { pictureDefaults } from './picture-defaults.js';
 const uid = (kind) => kind + '-' + crypto.randomUUID();
 const find = (p, id) => p.entities.find((e) => e.id === id);
 const mode = (shot) => shot.data.storyboard?.mode || shot.data.h3?.inputMode || 'fl';
@@ -192,6 +193,10 @@ function suggestProfiles(assets, profiles) {
   }
 }
 
+// The take an enhance job copies, by its library entity (h3-studio#893).
+const enhanceSource = (job) =>
+  job.recipe_id === ENHANCE_RECIPE ? job.client_ref?.entity_id || null : null;
+
 // Every take of a shot: its jobs (local and server) in order, then imported candidates.
 function shotVersions(project, s, jobs) {
   const shotJobs = [
@@ -222,8 +227,10 @@ function shotVersions(project, s, jobs) {
       error: j.error_code || j.message || '',
       audio: j.artifacts?.find((a) => a.kind === 'audio'),
       effectiveRequest: j.effective_request,
-      // A 1080P/2K copy of another take (h3-studio#795); never enhanced again.
+      // A 1080P/2K copy of another take (h3-studio#795); never enhanced again. Its source take
+      // by library entity, so a second "enhance" of the same take is never sent (#893).
       enhanced: j.recipe_id === ENHANCE_RECIPE,
+      sourceEntityId: enhanceSource(j),
     };
   });
   for (const id of list(s.data.candidateIds)) {
@@ -275,16 +282,21 @@ function shotPlace(s, b, scene) {
   return scene?.data.locationId ? { id: scene.data.locationId, variant: '' } : null;
 }
 
+function shotCast(shot, scene) {
+  const cast =
+    shot.data.storyboard && Object.hasOwn(shot.data, 'cast')
+      ? list(shot.data.cast)
+      : [...list(scene?.data.cast), ...list(shot.data.cast)];
+  return new Map(
+    cast.map((item) => [item.characterId, { id: item.characterId, variant: item.lookId }]),
+  );
+}
+
 function shotView(project, s, { jobs, assets }) {
   const b = s.data.storyboard || {},
     versions = shotVersions(project, s, jobs);
   const scene = find(project, s.parentId),
-    cast = new Map(
-      (s.data.storyboard && Object.hasOwn(s.data, 'cast')
-        ? list(s.data.cast)
-        : [...list(scene?.data.cast), ...list(s.data.cast)]
-      ).map((c) => [c.characterId, { id: c.characterId, variant: c.lookId }]),
-    );
+    cast = shotCast(s, scene);
   return {
     id: s.id,
     title: s.title,
@@ -347,6 +359,7 @@ export function storyboardView(
       chapters: storyChapters(project).map((e) => ({ id: e.id, title: e.title })),
       style: project.journey?.storyboard?.style || '',
       aspect: project.journey?.brief?.aspect || '16:9',
+      pictureDefaults: pictureDefaults(project),
     },
     shots,
     assets,

@@ -1,4 +1,6 @@
 import { Disclosure } from './ui/Disclosure.jsx';
+import { defaultCopies } from './picture-defaults.js';
+import { useSpeechText } from './use-speech-text.js';
 import { TakeNextStep } from './TakeNextStep.jsx';
 import {
   UserRound,
@@ -1699,9 +1701,12 @@ function usualSettings(shots, db, locale) {
     for (const v of values) counts.set(v, (counts.get(v) || 0) + 1);
     return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
   };
+  // A story with a default picture marks shots that differ from it (#891).
+  const defaults = db.state.project.pictureDefaults;
   const value = {
     mode: top(shots.map((s) => expand(s, db, locale).mode)),
-    quality: top(shots.map((s) => s.quality)),
+    quality: defaults?.set ? defaults.quality : top(shots.map((s) => s.quality)),
+    aspect: defaults?.set ? defaults.aspect : top(shots.map((s) => s.aspect)),
   };
   usualCache.set(shots, value);
   return value;
@@ -1850,6 +1855,7 @@ export function ShotCard({
             {shot.quality !== usual.quality && (
               <span className="q">{QUALITY_LABEL[shot.quality]}</span>
             )}
+            {shot.aspect !== usual.aspect && <span className="q">{shot.aspect}</span>}
             {warnings.length > 0 && (
               <Tooltip tap content={warnings.join('\n')}>
                 <Button
@@ -2140,7 +2146,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   const { state, dispatch, db } = useStore();
   const shot = state.shots.find((s) => s.id === shotId);
   const missing = useShotReadiness(shot, tr);
-  const [copies, setCopies] = useState('1');
+  const firstCopies = defaultCopies(state);
+  const [copies, setCopies] = useState(firstCopies);
   // Hooks stay above the early return below (rules of hooks).
   const [regenerating, setRegenerating] = useState(false);
   const [preview, setPreview] = useState(null),
@@ -2152,8 +2159,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
     setPicker(null);
     setSaving(false);
     setMsg('');
-    setCopies('1');
-  }, [shotId, state.contextId]);
+    setCopies(firstCopies);
+  }, [shotId, state.contextId, firstCopies]);
   // Text boxes grow with what is typed, like a chat composer; size them for saved text too.
   const editorRef = useRef(null),
     mediaRef = useRef(null);
@@ -2163,6 +2170,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   useEffect(() => {
     editorRef.current?.querySelectorAll('textarea').forEach((node) => growTextarea(node));
   });
+  // Spoken lines edit as 「台词」; saving keeps the video model's tags (h3-studio#1113).
+  const speech = useSpeechText(shot?.prompt);
   const [shownQuality, chooseQuality] = useOptimisticChoice(shot?.quality, (quality) =>
     dispatch({ type: 'update', id: shotId, patch: { quality } }),
   );
@@ -2392,8 +2401,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           </span>
           <textarea
             rows={2}
-            value={shot.prompt}
-            onChange={(e) => upd({ prompt: e.target.value })}
+            value={speech.shown}
+            onChange={(e) => upd({ prompt: speech.edit(e.target.value, e.target.selectionEnd) })}
             placeholder={tr('storyboard.finish11')}
           />
         </label>
