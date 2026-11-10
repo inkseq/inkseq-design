@@ -311,6 +311,7 @@ function EnhanceAllDialog({ shots, onClose }) {
           .map((target) => ({ shot: target.shot, reason: 'unavailable' }))
       : []),
   ];
+  const total = list ? ready.length : plan.targets.length;
   return (
     <Dialog title={t('enhance.allTitle')} onClose={() => onClose(started)} busy={busy}>
       <Segmented
@@ -321,8 +322,8 @@ function EnhanceAllDialog({ shots, onClose }) {
       />
       <small className="muted">{t('enhance.tier.' + tier + 'Note')}</small>
       <p className="sb-confirm-note">
-        {t('enhance.allCount', {
-          count: list ? ready.length : plan.targets.length,
+        {t('enhance.allCount' + (total === 1 ? '.one' : ''), {
+          count: total,
           skipped: skipped.length,
         })}
       </p>
