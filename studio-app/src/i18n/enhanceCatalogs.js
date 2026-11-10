@@ -39,7 +39,8 @@ export const enhanceCatalogs = {
     'enhance.skip.unavailable': 'can’t be enhanced right now',
     'enhance.allFit': 'Your credits cover the first {fit} of these {count}.',
     'enhance.allNone': 'Your credits don’t cover any of these yet.',
-    'enhance.allUseCopy': 'Use each sharper copy in the film when it’s done',
+    'enhance.allUseCopy':
+      'The film will use each sharper copy when it’s done. The originals stay in the takes.',
     'enhance.allStart': 'Enhance {count}',
     'enhance.allStartFirst': 'Enhance the first {count}',
     'enhance.allPartial':
@@ -81,7 +82,7 @@ export const enhanceCatalogs = {
     'enhance.skip.unavailable': '暂时无法提升',
     'enhance.allFit': '你的积分够提升前 {fit} 个（共 {count} 个）。',
     'enhance.allNone': '你的积分还不够提升其中任何一个。',
-    'enhance.allUseCopy': '清晰版完成后，成片里改用清晰版',
+    'enhance.allUseCopy': '清晰版完成后，成片会改用清晰版，原片仍保留在镜次里。',
     'enhance.allStart': '提升 {count} 个',
     'enhance.allStartFirst': '先提升前 {count} 个',
     'enhance.allPartial':
