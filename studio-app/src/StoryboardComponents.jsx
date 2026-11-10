@@ -1,5 +1,6 @@
 import { Disclosure } from './ui/Disclosure.jsx';
 import { defaultCopies } from './picture-defaults.js';
+import { useSpeechText } from './use-speech-text.js';
 import { TakeNextStep } from './TakeNextStep.jsx';
 import {
   UserRound,
@@ -2168,6 +2169,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   useEffect(() => {
     editorRef.current?.querySelectorAll('textarea').forEach((node) => growTextarea(node));
   });
+  // Spoken lines edit as 「台词」; saving keeps the video model's tags (h3-studio#1113).
+  const speech = useSpeechText(shot?.prompt);
   const [shownQuality, chooseQuality] = useOptimisticChoice(shot?.quality, (quality) =>
     dispatch({ type: 'update', id: shotId, patch: { quality } }),
   );
@@ -2396,8 +2399,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
           </span>
           <textarea
             rows={2}
-            value={shot.prompt}
-            onChange={(e) => upd({ prompt: e.target.value })}
+            value={speech.shown}
+            onChange={(e) => upd({ prompt: speech.edit(e.target.value, e.target.selectionEnd) })}
             placeholder={tr('storyboard.finish11')}
           />
         </label>
