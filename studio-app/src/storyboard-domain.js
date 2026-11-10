@@ -1001,7 +1001,7 @@ function storyboardBlock(shot, patch) {
   const b = {
     version: 1,
     mode: mode(shot),
-    quality: 'draft',
+    quality: shot.data.qualityIntent ?? 'draft',
     place: null,
     propIds: [],
     firstFrameId: '',
