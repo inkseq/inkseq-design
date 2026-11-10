@@ -158,6 +158,7 @@
 !studio-app/src/enhance-take.css
 !studio-app/src/shot-status.js
 !studio-app/src/shot-status.test.js
+!studio-app/src/FeedbackSettings.jsx
 !studio-app/src/film-editor.css
 !studio-app/src/InkLoader.jsx
 !studio-app/src/ink-loader.css
@@ -559,3 +560,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/stage-page.js
 !studio-app/src/stage-page.css
 !studio-app/src/stage-page.test.js
+!studio-app/src/speech-edit.js
+!studio-app/src/speech-edit.test.js
+!studio-app/src/use-speech-text.js
