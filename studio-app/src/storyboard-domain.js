@@ -913,7 +913,7 @@ function patchCreatorControls(shot, patch) {
   shot.data.h3 = { ...shot.data.h3, controls };
 }
 // A legacy shot (no storyboard block) stays legacy unless the patch needs storyboard fields.
-const STORYBOARD_ONLY = ['cast', 'place', 'props', 'continuePrev', 'look', 'camera'];
+const STORYBOARD_ONLY = ['cast', 'place', 'props', 'cardImages', 'continuePrev', 'look', 'camera'];
 const staysLegacy = (shot, patch) =>
   !shot.data.storyboard &&
   !Object.keys(patch).some((key) => STORYBOARD_ONLY.includes(key)) &&
