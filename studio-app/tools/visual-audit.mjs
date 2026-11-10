@@ -175,17 +175,21 @@ const slug = (text) =>
 const PICTURE =
   '<svg xmlns="http://www.w3.org/2000/svg" width="64" height="16"><rect width="64" height="16" fill="#888"/></svg>';
 async function mediaGate(context) {
-  const gate = { holding: true, pending: [], n: 0 };
-  const answer = (route) =>
-    gate.n++ % 2
+  const gate = { holding: true, pending: [] };
+  const answer = (route) => {
+    // The same picture always has the same outcome, independent of request scheduling.
+    const path = new URL(route.request().url()).pathname;
+    const odd = [...path].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 2;
+    return odd
       ? route.abort()
       : route.fulfill({ status: 200, contentType: 'image/svg+xml', body: PICTURE });
+  };
   await context.route(/\/v1\/(assets|artifacts|voices)\/.+\/(content|sample)/, (route) =>
     gate.holding ? gate.pending.push(route) : answer(route),
   );
-  gate.release = () => {
+  gate.release = async () => {
     gate.holding = false;
-    for (const route of gate.pending.splice(0)) answer(route).catch(() => {});
+    await Promise.all(gate.pending.splice(0).map((route) => answer(route).catch(() => {})));
   };
   return gate;
 }
@@ -229,10 +233,19 @@ async function storySuite(browser, base) {
           await screen.open(page, base);
           await page.locator(screen.ready).first().waitFor({ timeout: 15000 });
           await page.waitForTimeout(500);
+          await page.evaluate(() => document.fonts.ready);
           const media = screen.rules.media;
           const before = media ? await page.evaluate(mediaBoxes, media) : [];
-          gate.release();
-          await page.waitForTimeout(700);
+          await gate.release();
+          await page.waitForFunction(() =>
+            [...document.images]
+              .filter((image) => image.currentSrc)
+              .every((image) => image.complete),
+          );
+          await page.evaluate(
+            () =>
+              new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+          );
           const after = media ? await page.evaluate(mediaBoxes, media) : [];
           const moved = [];
           if (before.length !== after.length)

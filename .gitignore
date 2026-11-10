@@ -48,6 +48,9 @@
 !studio-app/package.json
 !studio-app/src/AccountPassword.jsx
 !studio-app/src/ShotPicture.jsx
+!studio-app/src/ShotCardPictures.jsx
+!studio-app/src/shot-card-pictures.js
+!studio-app/src/shot-card-pictures.test.js
 !studio-app/src/SeriesApp.jsx
 !studio-app/src/app-styles.js
 !studio-app/src/catalog-tiers.test.js
@@ -155,6 +158,15 @@
 !studio-app/src/CloudAutosave.jsx
 !studio-app/src/film-audio.test.js
 !studio-app/src/FilmEditor.jsx
+!studio-app/src/audio-peaks.js
+!studio-app/src/audio-peaks.test.js
+!studio-app/src/picture-defaults.js
+!studio-app/src/picture-defaults.test.js
+!studio-app/src/StoryPictureDefaults.jsx
+!studio-app/src/enhance-take.css
+!studio-app/src/shot-status.js
+!studio-app/src/shot-status.test.js
+!studio-app/src/FeedbackSettings.jsx
 !studio-app/src/film-editor.css
 !studio-app/src/InkLoader.jsx
 !studio-app/src/ink-loader.css
@@ -559,3 +571,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/AdminRevenue.jsx
 !studio-app/src/admin-money-model.js
 !studio-app/src/admin-money.test.js
+!studio-app/src/speech-edit.js
+!studio-app/src/speech-edit.test.js
+!studio-app/src/use-speech-text.js
