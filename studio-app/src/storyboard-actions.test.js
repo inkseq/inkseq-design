@@ -94,7 +94,10 @@ const get = (project, id) => project.entities.find((value) => value.id === id);
 const act = (project, action) => edit(project, action, { chapterId: 'chapter' });
 
 test('picture picker updates persist through the action path and retain legacy shot context', () => {
-  for (const storyboard of [undefined, { mode: 'REF' }]) {
+  for (const storyboard of [
+    undefined,
+    { mode: 'ref', place: { locationId: 'place', versionId: '' }, firstFrameId: 'image-one' },
+  ]) {
     const project = fixture(),
       shot = get(project, 'shot-a'),
       jobs = structuredClone(project.jobs);
