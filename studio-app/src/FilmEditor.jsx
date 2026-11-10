@@ -29,6 +29,7 @@ import { Clapperboard, EyeOff, Gauge, Undo2, Unlink, Volume2, VolumeX } from 'lu
 import { store } from './store.js';
 import { useStoryboardMediaUrl } from './StoryboardMedia.jsx';
 import { cutFps } from './video-cut-model.js';
+import { chapterShots, shotsAspect } from './delivery-model.js';
 import { captionProblems, captionStatus, captionTrack, orderedCues } from './caption-model.js';
 import {
   addCue,
@@ -500,7 +501,7 @@ export default function FilmEditor({
     }),
   );
   const busy = !!s.busy;
-  const aspect = project.journey?.delivery?.aspect || project.journey?.brief?.aspect || '16:9',
+  const aspect = shotsAspect(project, chapterShots(project, chapterId)),
     [width, height] = SIZES[aspect] || SIZES['16:9'];
   const onUrl = useCallback(
     (id, url) => setSources((old) => (old[id] === url ? old : { ...old, [id]: url })),

@@ -62,6 +62,29 @@ function changeRows(message, messages) {
     });
 }
 
+// Advice on the proposed shots (h3-studio#628): one row per warning, in shot order, with the
+// shot's number. Advice made for an older draft (stale) or with unknown codes is not shown;
+// the server text is shown as text only, never acted on.
+const RISK_CODES = ['simultaneous_speakers', 'speech_too_dense', 'action_density', 'plot_density'];
+export function riskWarnings(review, cards) {
+  if (!review || review.version !== 1 || review.status === 'stale') return [];
+  const order = new Map(cards.filter((c) => c.kind === 'shot').map((c) => [c.id, c.order]));
+  const seen = new Set();
+  return (Array.isArray(review.warnings) ? review.warnings : [])
+    .filter((w) => RISK_CODES.includes(w?.code) && order.has(w.shot_id))
+    .filter((w) => {
+      const key = w.shot_id + ' ' + w.code;
+      return !seen.has(key) && seen.add(key);
+    })
+    .map((w) => ({
+      shotId: w.shot_id,
+      order: order.get(w.shot_id),
+      code: w.code,
+      suggestion: typeof w.suggestion === 'string' ? w.suggestion.trim().slice(0, 500) : '',
+    }))
+    .sort((a, b) => a.order - b.order || RISK_CODES.indexOf(a.code) - RISK_CODES.indexOf(b.code));
+}
+
 // The newest reply's proposals become confirm cards: pictures, a new story, generation.
 function proposalQuotes(message, { cards, labels, messages, quotes, started }) {
   // Suggested card pictures: one confirm card for all of them, drawn one at a time so each
@@ -109,6 +132,7 @@ function proposalQuotes(message, { cards, labels, messages, quotes, started }) {
       status: 'open',
       action: { kind: 'generate', cards: message.proposal.shot_ids },
       label: labels.generate?.(message.proposal.shot_ids.length) || '',
+      risks: riskWarnings(message.proposal.risk_review, cards),
     };
     messages.push({ id, role: 'quote', quoteId: id });
   }
