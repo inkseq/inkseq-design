@@ -191,6 +191,10 @@ function suggestProfiles(assets, profiles) {
   }
 }
 
+// The take an enhance job copies, by its library entity (h3-studio#893).
+const enhanceSource = (job) =>
+  job.recipe_id === ENHANCE_RECIPE ? job.client_ref?.entity_id || null : null;
+
 // Every take of a shot: its jobs (local and server) in order, then imported candidates.
 function shotVersions(project, s, jobs) {
   const shotJobs = [
@@ -221,8 +225,10 @@ function shotVersions(project, s, jobs) {
       error: j.error_code || j.message || '',
       audio: j.artifacts?.find((a) => a.kind === 'audio'),
       effectiveRequest: j.effective_request,
-      // A 1080P/2K copy of another take (h3-studio#795); never enhanced again.
+      // A 1080P/2K copy of another take (h3-studio#795); never enhanced again. Its source take
+      // by library entity, so a second "enhance" of the same take is never sent (#893).
       enhanced: j.recipe_id === ENHANCE_RECIPE,
+      sourceEntityId: enhanceSource(j),
     };
   });
   for (const id of list(s.data.candidateIds)) {
