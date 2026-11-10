@@ -112,6 +112,8 @@
 !studio-app/tools/check-lint.mjs
 !studio-app/tools/lint-baseline.json
 !studio-app/tools/check-css-classes.mjs
+!studio-app/tools/css-class-use.mjs
+!studio-app/src/css-class-use.test.js
 !studio-app/src/StoryChatAdminSwitch.jsx
 !studio-app/src/story-chat.css
 !studio-app/src/CapacitySettings.jsx
