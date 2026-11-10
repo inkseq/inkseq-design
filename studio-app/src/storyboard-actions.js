@@ -266,7 +266,9 @@ function patchShot(project, shot, patch) {
     !shot.data.storyboard &&
     !shot.data.h3?.explicitReferences &&
     Object.keys(clean).some((key) =>
-      ['mode', 'cast', 'place', 'props', 'cardImages', 'continuePrev', 'look', 'camera'].includes(key),
+      ['mode', 'cast', 'place', 'props', 'cardImages', 'continuePrev', 'look', 'camera'].includes(
+        key,
+      ),
     )
   )
     materializeLegacyContext(project, shot, clean);
