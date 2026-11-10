@@ -7,6 +7,7 @@ import { modelsVisible, profileTier } from './model-visibility.js';
 import { children } from './store.js';
 import { effectiveLimits, effectiveControlSchema, roleSupported } from './quick-chat-model.js';
 import { bibleOf } from './story-bible.js';
+import { pictureDefaults } from './picture-defaults.js';
 const uid = (kind) => kind + '-' + crypto.randomUUID();
 const find = (p, id) => p.entities.find((e) => e.id === id);
 const mode = (shot) => shot.data.storyboard?.mode || shot.data.h3?.inputMode || 'fl';
@@ -350,6 +351,7 @@ export function storyboardView(
       chapters: storyChapters(project).map((e) => ({ id: e.id, title: e.title })),
       style: project.journey?.storyboard?.style || '',
       aspect: project.journey?.brief?.aspect || '16:9',
+      pictureDefaults: pictureDefaults(project),
     },
     shots,
     assets,
