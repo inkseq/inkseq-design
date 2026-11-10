@@ -235,6 +235,8 @@ export const operatorPanelCatalogs = {
 };
 Object.assign(operatorPanelCatalogs.en, {
   'operatorPanel.ownerBudget': 'Account budget · {owner}',
+  'operatorPanel.ownerGpuBudget': 'GPU budget · {owner}',
+  'operatorPanel.ownerJobBudget': 'Generation budget · {owner}',
   'operatorPanel.projectBudget': 'Project budget · {owner} / {project}',
   'operatorPanel.sharedGpuBudget': 'Shared GPU budget',
   'operatorPanel.sharedJobBudget': 'Shared generation budget',
@@ -264,6 +266,8 @@ Object.assign(operatorPanelCatalogs.en, {
 });
 Object.assign(operatorPanelCatalogs.zh, {
   'operatorPanel.ownerBudget': '账户预算 · {owner}',
+  'operatorPanel.ownerGpuBudget': 'GPU 预算 · {owner}',
+  'operatorPanel.ownerJobBudget': '生成预算 · {owner}',
   'operatorPanel.projectBudget': '项目预算 · {owner} / {project}',
   'operatorPanel.sharedGpuBudget': '共享 GPU 预算',
   'operatorPanel.sharedJobBudget': '共享生成预算',

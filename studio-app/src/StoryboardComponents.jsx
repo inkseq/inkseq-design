@@ -1,4 +1,5 @@
 import { Disclosure } from './ui/Disclosure.jsx';
+import { defaultCopies } from './picture-defaults.js';
 import { useSpeechText } from './use-speech-text.js';
 import { TakeNextStep } from './TakeNextStep.jsx';
 import {
@@ -52,6 +53,7 @@ import React, {
   useSyncExternalStore,
 } from 'react';
 import { useOptimisticChoice } from './optimistic-choice.js';
+import { ShotCardPictures } from './ShotCardPictures.jsx';
 import { useQuery } from '@tanstack/react-query';
 import { openKey, useCardGrid } from './card-grid.js';
 import { assetLabel, secondsLabel, shotName } from './storyboard-a11y.js';
@@ -1699,9 +1701,12 @@ function usualSettings(shots, db, locale) {
     for (const v of values) counts.set(v, (counts.get(v) || 0) + 1);
     return [...counts].sort((a, b) => b[1] - a[1])[0]?.[0];
   };
+  // A story with a default picture marks shots that differ from it (#891).
+  const defaults = db.state.project.pictureDefaults;
   const value = {
     mode: top(shots.map((s) => expand(s, db, locale).mode)),
-    quality: top(shots.map((s) => s.quality)),
+    quality: defaults?.set ? defaults.quality : top(shots.map((s) => s.quality)),
+    aspect: defaults?.set ? defaults.aspect : top(shots.map((s) => s.aspect)),
   };
   usualCache.set(shots, value);
   return value;
@@ -1850,6 +1855,7 @@ export function ShotCard({
             {shot.quality !== usual.quality && (
               <span className="q">{QUALITY_LABEL[shot.quality]}</span>
             )}
+            {shot.aspect !== usual.aspect && <span className="q">{shot.aspect}</span>}
             {warnings.length > 0 && (
               <Tooltip tap content={warnings.join('\n')}>
                 <Button
@@ -2140,7 +2146,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   const { state, dispatch, db } = useStore();
   const shot = state.shots.find((s) => s.id === shotId);
   const missing = useShotReadiness(shot, tr);
-  const [copies, setCopies] = useState('1');
+  const firstCopies = defaultCopies(state);
+  const [copies, setCopies] = useState(firstCopies);
   // Hooks stay above the early return below (rules of hooks).
   const [regenerating, setRegenerating] = useState(false);
   const [preview, setPreview] = useState(null),
@@ -2152,8 +2159,8 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
     setPicker(null);
     setSaving(false);
     setMsg('');
-    setCopies('1');
-  }, [shotId, state.contextId]);
+    setCopies(firstCopies);
+  }, [shotId, state.contextId, firstCopies]);
   // Text boxes grow with what is typed, like a chat composer; size them for saved text too.
   const editorRef = useRef(null),
     mediaRef = useRef(null);
@@ -2173,6 +2180,7 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
   // Resolution and labels follow the pressed quality too, not only the toggle (#1032).
   const info = expand({ ...shot, quality: shownQuality }, db, locale);
   const upd = (patch) => dispatch({ type: 'update', id: shot.id, patch });
+  const pickThumb = (id) => <AssetThumb asset={db.asset(id)} size={28} />;
   // One new take: a fresh seed only matters when the seed is locked; HD switches the tier first.
   const regenerate = async (patch) => {
     if (patch.newSeed && !shot.seedLock) delete patch.newSeed;
@@ -2459,6 +2467,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                             </option>
                           ))}
                         </select>
+                        <ShotCardPictures
+                          shot={shot}
+                          cardId={p.id}
+                          name={p.name}
+                          images={variantOf(p, c.variant)?.images || []}
+                          thumb={pickThumb}
+                          onChange={upd}
+                        />
                       </div>
                       <IconButton
                         size="xs"
@@ -2506,6 +2522,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                               </option>
                             ))}
                           </select>
+                          <ShotCardPictures
+                            shot={shot}
+                            cardId={p.id}
+                            name={p.name}
+                            images={variantOf(p, shot.place.variant)?.images || []}
+                            thumb={pickThumb}
+                            onChange={upd}
+                          />
                         </div>
                         <IconButton
                           size="xs"
@@ -2532,6 +2556,14 @@ export function ShotEditor({ shotId, onClose, inline, wide, onWide }) {
                             {p.name}
                           </Button>
                           <small>{tr('storyboard.copy88')}</small>
+                          <ShotCardPictures
+                            shot={shot}
+                            cardId={p.id}
+                            name={p.name}
+                            images={p.variants[0]?.images || []}
+                            thumb={pickThumb}
+                            onChange={upd}
+                          />
                         </div>
                         <IconButton
                           size="xs"

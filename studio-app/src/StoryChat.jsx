@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useReducer, useRef, useState, useEffectEvent
 import { FloatingMessage } from './floating-notice.js';
 import {
   ArrowUp,
+  AlertTriangle,
   Check,
   Film,
   ImagePlus,
@@ -78,6 +79,29 @@ function Thumb({ card, wide = false }) {
   );
 }
 
+// What may not come out well in the proposed shots (h3-studio#628). Advice only: making the
+// shots stays the creator's choice, and nothing here edits a shot.
+function QuoteRisks({ risks }) {
+  const { t } = useI18n();
+  return (
+    <div className="sc-risks">
+      <p>
+        <AlertTriangle size={13} aria-hidden="true" /> {t('storyChat.riskTitle')}
+      </p>
+      <ul>
+        {risks.map((risk) => (
+          <li key={risk.shotId + risk.code}>
+            <b>
+              {t('storyChat.shotN', { n: risk.order })} · {t('storyChat.risk.' + risk.code)}
+            </b>
+            {risk.suggestion && <small>{risk.suggestion}</small>}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 function QuoteCard({ quote, balance, onSettle }) {
   const { t } = useI18n();
   const affordable = quoteAffordable(quote, balance);
@@ -112,6 +136,7 @@ function QuoteCard({ quote, balance, onSettle }) {
           <Film size={15} aria-hidden="true" />
           <strong>{quote.label}</strong>
         </div>
+        {quote.status === 'open' && quote.risks?.length > 0 && <QuoteRisks risks={quote.risks} />}
         {quote.status === 'open' ? (
           <div className="sc-quote-actions">
             <small>{t('storyChat.liveQuoteHelp')}</small>
@@ -694,6 +719,12 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     const node = thread.current;
     if (node) node.scrollTop = node.scrollHeight;
   }, [state.messages.length, state.busy]);
+  // A reply being written keeps its end in view, unless the person scrolled up to read.
+  const following = useRef(true);
+  useEffect(() => {
+    const node = thread.current;
+    if (node && state.draft && following.current) node.scrollTop = node.scrollHeight;
+  }, [state.draft]);
 
   const send = (value = text) => {
     const message = value.trim();
@@ -868,7 +899,14 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
               {boardOpen ? <PanelRightClose size={16} /> : <PanelRightOpen size={16} />}
             </IconButton>
           </div>
-          <div className="sc-thread" ref={thread}>
+          <div
+            className="sc-thread"
+            ref={thread}
+            onScroll={(event) => {
+              const node = event.currentTarget;
+              following.current = node.scrollHeight - node.scrollTop - node.clientHeight < 48;
+            }}
+          >
             {state.messages.length > 0 && (
               <h1 className="visually-hidden">{t('nav.quickCreate')}</h1>
             )}
@@ -968,12 +1006,24 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                 </div>
               );
             })}
+            {state.busy && state.draft && (
+              // The reply as it is being written (#1083); the server's view replaces it.
+              <div className="sc-msg assistant" aria-busy="true">
+                <p>{state.draft}</p>
+              </div>
+            )}
             {state.busy && (
               <div className="sc-typing" aria-live="polite">
                 <span />
                 <span />
                 <span />
-                <small>{t(state.cards.length ? 'storyChat.working' : 'storyChat.thinking')}</small>
+                <small>
+                  {t(
+                    state.cards.length || state.draft || state.step === 'applying'
+                      ? 'storyChat.working'
+                      : 'storyChat.thinking',
+                  )}
+                </small>
               </div>
             )}
             {done.done && (

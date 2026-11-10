@@ -970,6 +970,23 @@ span.ref {
   font-size: 12px;
   gap: 2px;
 }
+/* Which card pictures a reference shot sends (h3-studio#504): same size picked or not. */
+.card-picks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.card-pick {
+  padding: 1px;
+  border: 2px solid transparent;
+  border-radius: var(--r);
+  background: none;
+  opacity: 0.55;
+}
+.card-pick.on {
+  border-color: var(--accent);
+  opacity: 1;
+}
 .castitem small {
   color: var(--muted);
   font-size: 11px;
