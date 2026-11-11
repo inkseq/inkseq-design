@@ -177,7 +177,6 @@
 !studio-app/src/ink-mark-daily.js
 !studio-app/src/ink-mark-daily.test.js
 !studio-app/src/account-menu.css
-!studio-app/src/dialogs.css
 !studio-app/src/AgentConnect.jsx
 !studio-app/src/AgentLink.jsx
 !studio-app/src/ApiKeys.jsx
@@ -192,9 +191,7 @@
 !studio-app/src/ProjectActivity.jsx
 !studio-app/src/quick-chat-history.js
 !studio-app/src/quick-chat-history.test.js
-!studio-app/src/RecipeExecutionNotice.jsx
 !studio-app/src/ServiceStatus.jsx
-!studio-app/src/ShotPromptDraft.jsx
 !studio-app/src/EnhanceTake.jsx
 !studio-app/src/ReportProblem.jsx
 !studio-app/src/report-problem.js
@@ -258,7 +255,6 @@
 !studio-app/src/persistence-warning.css
 !studio-app/src/production-model.js
 !studio-app/src/production-model.test.js
-!studio-app/src/production-queue.css
 !studio-app/src/project-activity.css
 !studio-app/src/quick-chat-client.js
 !studio-app/src/quick-chat-controller.js
@@ -277,7 +273,6 @@
 !studio-app/src/store.test.js
 !studio-app/src/story-navigation.js
 !studio-app/src/story-navigation.test.js
-!studio-app/src/storyboard.js
 !studio-app/src/subtitle-burn.test.js
 !studio-app/src/video-cut-model.js
 !studio-app/src/video-cut-model.test.js
@@ -434,8 +429,6 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/media-read-gate.test.js
 
 # Reviewed account-defaults summary and existing editor navigation (#285).
-!studio-app/src/SettingsGenerationDefaults.jsx
-!studio-app/src/settings-generation-defaults.js
 !studio-app/src/ui285.test.js
 
 # Original-ledger cost presentation (#296).
@@ -578,3 +571,7 @@ design/inkseq-v2-prototype/dist/
 !studio-app/src/speech-edit.js
 !studio-app/src/speech-edit.test.js
 !studio-app/src/use-speech-text.js
+!studio-app/src/api/
+!studio-app/src/api/feedback.js
+!studio-app/src/feedback-api.test.js
+!studio-app/API-INVENTORY.md
