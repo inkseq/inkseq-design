@@ -17,7 +17,7 @@ import { useStoryboardUI as useStore } from './storyboard-ui-context.jsx';
 import { VoiceDesign, useSample } from './VoiceDesign.jsx';
 import { useSpeaking } from './ProfileBible.jsx';
 import { ProfileSplit } from './ProfileSplit.jsx';
-import { nextSpeaker, peopleInProfile, voiceGaps } from './story-bible.js';
+import { hasVoiceSample, nextSpeaker, peopleInProfile, voiceGaps } from './story-bible.js';
 
 const DIRECTIONS = ['calm', 'angry', 'sad', 'happy'],
   MAX_LINE = 500;
@@ -165,20 +165,31 @@ export function VoicePicker({ profile, samples = null }) {
   const gaps = voiceGaps(profile, speaking);
   const language = locale === 'en' ? 'en' : 'zh';
   const [failed, setFailed] = useState(''),
+    [giving, setGiving] = useState(false),
     wanted = useRef(''),
     client = useQueryClient();
   // The sample for the chosen voice. A failure keeps the choice and says so; nothing waits.
   const give = async (id) => {
     wanted.current = id;
     setFailed('');
+    setGiving(true);
     try {
       await adapter.chooseCatalogVoice(profile.id, { voice_id: id, language });
       // Shot advice read before the sample existed ("no voice yet") is out of date now.
       void client.invalidateQueries({ queryKey: ['shot-readiness'] });
     } catch {
       if (wanted.current === id) setFailed(id);
+    } finally {
+      setGiving(false);
     }
   };
+  // A voice chosen before samples existed, or whose sample did not arrive: offer it here.
+  const owed =
+    !giving &&
+    !!profile.voiceId &&
+    !!adapter?.chooseCatalogVoice &&
+    state.workspaceMode === 'cloud' &&
+    (failed === profile.voiceId || !hasVoiceSample(profile));
   // The button changes at once (the saved choice); the sample follows on a cloud story.
   const choose = async (id) => {
     wanted.current = id;
@@ -237,10 +248,10 @@ export function VoicePicker({ profile, samples = null }) {
           {profile.voiceId && adapter?.speakLine && (
             <VoiceLine profile={profile} language={language} />
           )}
-          {failed && failed === profile.voiceId && (
+          {owed && (
             <div className="voice-line-row" role="alert">
               <span>{t('voice.sampleFailed')}</span>
-              <Button size="sm" onClick={() => void give(failed)}>
+              <Button size="sm" onClick={() => void give(profile.voiceId)}>
                 {t('voice.sampleRetry')}
               </Button>
             </div>
