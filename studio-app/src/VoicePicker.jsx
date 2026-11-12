@@ -2,9 +2,11 @@
 // number and group, a note on the voice, a voice from our catalog (h3-studio#997) and the
 // voice samples (rendered by the editor and passed in). The story keeps only our voice id;
 // which provider speaks it is the server's business, and people only ever see voice names. The
-// catalog part is hidden while the server has voice switched off. Choosing is a saved edit.
+// catalog part is hidden while the server has voice switched off. Choosing is a saved edit; on
+// a cloud story the server then makes that voice's own sample the character's voice sample
+// (h3-studio#1222), because a shot only sends samples.
 import React, { useRef, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Pause, Play } from 'lucide-react';
 import { useI18n } from './i18n/I18nProvider.jsx';
 import { Button, IconButton } from './ui/Button.jsx';
@@ -162,7 +164,29 @@ export function VoicePicker({ profile, samples = null }) {
   const people = peopleInProfile(profile, state.profiles);
   const gaps = voiceGaps(profile, speaking);
   const language = locale === 'en' ? 'en' : 'zh';
-  const choose = (id) => dispatch({ type: 'profile', id: profile.id, patch: { voiceId: id } });
+  const [failed, setFailed] = useState(''),
+    wanted = useRef(''),
+    client = useQueryClient();
+  // The sample for the chosen voice. A failure keeps the choice and says so; nothing waits.
+  const give = async (id) => {
+    wanted.current = id;
+    setFailed('');
+    try {
+      await adapter.chooseCatalogVoice(profile.id, { voice_id: id, language });
+      // Shot advice read before the sample existed ("no voice yet") is out of date now.
+      void client.invalidateQueries({ queryKey: ['shot-readiness'] });
+    } catch {
+      if (wanted.current === id) setFailed(id);
+    }
+  };
+  // The button changes at once (the saved choice); the sample follows on a cloud story.
+  const choose = async (id) => {
+    wanted.current = id;
+    setFailed('');
+    const picked = await dispatch({ type: 'profile', id: profile.id, patch: { voiceId: id } });
+    const cloud = adapter?.chooseCatalogVoice && state.workspaceMode === 'cloud';
+    if (id && cloud && picked?.ok !== false) await give(id);
+  };
   const catalog = data?.enabled && data.voices?.length > 0;
   return (
     <section className="pe-section voice-picker voice-all" aria-labelledby={'voice-' + profile.id}>
@@ -202,7 +226,7 @@ export function VoicePicker({ profile, samples = null }) {
                     variant={chosen ? 'primary' : 'secondary'}
                     aria-pressed={chosen}
                     aria-label={t(chosen ? 'voice.chosenNamed' : 'voice.chooseNamed', { name })}
-                    onClick={() => choose(chosen ? '' : voice.id)}
+                    onClick={() => void choose(chosen ? '' : voice.id)}
                   >
                     {chosen ? t('voice.chosen') : t('voice.choose')}
                   </Button>
@@ -212,6 +236,14 @@ export function VoicePicker({ profile, samples = null }) {
           </ul>
           {profile.voiceId && adapter?.speakLine && (
             <VoiceLine profile={profile} language={language} />
+          )}
+          {failed && failed === profile.voiceId && (
+            <div className="voice-line-row" role="alert">
+              <span>{t('voice.sampleFailed')}</span>
+              <Button size="sm" onClick={() => void give(failed)}>
+                {t('voice.sampleRetry')}
+              </Button>
+            </div>
           )}
         </div>
       )}
