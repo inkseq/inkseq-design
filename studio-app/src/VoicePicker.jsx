@@ -148,27 +148,16 @@ function SpeakerFields({ profile }) {
   );
 }
 
-export function VoicePicker({ profile, samples = null }) {
-  const { t, locale } = useI18n();
+// One of our voices for a character. The button changes at once (the saved choice); on a cloud
+// story the server then adds that voice's own sample, because a shot only sends samples. A
+// failure keeps the choice and says so; nothing waits.
+function useCatalogSample(profile, language) {
   const { adapter, dispatch, state } = useStore();
-  const read = adapter?.readVoices;
-  const { data } = useQuery({
-    queryKey: ['voices'],
-    queryFn: () => read(),
-    enabled: !!read,
-    staleTime: 600000,
-    retry: false,
-  });
-  const { playing, toggle } = useSample();
-  const speaking = useSpeaking(profile);
-  const people = peopleInProfile(profile, state.profiles);
-  const gaps = voiceGaps(profile, speaking);
-  const language = locale === 'en' ? 'en' : 'zh';
   const [failed, setFailed] = useState(''),
     [giving, setGiving] = useState(false),
     wanted = useRef(''),
     client = useQueryClient();
-  // The sample for the chosen voice. A failure keeps the choice and says so; nothing waits.
+  const cloud = !!adapter?.chooseCatalogVoice && state.workspaceMode === 'cloud';
   const give = async (id) => {
     wanted.current = id;
     setFailed('');
@@ -183,21 +172,34 @@ export function VoicePicker({ profile, samples = null }) {
       setGiving(false);
     }
   };
-  // A voice chosen before samples existed, or whose sample did not arrive: offer it here.
-  const owed =
-    !giving &&
-    !!profile.voiceId &&
-    !!adapter?.chooseCatalogVoice &&
-    state.workspaceMode === 'cloud' &&
-    (failed === profile.voiceId || !hasVoiceSample(profile));
-  // The button changes at once (the saved choice); the sample follows on a cloud story.
   const choose = async (id) => {
     wanted.current = id;
     setFailed('');
     const picked = await dispatch({ type: 'profile', id: profile.id, patch: { voiceId: id } });
-    const cloud = adapter?.chooseCatalogVoice && state.workspaceMode === 'cloud';
     if (id && cloud && picked?.ok !== false) await give(id);
   };
+  // A voice chosen before samples existed, or whose sample did not arrive: offer it.
+  const lacking = failed === profile.voiceId || !hasVoiceSample(profile);
+  return { choose, give, owed: cloud && !giving && !!profile.voiceId && lacking };
+}
+
+export function VoicePicker({ profile, samples = null }) {
+  const { t, locale } = useI18n();
+  const { adapter, state } = useStore();
+  const read = adapter?.readVoices;
+  const { data } = useQuery({
+    queryKey: ['voices'],
+    queryFn: () => read(),
+    enabled: !!read,
+    staleTime: 600000,
+    retry: false,
+  });
+  const { playing, toggle } = useSample();
+  const speaking = useSpeaking(profile);
+  const people = peopleInProfile(profile, state.profiles);
+  const gaps = voiceGaps(profile, speaking);
+  const language = locale === 'en' ? 'en' : 'zh';
+  const { choose, give, owed } = useCatalogSample(profile, language);
   const catalog = data?.enabled && data.voices?.length > 0;
   return (
     <section className="pe-section voice-picker voice-all" aria-labelledby={'voice-' + profile.id}>
