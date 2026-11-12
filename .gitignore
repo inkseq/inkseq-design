@@ -67,6 +67,8 @@
 !studio-app/src/shot-mention.js
 !studio-app/src/shot-mention.test.js
 !studio-app/src/VoicePicker.jsx
+!studio-app/src/voice-catalog.js
+!studio-app/src/voice-catalog.test.js
 !studio-app/src/VoiceDesign.jsx
 !studio-app/src/AccountGoogleLink.jsx
 !studio-app/src/monitoring.js
