@@ -148,11 +148,7 @@ function videoQuote(message, offered, { cards, labels, started, draw }) {
 // Every shot the reply offered already has a take: the offer stays, saying so, instead of
 // vanishing the moment the last take arrives.
 function doneQuote(message, proposal, cards, labels) {
-  const named = proposal.shot_ids?.length
-    ? proposal.shot_ids
-    : proposal.picture_card_ids?.length
-      ? cards.filter((card) => card.kind === 'shot').map((card) => card.id)
-      : [];
+  const named = proposal.shot_ids || [];
   if (!named.length) return null;
   return {
     id: `${message.id}-q`,
@@ -435,6 +431,7 @@ export function createLiveChat({
     }
   }
   const toWorks = (quote, emit) => {
+    if (closed) return;
     settled[quote.id] = 'confirmed';
     emit({ type: 'quote.settled', id: quote.id, status: 'confirmed' });
     labels.openWorks?.(project, quote.action.cards?.[0], { generate: true });
@@ -488,6 +485,7 @@ export function createLiveChat({
       receipt: receipt.id,
       plans: receipt.items.map((item) => item.plan_id),
       priced: receipt.items.map((item) => item.shot_id),
+      costs: receipt.items.map((item) => item.plan.credits),
       version: receipt.project_version,
     };
     emit({
@@ -497,6 +495,7 @@ export function createLiveChat({
       receipt: receipt.id,
       plans: receipt.items.map((item) => item.plan_id),
       priced: receipt.items.map((item) => item.shot_id),
+      costs: receipt.items.map((item) => item.plan.credits),
       version: receipt.project_version,
     });
   }
@@ -526,7 +525,11 @@ export function createLiveChat({
         if (state.done + state.failed !== seen && !turning) {
           seen = state.done + state.failed;
           try {
-            load(await api.request(`/v1/story-chats/${encodeURIComponent(project)}`), emit);
+            const value = await api.request(`/v1/story-chats/${encodeURIComponent(project)}`);
+            // The story may have changed under this request, or a turn may have started.
+            if (closed) return;
+            if (!turning) load(value, emit);
+            else seen = -1;
           } catch {
             /* The next look tries again. */
           }
@@ -625,11 +628,28 @@ export function createLiveChat({
         emit({ type: 'quote.settled', id: quote.id, status: 'partly' });
         return;
       }
+      const costOf = Object.fromEntries(
+        (quote.plans || []).map((plan, index) => [plan, (quote.costs || [])[index] || 0]),
+      );
+      emit({
+        type: 'credits.spent',
+        credits: items
+          .filter((item) => !refused.includes(item))
+          .reduce((sum, item) => sum + (costOf[item.plan_id] || 0), 0),
+      });
       settled[quote.id] = 'making';
       emit({ type: 'quote.settled', id: quote.id, status: 'making' });
       track('story_chat_shots_made');
       await watch(quote, emit, started);
-      if (refused.length && settled[quote.id] === 'made') {
+      if (refused.length && ['made', 'partly'].includes(settled[quote.id])) {
+        const made = extra[quote.id]?.made || { done: 0, total: 0, failed: 0 };
+        const whole = {
+          done: made.done,
+          total: made.total + refused.length,
+          failed: made.failed + refused.length,
+        };
+        extra[quote.id] = { ...extra[quote.id], made: whole };
+        emit({ type: 'quote.progress', id: quote.id, ...whole });
         settled[quote.id] = 'partly';
         emit({ type: 'quote.settled', id: quote.id, status: 'partly' });
       }

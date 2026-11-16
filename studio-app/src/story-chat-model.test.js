@@ -582,7 +582,9 @@ test('the video offer draws its pictures, prices the shots and makes them in the
   const opened = [];
   const labels = { openWorks: (...args) => opened.push(args), failed: () => 'failed', pollMs: 1 };
   let state = { ...fromServer(view, labels) };
+  const spent = [];
   const emit = (event) => {
+    if (event.type === 'credits.spent') spent.push(event.credits);
     state = applyEvent(state, event);
   };
   const chat = createLiveChat({ api, projectId: 'p1', labels });
@@ -604,6 +606,7 @@ test('the video offer draws its pictures, prices the shots and makes them in the
   setTimeout(() => (jobState = 'succeeded'), 5);
   await chat.make(priced, emit);
   const batch = calls.find(([method, path]) => method === 'POST' && path === 'batches');
+  assert.deepEqual(spent, [30]);
   assert.equal(batch[2], 'chat-batch-pf1');
   assert.equal(state.quotes[quote.id].status, 'made');
   assert.deepEqual(state.quotes[quote.id].made, { done: 1, total: 1, failed: 0 });
@@ -621,6 +624,8 @@ test('the video offer draws its pictures, prices the shots and makes them in the
   assert.equal(state.quotes[fresh.id].status, 'priced');
   await refusedChat.make(state.quotes[fresh.id], emit);
   assert.equal(state.quotes[fresh.id].status, 'partly');
+  // Nothing started, so nothing leaves the shown balance.
+  assert.deepEqual(spent, [30]);
   assert.deepEqual(state.quotes[fresh.id].made, { done: 0, total: 1, failed: 1 });
   refuseBatch = false;
 
@@ -762,4 +767,21 @@ test('a price for an older story version is checked again, never submitted', asy
   assert.equal(state.quotes[quote.id].version, 10);
   assert.deepEqual(state.quotes[quote.id].plans, ['plan-10']);
   chat.close();
+});
+
+test('a picture suggestion never claims that shots are ready', async () => {
+  const { fromServer } = await import('./story-chat-client.js');
+  const view = videoView({ kind: 'image', shot_ids: [], picture_card_ids: [VIDEO_IDS[0]] });
+  view.cards.shots[0].takes = 1;
+  const quotes = Object.values(fromServer(view, { imageCredits: 5 }).quotes);
+  assert.equal(
+    quotes.some((quote) => quote.status === 'made'),
+    false,
+  );
+  // Named shots that all have takes stay as a finished offer.
+  const named = videoView({ kind: 'generate', shot_ids: ['s1', 's2'] });
+  named.cards.shots[0].takes = 1;
+  const [done] = Object.values(fromServer(named, {}).quotes);
+  assert.equal(done.status, 'made');
+  assert.deepEqual(done.made, { done: 2, total: 2, failed: 0 });
 });

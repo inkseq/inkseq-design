@@ -125,6 +125,7 @@ const EVENTS = {
               receipt: event.receipt,
               plans: event.plans,
               priced: event.priced,
+              costs: event.costs,
               version: event.version,
             },
           },

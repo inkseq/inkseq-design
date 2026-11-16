@@ -789,6 +789,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     let clear = null;
     return (event) => {
       dispatch({ type: 'event', event });
+      if (event.type === 'credits.spent' && Number.isFinite(event.credits))
+        setBalance((value) => value - event.credits);
       if (event.type === 'chat.loaded' && event.fresh?.length) {
         setFresh(event.fresh);
         clearTimeout(clear);
@@ -849,8 +851,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     chat.current.settle(quote, accepted, state.cards, emit);
   };
   // The shots' checked price was confirmed in the chat (h3-studio#1244).
+  // Credits leave the shown balance when the chat says shots were started (credits.spent).
   const make = (quote) => {
-    if (Number.isFinite(quote.credits)) setBalance((value) => value - quote.credits);
     void chat.current.make?.(quote, emit);
   };
   const edit = (id, patch) => {
