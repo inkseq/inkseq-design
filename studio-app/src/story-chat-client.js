@@ -102,12 +102,13 @@ const pictureRequest = (message, card) =>
 
 // Shots the reply offers to make: the ones it names, or, when it only suggests pictures,
 // every shot that has no take yet, so the pictures lead straight on to the video.
+// A shot that already has a take is never offered again, so a reload cannot pay for it twice.
 function offeredShots(proposal, cards) {
-  if (proposal.shot_ids?.length) return proposal.shot_ids;
-  if (!proposal.picture_card_ids?.length) return [];
-  return cards
+  const draft = cards
     .filter((card) => card.kind === 'shot' && card.status === 'draft')
     .map((card) => card.id);
+  if (proposal.shot_ids?.length) return proposal.shot_ids.filter((id) => draft.includes(id));
+  return proposal.picture_card_ids?.length ? draft : [];
 }
 
 // The video offer, with the pictures it still has to draw: the suggested ones and any card the
@@ -242,6 +243,47 @@ export function fromServer(view, labels = {}) {
   };
 }
 
+// The credits a checked plan set costs, or null when any plan is not priced in credits (the
+// dollar path); the chat then hands the shots to Works, which shows any price.
+export function planCredits(receipt) {
+  const plans = (receipt?.items || []).map((item) => item.plan || {});
+  if (!plans.length || plans.some((plan) => plan.admission !== 'credits')) return null;
+  if (!plans.every((plan) => Number.isSafeInteger(plan.credits))) return null;
+  return plans.reduce((sum, plan) => sum + plan.credits, 0);
+}
+
+// Each shot's newest job decides its state: made, failed, or still being made (also while the
+// job is planned and not yet admitted). Jobs come newest first from /v1/jobs.
+const MAKING = new Set([
+  'planned',
+  'waiting_capacity',
+  'queued',
+  'claimed',
+  'submitting',
+  'running',
+  'collecting',
+  'checking',
+  'cancel_requested',
+]);
+export function shotProgress(jobs, shotIds) {
+  const newest = new Map();
+  for (const job of Array.isArray(jobs) ? jobs : []) {
+    const shot = job?.client_ref?.shot_id;
+    if (shot && shotIds.includes(shot) && !newest.has(shot)) newest.set(shot, job.status);
+  }
+  const of = (test) => shotIds.filter((shot) => newest.has(shot) && test(newest.get(shot)));
+  const done = of((status) => status === 'succeeded');
+  const failed = of((status) => ['failed', 'cancelled', 'expired'].includes(status));
+  const making = of((status) => MAKING.has(status));
+  return {
+    total: shotIds.length,
+    done: done.length,
+    failed: failed.length,
+    making,
+    finished: shotIds.length > 0 && done.length + failed.length === shotIds.length,
+  };
+}
+
 const turnId = () =>
   'turn-' +
   (globalThis.crypto?.randomUUID?.() ||
@@ -258,12 +300,15 @@ export function createLiveChat({
 }) {
   let project = projectId,
     view = null;
-  const settled = {};
+  // What this page learned about an offer (its status, checked price, progress) outlives the
+  // server's view of the story, which is re-read after every change.
+  const settled = {},
+    extra = {};
   const load = (value, emit, fresh = []) => {
     view = value;
     const state = fromServer(value, { ...labels, imageCredits, picturesEnabled });
     for (const [id, status] of Object.entries(settled))
-      if (state.quotes[id]) state.quotes[id] = { ...state.quotes[id], status };
+      if (state.quotes[id]) state.quotes[id] = { ...state.quotes[id], ...extra[id], status };
     emit({ type: 'chat.loaded', state, fresh });
   };
   // After a timeout or lost response, re-read the story; true if it shows the outcome.
@@ -353,9 +398,148 @@ export function createLiveChat({
       return false;
     }
   }
+  const toWorks = (quote, emit) => {
+    settled[quote.id] = 'confirmed';
+    emit({ type: 'quote.settled', id: quote.id, status: 'confirmed' });
+    labels.openWorks?.(project, quote.action.cards?.[0], { generate: true });
+  };
+  const projectJobs = async () => {
+    const value = await api.request(
+      `/v1/jobs?client_project_id=${encodeURIComponent(project)}&limit=100&offset=0`,
+    );
+    return Array.isArray(value) ? value : value?.jobs || [];
+  };
+  async function priceShots(quote, emit) {
+    settled[quote.id] = 'pricing';
+    emit({ type: 'quote.settled', id: quote.id, status: 'pricing' });
+    let receipt, shots;
+    try {
+      // A shot already being made (say, after a reload) is never made a second time.
+      const busy = shotProgress(await projectJobs(), quote.action.cards).making;
+      shots = quote.action.cards.filter((shot) => !busy.includes(shot));
+      if (!shots.length) {
+        settled[quote.id] = 'making';
+        emit({ type: 'quote.settled', id: quote.id, status: 'making' });
+        await watch(quote, emit);
+        return;
+      }
+      const path = `/v1/projects/${encodeURIComponent(project)}`;
+      const current = await api.request(path);
+      receipt = await api.request(path + '/storyboard/preflights', {
+        method: 'POST',
+        body: { expected_version: current.version, shot_ids: shots, copies: 1 },
+        // One check per offer and story version: a retry finds the same plans.
+        key: `chat-${quote.id}-v${current.version}`.replace(/[^A-Za-z0-9_-]/g, '').slice(-120),
+        timeoutMs: 180000,
+      });
+    } catch {
+      toWorks(quote, emit);
+      return;
+    }
+    const credits = planCredits(receipt);
+    if (
+      receipt?.closed_preflight ||
+      receipt?.status !== 'completed' ||
+      credits === null ||
+      receipt.items.some((item) => !item.plan_id)
+    ) {
+      toWorks(quote, emit);
+      return;
+    }
+    settled[quote.id] = 'priced';
+    extra[quote.id] = {
+      credits,
+      receipt: receipt.id,
+      plans: receipt.items.map((item) => item.plan_id),
+    };
+    emit({
+      type: 'quote.priced',
+      id: quote.id,
+      credits,
+      receipt: receipt.id,
+      plans: receipt.items.map((item) => item.plan_id),
+    });
+  }
+  // Watch the offer's shots: "Making…" until each take arrives, then the story is re-read so
+  // the finished takes appear. Stops when every shot is finished.
+  async function watch(quote, emit) {
+    const shots = quote.action.cards;
+    let seen = -1;
+    for (;;) {
+      let state = null;
+      try {
+        state = shotProgress(await projectJobs(), shots);
+      } catch {
+        /* The next look tries again. */
+      }
+      if (state) {
+        extra[quote.id] = {
+          ...extra[quote.id],
+          made: { done: state.done, total: state.total, failed: state.failed },
+        };
+        emit({
+          type: 'quote.progress',
+          id: quote.id,
+          done: state.done,
+          total: state.total,
+          failed: state.failed,
+        });
+        if (state.done + state.failed !== seen) {
+          seen = state.done + state.failed;
+          try {
+            load(await api.request(`/v1/story-chats/${encodeURIComponent(project)}`), emit);
+          } catch {
+            /* The next look tries again. */
+          }
+        }
+        for (const shot of state.making)
+          emit({ type: 'card.status', id: shot, status: 'generating' });
+        if (state.finished) {
+          settled[quote.id] = state.failed ? 'partly' : 'made';
+          emit({ type: 'quote.settled', id: quote.id, status: settled[quote.id] });
+          return;
+        }
+      }
+      await new Promise((resolve) => setTimeout(resolve, labels.pollMs ?? 15000));
+    }
+  }
   return {
     live: true,
     balance: Number.NaN,
+    // The person confirmed the checked price: submit the plans as one batch, then watch it.
+    async make(quote, emit) {
+      if (!quote.plans?.length) return;
+      settled[quote.id] = 'submitting';
+      emit({ type: 'quote.settled', id: quote.id, status: 'submitting' });
+      try {
+        await api.request('/v1/batches', {
+          method: 'POST',
+          body: { client_project_id: project, plan_ids: quote.plans },
+          key: `chat-batch-${quote.receipt}`.replace(/[^A-Za-z0-9_-]/g, '').slice(-120),
+          timeoutMs: 180000,
+        });
+      } catch (failure) {
+        const code = failure.detail?.code || failure.detail?.detail?.code;
+        // Credits or a spending confirmation are handled in Works, with the same plans.
+        if (code === 'spending_confirmation_required' || failure.status === 402) {
+          toWorks(quote, emit);
+          return;
+        }
+        settled[quote.id] = 'priced';
+        emit({ type: 'quote.settled', id: quote.id, status: 'priced' });
+        emit({
+          type: 'assistant.message',
+          id: quote.id + '-make-error-' + Date.now().toString(36),
+          text: labels.failed?.(failure) || failure.message,
+          chips: [],
+        });
+        return;
+      }
+      settled[quote.id] = 'making';
+      emit({ type: 'quote.settled', id: quote.id, status: 'making' });
+      track('story_chat_shots_made');
+      await watch(quote, emit);
+    },
     get projectId() {
       return project;
     },
@@ -413,8 +597,9 @@ export function createLiveChat({
         emit({ type: 'turn.finished' });
       }
     },
-    // The video offer draws the pictures it needs, then opens the story in Works, where the
-    // shots' price is shown and generation is confirmed and charged.
+    // The video offer draws the pictures it needs, then checks the shots for their price
+    // (the same check Works runs). The person confirms that price here; anything the chat
+    // cannot price opens Works, which handles every case as before.
     async settle(quote, accepted, _cards, emit) {
       const drawFirst =
         accepted && quote.action.kind === 'generate' && quote.action.pictures?.length;
@@ -439,7 +624,7 @@ export function createLiveChat({
           emit({ type: 'quote.settled', id: quote.id, status: settled[quote.id] });
           if (settled[quote.id] !== 'confirmed') return;
         }
-        labels.openWorks?.(project, quote.action.cards?.[0], { generate: true });
+        await priceShots(quote, emit);
         return;
       }
       // Confirmed pictures: the server holds the credits, draws, and charges only when the

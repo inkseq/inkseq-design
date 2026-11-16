@@ -525,46 +525,163 @@ test('suggested pictures and shots without a take become one video offer', async
   assert.deepEqual(Object.values(off.quotes)[0].action.pictures, []);
 });
 
-test('the video offer draws its pictures first, then opens the price in Works', async () => {
+test('the video offer draws its pictures, prices the shots and makes them in the chat', async () => {
   const { createLiveChat, fromServer } = await import('./story-chat-client.js');
+  const { applyEvent } = await import('./story-chat-model.js');
   const proposal = { kind: 'generate', shot_ids: ['s1'] };
   let view = videoView(proposal);
   const calls = [];
-  let refuse = '';
+  let preflight = 'credits',
+    jobState = 'running',
+    made = false,
+    refuse = '';
   const api = {
     async request(path, options = {}) {
-      if (!path.endsWith('/images')) return view;
-      calls.push(options.body.card_id);
-      if (options.body.card_id === refuse) throw Object.assign(Error('no'), { detail: {} });
-      const drawn = structuredClone(view);
-      for (const group of ['characters', 'places'])
-        for (const card of drawn.cards[group])
-          if (card.id === options.body.card_id) card.image_url = '/v1/assets/new/content';
-      view = drawn;
+      calls.push([options.method || 'GET', path.replace('/v1/', ''), options.key || '']);
+      if (path.endsWith('/images')) {
+        if (options.body.card_id === refuse) throw Object.assign(Error('no'), { detail: {} });
+        const drawn = structuredClone(view);
+        for (const group of ['characters', 'places'])
+          for (const card of drawn.cards[group])
+            if (card.id === options.body.card_id) card.image_url = '/v1/assets/new/content';
+        view = drawn;
+        return view;
+      }
+      if (path === '/v1/projects/p1') return { version: 9 };
+      if (path.endsWith('/storyboard/preflights'))
+        return preflight === 'credits'
+          ? {
+              id: 'pf1',
+              status: 'completed',
+              items: [
+                { shot_id: 's1', plan_id: 'plan-1', plan: { admission: 'credits', credits: 30 } },
+              ],
+            }
+          : { id: 'pf2', status: 'completed', closed_preflight: true, items: [] };
+      if (path === '/v1/batches') return { batch_id: 'b1' };
+      if (path.startsWith('/v1/jobs?'))
+        return { jobs: made ? [{ client_ref: { shot_id: 's1' }, status: jobState }] : [] };
       return view;
     },
   };
-  const opened = [],
-    events = [];
-  const labels = { openWorks: (...args) => opened.push(args), failed: () => 'failed' };
+  const opened = [];
+  const labels = { openWorks: (...args) => opened.push(args), failed: () => 'failed', pollMs: 1 };
+  let state = { ...fromServer(view, labels) };
+  const emit = (event) => {
+    state = applyEvent(state, event);
+  };
   const chat = createLiveChat({ api, projectId: 'p1', labels });
-  const [quote] = Object.values(fromServer(view, labels).quotes);
-  assert.deepEqual(quote.action.pictures, [VIDEO_IDS[0], VIDEO_IDS[1]]);
-  await chat.settle(quote, true, [], (event) => events.push(event));
-  assert.deepEqual(calls, quote.action.pictures);
-  assert.deepEqual(opened, [['p1', 's1', { generate: true }]]);
-  const statuses = events.filter((e) => e.type === 'quote.settled').map((e) => e.status);
-  assert.deepEqual(statuses, ['working', 'confirmed']);
+  const quote = Object.values(state.quotes)[0];
+  await chat.settle(quote, true, [], emit);
+  // Pictures first, in order, then one check at the story's version.
+  assert.deepEqual(
+    calls.filter(([, path]) => path.endsWith('/images')).length,
+    quote.action.pictures.length,
+  );
+  const check = calls.find(([, path]) => path.endsWith('/storyboard/preflights'));
+  assert.match(check[2], /-v9$/);
+  assert.deepEqual(opened, []);
+  const priced = state.quotes[quote.id];
+  assert.equal(priced.status, 'priced');
+  assert.equal(priced.credits, 30);
+  assert.deepEqual(priced.plans, ['plan-1']);
+  // Confirm: one batch with those plans, then progress until the take arrives.
+  made = true;
+  setTimeout(() => (jobState = 'succeeded'), 5);
+  await chat.make(priced, emit);
+  const batch = calls.find(([method, path]) => method === 'POST' && path === 'batches');
+  assert.equal(batch[2], 'chat-batch-pf1');
+  assert.equal(state.quotes[quote.id].status, 'made');
+  assert.deepEqual(state.quotes[quote.id].made, { done: 1, total: 1, failed: 0 });
 
-  // A picture that does not arrive keeps the offer open and does not open Works.
+  // A check the chat cannot price opens Works, exactly as before.
+  view = videoView(proposal);
+  preflight = 'closed';
+  const second = createLiveChat({ api, projectId: 'p1', labels });
+  state = { ...fromServer(view, labels) };
+  await second.settle(Object.values(state.quotes)[0], true, [], emit);
+  assert.deepEqual(opened, [['p1', 's1', { generate: true }]]);
+
+  // A picture that does not arrive keeps the offer open and checks nothing.
   view = videoView(proposal);
   refuse = VIDEO_IDS[1];
   calls.length = 0;
   opened.length = 0;
-  events.length = 0;
-  const again = createLiveChat({ api, projectId: 'p1', labels });
-  const [open] = Object.values(fromServer(view, labels).quotes);
-  await again.settle(open, true, [], (event) => events.push(event));
+  const third = createLiveChat({ api, projectId: 'p1', labels });
+  state = { ...fromServer(view, labels) };
+  const open = Object.values(state.quotes)[0];
+  await third.settle(open, true, [], emit);
   assert.deepEqual(opened, []);
-  assert.equal(events.filter((e) => e.type === 'quote.settled').at(-1).status, 'open');
+  assert.equal(state.quotes[open.id].status, 'open');
+  assert.equal(
+    calls.some(([, path]) => path.endsWith('/storyboard/preflights')),
+    false,
+  );
+});
+
+test("shot progress reads each shot's newest job", async () => {
+  const { shotProgress, planCredits } = await import('./story-chat-client.js');
+  const jobs = [
+    { client_ref: { shot_id: 'a' }, status: 'succeeded' },
+    { client_ref: { shot_id: 'b' }, status: 'running' },
+    { client_ref: { shot_id: 'c' }, status: 'failed' },
+    { client_ref: { shot_id: 'c' }, status: 'succeeded' },
+    { client_ref: { shot_id: 'z' }, status: 'running' },
+  ];
+  const progress = shotProgress(jobs, ['a', 'b', 'c', 'd']);
+  assert.deepEqual(
+    [progress.done, progress.failed, progress.making, progress.finished, progress.total],
+    [1, 1, ['b'], false, 4],
+  );
+  assert.equal(shotProgress(jobs, ['a', 'c']).finished, true);
+  assert.equal(shotProgress(null, ['a']).finished, false);
+  assert.deepEqual(
+    shotProgress([{ client_ref: { shot_id: 'a' }, status: 'planned' }], ['a']).making,
+    ['a'],
+  );
+  assert.equal(
+    planCredits({
+      items: [
+        { plan: { admission: 'credits', credits: 5 } },
+        { plan: { admission: 'credits', credits: 7 } },
+      ],
+    }),
+    12,
+  );
+  assert.equal(planCredits({ items: [{ plan: { admission: 'usd' } }] }), null);
+  assert.equal(planCredits({ items: [] }), null);
+});
+
+test('a shot with a take or one still being made is not offered or made again', async () => {
+  const { createLiveChat, fromServer } = await import('./story-chat-client.js');
+  const { applyEvent } = await import('./story-chat-model.js');
+  // s2 already has a take: the offer names only s1.
+  const proposal = { kind: 'generate', shot_ids: ['s1', 's2'] };
+  const view = videoView(proposal);
+  for (const card of [...view.cards.characters, ...view.cards.places])
+    card.image_url = '/v1/assets/x/content';
+  const labels = { openWorks: () => {}, failed: () => 'failed', pollMs: 1 };
+  let state = { ...fromServer(view, labels) };
+  const [quote] = Object.values(state.quotes);
+  assert.deepEqual(quote.action.cards, ['s1']);
+  // s1 is being made already (a reload during making): no check, no batch, just watching.
+  const calls = [];
+  let status = 'running';
+  const api = {
+    async request(path, options = {}) {
+      calls.push([options.method || 'GET', path]);
+      if (path.startsWith('/v1/jobs?'))
+        return { jobs: [{ client_ref: { shot_id: 's1' }, status }] };
+      return view;
+    },
+  };
+  setTimeout(() => (status = 'succeeded'), 5);
+  await createLiveChat({ api, projectId: 'p1', labels }).settle(quote, true, [], (event) => {
+    state = applyEvent(state, event);
+  });
+  assert.equal(
+    calls.some(([method]) => method === 'POST'),
+    false,
+  );
+  assert.equal(state.quotes[quote.id].status, 'made');
 });
