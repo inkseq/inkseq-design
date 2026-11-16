@@ -272,6 +272,23 @@ export function planCredits(receipt) {
   return plans.reduce((sum, plan) => sum + plan.credits, 0);
 }
 
+// What a batch reply says about the priced shots: refused items (credits, limits, a changed
+// shot; a 202 can still refuse some), the shots actually started, and the credits they cost.
+export function batchOutcome(batch, quote) {
+  const items = Array.isArray(batch?.items) ? batch.items : [];
+  const index = Object.fromEntries((quote.plans || []).map((plan, at) => [plan, at]));
+  const refused = items.filter(
+    (item) => item.error_code || ['rejected', 'admission_blocked'].includes(item.status),
+  );
+  const accepted = items.filter((item) => !refused.includes(item) && item.plan_id in index);
+  return {
+    items,
+    refused,
+    started: accepted.map((item) => (quote.priced || [])[index[item.plan_id]]).filter(Boolean),
+    spent: accepted.reduce((sum, item) => sum + ((quote.costs || [])[index[item.plan_id]] || 0), 0),
+  };
+}
+
 // Each shot's newest job decides its state: made, failed, or still being made (also while the
 // job is planned and not yet admitted). Jobs come newest first from /v1/jobs.
 const MAKING = new Set([
@@ -594,17 +611,7 @@ export function createLiveChat({
       }
       // A 202 can still refuse items (credits, limits, a changed shot): those shots are not
       // being made, so they are not watched, and Works is offered for them.
-      const items = Array.isArray(batch?.items) ? batch.items : [];
-      const shotOf = Object.fromEntries(
-        (quote.plans || []).map((plan, index) => [plan, (quote.priced || [])[index]]),
-      );
-      const refused = items.filter(
-        (item) => item.error_code || ['rejected', 'admission_blocked'].includes(item.status),
-      );
-      const started = items
-        .filter((item) => !refused.includes(item))
-        .map((item) => shotOf[item.plan_id])
-        .filter(Boolean);
+      const { items, refused, started, spent } = batchOutcome(batch, quote);
       if (refused.length)
         emit({
           type: 'assistant.message',
@@ -628,15 +635,7 @@ export function createLiveChat({
         emit({ type: 'quote.settled', id: quote.id, status: 'partly' });
         return;
       }
-      const costOf = Object.fromEntries(
-        (quote.plans || []).map((plan, index) => [plan, (quote.costs || [])[index] || 0]),
-      );
-      emit({
-        type: 'credits.spent',
-        credits: items
-          .filter((item) => !refused.includes(item))
-          .reduce((sum, item) => sum + (costOf[item.plan_id] || 0), 0),
-      });
+      emit({ type: 'credits.spent', credits: spent });
       settled[quote.id] = 'making';
       emit({ type: 'quote.settled', id: quote.id, status: 'making' });
       track('story_chat_shots_made');
