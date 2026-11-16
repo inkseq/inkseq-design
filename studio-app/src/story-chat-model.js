@@ -124,6 +124,8 @@ const EVENTS = {
               credits: event.credits,
               receipt: event.receipt,
               plans: event.plans,
+              priced: event.priced,
+              version: event.version,
             },
           },
         }

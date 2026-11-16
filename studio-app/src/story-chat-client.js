@@ -145,10 +145,34 @@ function videoQuote(message, offered, { cards, labels, started, draw }) {
   };
 }
 
+// Every shot the reply offered already has a take: the offer stays, saying so, instead of
+// vanishing the moment the last take arrives.
+function doneQuote(message, proposal, cards, labels) {
+  const named = proposal.shot_ids?.length
+    ? proposal.shot_ids
+    : proposal.picture_card_ids?.length
+      ? cards.filter((card) => card.kind === 'shot').map((card) => card.id)
+      : [];
+  if (!named.length) return null;
+  return {
+    id: `${message.id}-q`,
+    live: true,
+    status: 'made',
+    made: { done: named.length, total: named.length, failed: 0 },
+    action: { kind: 'generate', cards: named, pictures: [], requests: [] },
+    label: labels.generate?.(named.length) || '',
+  };
+}
+
 function proposalQuotes(message, { cards, labels, messages, quotes, started }) {
   const proposal = message.proposal || {};
   const draw = labels.picturesEnabled !== false;
   const offered = offeredShots(proposal, cards);
+  const madeQuote = !offered.length && doneQuote(message, proposal, cards, labels);
+  if (madeQuote) {
+    quotes[madeQuote.id] = madeQuote;
+    messages.push({ id: madeQuote.id, role: 'quote', quoteId: madeQuote.id });
+  }
   // Suggested card pictures: one confirm card for all of them, drawn one at a time so each
   // follows the first picture's style (#1111). Each card keeps its own stable request id,
   // so a replay never draws or charges twice, and a reload shows it as already confirmed.
@@ -265,6 +289,13 @@ const MAKING = new Set([
   'checking',
   'cancel_requested',
 ]);
+// A shot that is being made or was made already is never priced or charged again; a job
+// that only got as far as "planned" (refused at admission) does not count.
+export function shotsTaken(jobs, shotIds) {
+  const state = shotProgress(jobs, shotIds);
+  return [...state.making.filter((shot) => state.statuses[shot] !== 'planned'), ...state.made];
+}
+
 export function shotProgress(jobs, shotIds) {
   const newest = new Map();
   for (const job of Array.isArray(jobs) ? jobs : []) {
@@ -273,13 +304,16 @@ export function shotProgress(jobs, shotIds) {
   }
   const of = (test) => shotIds.filter((shot) => newest.has(shot) && test(newest.get(shot)));
   const done = of((status) => status === 'succeeded');
-  const failed = of((status) => ['failed', 'cancelled', 'expired'].includes(status));
+  const made = done;
+  const failed = of((status) => ['failed', 'cancelled', 'expired', 'blocked'].includes(status));
   const making = of((status) => MAKING.has(status));
   return {
     total: shotIds.length,
     done: done.length,
     failed: failed.length,
     making,
+    made,
+    statuses: Object.fromEntries(newest),
     finished: shotIds.length > 0 && done.length + failed.length === shotIds.length,
   };
 }
@@ -304,6 +338,8 @@ export function createLiveChat({
   // server's view of the story, which is re-read after every change.
   const settled = {},
     extra = {};
+  let closed = false,
+    turning = false;
   const load = (value, emit, fresh = []) => {
     view = value;
     const state = fromServer(value, { ...labels, imageCredits, picturesEnabled });
@@ -415,8 +451,8 @@ export function createLiveChat({
     let receipt, shots;
     try {
       // A shot already being made (say, after a reload) is never made a second time.
-      const busy = shotProgress(await projectJobs(), quote.action.cards).making;
-      shots = quote.action.cards.filter((shot) => !busy.includes(shot));
+      const taken = shotsTaken(await projectJobs(), quote.action.cards);
+      shots = quote.action.cards.filter((shot) => !taken.includes(shot));
       if (!shots.length) {
         settled[quote.id] = 'making';
         emit({ type: 'quote.settled', id: quote.id, status: 'making' });
@@ -451,6 +487,8 @@ export function createLiveChat({
       credits,
       receipt: receipt.id,
       plans: receipt.items.map((item) => item.plan_id),
+      priced: receipt.items.map((item) => item.shot_id),
+      version: receipt.project_version,
     };
     emit({
       type: 'quote.priced',
@@ -458,21 +496,22 @@ export function createLiveChat({
       credits,
       receipt: receipt.id,
       plans: receipt.items.map((item) => item.plan_id),
+      priced: receipt.items.map((item) => item.shot_id),
+      version: receipt.project_version,
     });
   }
   // Watch the offer's shots: "Making…" until each take arrives, then the story is re-read so
   // the finished takes appear. Stops when every shot is finished.
-  async function watch(quote, emit) {
-    const shots = quote.action.cards;
+  async function watch(quote, emit, shots = quote.action.cards) {
     let seen = -1;
-    for (;;) {
+    while (!closed) {
       let state = null;
       try {
         state = shotProgress(await projectJobs(), shots);
       } catch {
         /* The next look tries again. */
       }
-      if (state) {
+      if (state && !closed) {
         extra[quote.id] = {
           ...extra[quote.id],
           made: { done: state.done, total: state.total, failed: state.failed },
@@ -484,7 +523,7 @@ export function createLiveChat({
           total: state.total,
           failed: state.failed,
         });
-        if (state.done + state.failed !== seen) {
+        if (state.done + state.failed !== seen && !turning) {
           seen = state.done + state.failed;
           try {
             load(await api.request(`/v1/story-chats/${encodeURIComponent(project)}`), emit);
@@ -511,8 +550,23 @@ export function createLiveChat({
       if (!quote.plans?.length) return;
       settled[quote.id] = 'submitting';
       emit({ type: 'quote.settled', id: quote.id, status: 'submitting' });
+      // The same gate as Works: the price must be for the story as it is now, and no shot may
+      // have been made or started meanwhile (another tab, Works). Otherwise check again.
       try {
-        await api.request('/v1/batches', {
+        const current = await api.request(`/v1/projects/${encodeURIComponent(project)}`);
+        const taken = shotsTaken(await projectJobs(), quote.priced || []);
+        if (current.version !== quote.version || taken.length) {
+          await priceShots(quote, emit);
+          return;
+        }
+      } catch {
+        settled[quote.id] = 'priced';
+        emit({ type: 'quote.settled', id: quote.id, status: 'priced' });
+        return;
+      }
+      let batch;
+      try {
+        batch = await api.request('/v1/batches', {
           method: 'POST',
           body: { client_project_id: project, plan_ids: quote.plans },
           key: `chat-batch-${quote.receipt}`.replace(/[^A-Za-z0-9_-]/g, '').slice(-120),
@@ -535,10 +589,50 @@ export function createLiveChat({
         });
         return;
       }
+      // A 202 can still refuse items (credits, limits, a changed shot): those shots are not
+      // being made, so they are not watched, and Works is offered for them.
+      const items = Array.isArray(batch?.items) ? batch.items : [];
+      const shotOf = Object.fromEntries(
+        (quote.plans || []).map((plan, index) => [plan, (quote.priced || [])[index]]),
+      );
+      const refused = items.filter(
+        (item) => item.error_code || ['rejected', 'admission_blocked'].includes(item.status),
+      );
+      const started = items
+        .filter((item) => !refused.includes(item))
+        .map((item) => shotOf[item.plan_id])
+        .filter(Boolean);
+      if (refused.length)
+        emit({
+          type: 'assistant.message',
+          id: quote.id + '-refused-' + Date.now().toString(36),
+          text: labels.refused?.(refused.length, refused[0].error_code) || refused[0].error_code,
+          chips: [],
+        });
+      if (!started.length) {
+        settled[quote.id] = 'partly';
+        extra[quote.id] = {
+          ...extra[quote.id],
+          made: { done: 0, total: items.length, failed: refused.length },
+        };
+        emit({
+          type: 'quote.progress',
+          id: quote.id,
+          done: 0,
+          total: items.length,
+          failed: refused.length,
+        });
+        emit({ type: 'quote.settled', id: quote.id, status: 'partly' });
+        return;
+      }
       settled[quote.id] = 'making';
       emit({ type: 'quote.settled', id: quote.id, status: 'making' });
       track('story_chat_shots_made');
-      await watch(quote, emit);
+      await watch(quote, emit, started);
+      if (refused.length && settled[quote.id] === 'made') {
+        settled[quote.id] = 'partly';
+        emit({ type: 'quote.settled', id: quote.id, status: 'partly' });
+      }
     },
     get projectId() {
       return project;
@@ -562,7 +656,23 @@ export function createLiveChat({
         load(await api.request(path + '/open', { method: 'POST', body: { language } }), emit);
       }
     },
-    async send({ text, attachments = [], script = false }, emit) {
+    // While a turn runs, a watch does not re-read the story under it (h3-studio#1244).
+    async send(input, emit) {
+      turning = true;
+      try {
+        return await this.sendTurn(input, emit);
+      } finally {
+        turning = false;
+      }
+    },
+    close() {
+      closed = true;
+    },
+    // Works is the way on when the chat cannot finish (a refused or failed shot).
+    openWorks(quote) {
+      labels.openWorks?.(project, quote.action.cards?.[0], { generate: true });
+    },
+    async sendTurn({ text, attachments = [], script = false }, emit) {
       const id = turnId();
       emit({ type: 'user.message', id: id + '-u', text, attachments });
       emit({ type: 'turn.started' });
@@ -761,6 +871,5 @@ export function createLiveChat({
       }
     },
     edited() {},
-    close() {},
   };
 }

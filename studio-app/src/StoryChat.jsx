@@ -103,7 +103,7 @@ function QuoteRisks({ risks }) {
 }
 
 // After the pictures: the shots' checked price, then their progress, all in the chat.
-function MadeShots({ quote, balance, onSettle, onMake }) {
+function MadeShots({ quote, balance, onSettle, onMake, onWorks }) {
   const { t } = useI18n();
   const made = quote.made || { done: 0, total: quote.action.cards.length, failed: 0 };
   if (quote.status === 'priced') {
@@ -111,7 +111,10 @@ function MadeShots({ quote, balance, onSettle, onMake }) {
     return (
       <div className="sc-quote-actions">
         <small>
-          {t('storyChat.shotsPrice', { count: quote.action.cards.length, credits: quote.credits })}
+          {t('storyChat.shotsPrice', {
+            count: quote.plans?.length || quote.action.cards.length,
+            credits: quote.credits,
+          })}
           {Number.isFinite(balance) &&
             ' ' + t('storyChat.quoteBalance', { balance: balance.toLocaleString() })}
         </small>
@@ -147,13 +150,20 @@ function MadeShots({ quote, balance, onSettle, onMake }) {
     confirmed: t('storyChat.openedWorks'),
   }[quote.status];
   return (
-    <small className="sc-quote-done" role="status">
-      {text ?? t('storyChat.declined')}
-    </small>
+    <div className="sc-quote-actions">
+      <small className="sc-quote-done" role="status">
+        {text ?? t('storyChat.declined')}
+      </small>
+      {quote.status === 'partly' && onWorks && (
+        <Button className="keep-label" onClick={() => onWorks(quote)}>
+          {t('storyChat.openWorks')}
+        </Button>
+      )}
+    </div>
   );
 }
 
-function QuoteCard({ quote, balance, onSettle, onMake }) {
+function QuoteCard({ quote, balance, onSettle, onMake, onWorks }) {
   const { t } = useI18n();
   const affordable = quoteAffordable(quote, balance);
   if (quote.action?.kind === 'new_story')
@@ -226,7 +236,13 @@ function QuoteCard({ quote, balance, onSettle, onMake }) {
             </Button>
           </div>
         ) : (
-          <MadeShots quote={quote} balance={balance} onSettle={onSettle} onMake={onMake} />
+          <MadeShots
+            quote={quote}
+            balance={balance}
+            onSettle={onSettle}
+            onMake={onMake}
+            onWorks={onWorks}
+          />
         )}
       </div>
     );
@@ -714,6 +730,13 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
           return t('storyChat.failed', { reason: failure.message });
         },
         openWorks: openInWorks,
+        refused: (count, code) =>
+          t(count === 1 ? 'storyChat.refused.one' : 'storyChat.refused', {
+            count,
+            reason: t(
+              'storyChat.refusedReason.' + (code === 'insufficient_credits' ? 'credits' : 'other'),
+            ),
+          }),
         picture: (name) => t('storyChat.livePicture', { name }),
         pictures: (names, count) => t('storyChat.livePictures', { names, count }),
         newStory: (idea) => t('storyChat.newStoryLabel', { idea }),
@@ -757,6 +780,8 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
       .catch((failure) => alive && setUnavailable(failure.message));
     return () => {
       alive = false;
+      // Stops any watch of shots being made for this story (h3-studio#1244).
+      client.close();
     };
   }, [live, locale, api, session, t]);
 
@@ -819,12 +844,13 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
     setTab('chat');
   };
   const settle = (quote, accepted) => {
-    if (accepted) setBalance((value) => value - quote.credits);
+    // An offer with nothing to draw has no credits yet; the balance only moves by real amounts.
+    if (accepted && Number.isFinite(quote.credits)) setBalance((value) => value - quote.credits);
     chat.current.settle(quote, accepted, state.cards, emit);
   };
   // The shots' checked price was confirmed in the chat (h3-studio#1244).
   const make = (quote) => {
-    setBalance((value) => value - quote.credits);
+    if (Number.isFinite(quote.credits)) setBalance((value) => value - quote.credits);
     void chat.current.make?.(quote, emit);
   };
   const edit = (id, patch) => {
@@ -1050,6 +1076,7 @@ export default function StoryChat({ account, mode = 'preview', projectId = null 
                     balance={balance}
                     onSettle={settle}
                     onMake={make}
+                    onWorks={(quote) => chat.current.openWorks?.(quote)}
                   />
                 );
               return (

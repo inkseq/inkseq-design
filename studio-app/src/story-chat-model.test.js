@@ -534,6 +534,7 @@ test('the video offer draws its pictures, prices the shots and makes them in the
   let preflight = 'credits',
     jobState = 'running',
     made = false,
+    refuseBatch = false,
     refuse = '';
   const api = {
     async request(path, options = {}) {
@@ -552,13 +553,27 @@ test('the video offer draws its pictures, prices the shots and makes them in the
         return preflight === 'credits'
           ? {
               id: 'pf1',
+              project_version: 9,
               status: 'completed',
               items: [
                 { shot_id: 's1', plan_id: 'plan-1', plan: { admission: 'credits', credits: 30 } },
               ],
             }
           : { id: 'pf2', status: 'completed', closed_preflight: true, items: [] };
-      if (path === '/v1/batches') return { batch_id: 'b1' };
+      if (path === '/v1/batches') {
+        made = !refuseBatch;
+        return {
+          batch_id: 'b1',
+          items: [
+            {
+              plan_id: 'plan-1',
+              job_id: 'j1',
+              status: refuseBatch ? 'admission_blocked' : 'queued',
+              error_code: refuseBatch ? 'insufficient_credits' : null,
+            },
+          ],
+        };
+      }
       if (path.startsWith('/v1/jobs?'))
         return { jobs: made ? [{ client_ref: { shot_id: 's1' }, status: jobState }] : [] };
       return view;
@@ -586,13 +601,28 @@ test('the video offer draws its pictures, prices the shots and makes them in the
   assert.equal(priced.credits, 30);
   assert.deepEqual(priced.plans, ['plan-1']);
   // Confirm: one batch with those plans, then progress until the take arrives.
-  made = true;
   setTimeout(() => (jobState = 'succeeded'), 5);
   await chat.make(priced, emit);
   const batch = calls.find(([method, path]) => method === 'POST' && path === 'batches');
   assert.equal(batch[2], 'chat-batch-pf1');
   assert.equal(state.quotes[quote.id].status, 'made');
   assert.deepEqual(state.quotes[quote.id].made, { done: 1, total: 1, failed: 0 });
+
+  // Refused inside a 202 (credits): nothing is watched, the card offers Works.
+  view = videoView(proposal);
+  for (const card of [...view.cards.characters, ...view.cards.places])
+    card.image_url = '/v1/assets/x/content';
+  made = false;
+  refuseBatch = true;
+  const refusedChat = createLiveChat({ api, projectId: 'p1', labels });
+  state = { ...fromServer(view, labels) };
+  const fresh = Object.values(state.quotes)[0];
+  await refusedChat.settle(fresh, true, [], emit);
+  assert.equal(state.quotes[fresh.id].status, 'priced');
+  await refusedChat.make(state.quotes[fresh.id], emit);
+  assert.equal(state.quotes[fresh.id].status, 'partly');
+  assert.deepEqual(state.quotes[fresh.id].made, { done: 0, total: 1, failed: 1 });
+  refuseBatch = false;
 
   // A check the chat cannot price opens Works, exactly as before.
   view = videoView(proposal);
@@ -684,4 +714,52 @@ test('a shot with a take or one still being made is not offered or made again', 
     false,
   );
   assert.equal(state.quotes[quote.id].status, 'made');
+});
+
+test('a price for an older story version is checked again, never submitted', async () => {
+  const { createLiveChat, fromServer } = await import('./story-chat-client.js');
+  const { applyEvent } = await import('./story-chat-model.js');
+  const view = videoView({ kind: 'generate', shot_ids: ['s1'] });
+  for (const card of [...view.cards.characters, ...view.cards.places])
+    card.image_url = '/v1/assets/x/content';
+  let version = 9;
+  const calls = [];
+  const api = {
+    async request(path, options = {}) {
+      calls.push([options.method || 'GET', path, options.key || '']);
+      if (path === '/v1/projects/p1') return { version };
+      if (path.startsWith('/v1/jobs?')) return { jobs: [] };
+      if (path.endsWith('/storyboard/preflights'))
+        return {
+          id: 'pf-' + version,
+          project_version: version,
+          status: 'completed',
+          items: [
+            {
+              shot_id: 's1',
+              plan_id: 'plan-' + version,
+              plan: { admission: 'credits', credits: 30 },
+            },
+          ],
+        };
+      return view;
+    },
+  };
+  const labels = { openWorks: () => {}, failed: () => 'failed', pollMs: 1 };
+  let state = { ...fromServer(view, labels) };
+  const emit = (event) => (state = applyEvent(state, event));
+  const chat = createLiveChat({ api, projectId: 'p1', labels });
+  const [quote] = Object.values(state.quotes);
+  await chat.settle(quote, true, [], emit);
+  assert.equal(state.quotes[quote.id].version, 9);
+  version = 10; // an edit elsewhere
+  await chat.make(state.quotes[quote.id], emit);
+  assert.equal(
+    calls.some(([method, path]) => method === 'POST' && path === '/v1/batches'),
+    false,
+  );
+  assert.equal(state.quotes[quote.id].status, 'priced');
+  assert.equal(state.quotes[quote.id].version, 10);
+  assert.deepEqual(state.quotes[quote.id].plans, ['plan-10']);
+  chat.close();
 });
