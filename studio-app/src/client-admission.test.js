@@ -408,3 +408,36 @@ test('a keyed write refused at the door is sent again with the same key (h3-stud
   );
   assert.equal(count, 1);
 });
+
+test('a price check refused for capacity is tried again with the same key; a write is not', async () => {
+  const refuse = () =>
+    new Response('{"detail":"no","code":"capacity_unavailable"}', { status: 429 });
+  const seen = [];
+  const api = createCloudClient({
+    fetcher: async (path, options) => {
+      seen.push([path, options.headers['Idempotency-Key']]);
+      return seen.length === 1 ? refuse() : new Response('{"id":"pf"}');
+    },
+  });
+  await api.request('/v1/projects/p/storyboard/preflights', {
+    method: 'POST',
+    body: {},
+    key: 'check-1',
+  });
+  assert.deepEqual(
+    seen.map(([, key]) => key),
+    ['check-1', 'check-1'],
+  );
+  let batches = 0;
+  const paid = createCloudClient({
+    fetcher: async () => {
+      batches++;
+      return refuse();
+    },
+  });
+  await assert.rejects(
+    paid.request('/v1/batches', { method: 'POST', body: {}, key: 'batch-1' }),
+    (error) => error.status === 429,
+  );
+  assert.equal(batches, 1);
+});

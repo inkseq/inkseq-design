@@ -404,7 +404,12 @@ export function createCloudClient({
           }
           // A keyed write refused at the door (too many requests at once) changed nothing;
           // the same key may be sent again after the server's short wait (h3-studio#1246).
-          const busy = !!key && detail?.code === 'request_capacity_busy';
+          const busy =
+            !!key &&
+            (detail?.code === 'request_capacity_busy' ||
+              // A price check charges nothing and its key replays the same plans, so a
+              // refusal for capacity is tried again after a short wait (h3-studio#1246).
+              (detail?.code === 'capacity_unavailable' && /\/storyboard\/preflights$/.test(path)));
           if ((method === 'GET' || busy) && response.status === 429 && attempt < 2) {
             const delay = retryDelay(response);
             if (delay !== null && Date.now() + delay < deadline) {
